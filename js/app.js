@@ -215,10 +215,10 @@ function renderCarrito() {
   // Banner
   const banner = document.getElementById("carrito-banner");
   if (aplica) {
-    banner.innerHTML = `🎉 ¡Descuento del 10% aplicado por llevar ${prods.length} productos!`;
+    banner.innerHTML = `🎉 ¡Descuento del 5% aplicado por llevar ${prods.length} productos!`;
     banner.className = "descuento-activo";
   } else if (faltan > 0) {
-    banner.innerHTML = `🛍️ Agrega <strong>${faltan}</strong> producto${faltan > 1 ? "s" : ""} más y obtén un <strong>10% de descuento</strong>`;
+    banner.innerHTML = `🛍️ Agrega <strong>${faltan}</strong> producto${faltan > 1 ? "s" : ""} más y obtén un <strong>5% de descuento</strong>`;
     banner.className = "descuento-promo";
   } else {
     banner.innerHTML = "";
@@ -250,7 +250,7 @@ function enviarWhatsappCarrito() {
   let txt = `¡Hola! 👋 Quisiera hacer un pedido:\n\n${lista}\n\n`;
   txt += `💵 Subtotal: ${formatoPrecio(subtotal)}\n`;
   if (aplica) {
-    txt += `🏷️ Descuento 10%: - ${formatoPrecio(descuento)}\n`;
+    txt += `🏷️ Descuento 5%: - ${formatoPrecio(descuento)}\n`;
     txt += `✅ *Total con descuento: ${formatoPrecio(total)}*\n\n`;
   } else {
     txt += `✅ *Total: ${formatoPrecio(total)}*\n\n`;
