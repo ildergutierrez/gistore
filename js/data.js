@@ -2,7 +2,7 @@
 //  DICCIONARIO DE CATEGORÍAS
 // ============================================================
 const CATEGORIAS = {
-  1: "Electrónica",
+  1: "Productos naturales",
   2: "Hogar & Deco",
   3: "Moda",
   4: "Belleza & Cuidado",
@@ -75,36 +75,6 @@ const PRODUCTOS = [
       "Difusor ultrasónico de aceites esenciales con luz ambiental de 7 colores. Crea un ambiente relajante y purifica el aire de tu hogar.",
     imagen: "https://images.unsplash.com/photo-1608181831688-8b8b97ea3b7a?w=600&q=80",
     categoria: 2,
-  },
-  {
-    id: 7,
-    nombre: "Chaqueta Impermeable",
-    valor: 215000,
-    beneficios: ["100% impermeable", "Bolsillos interiores", "Talla S a XXL"],
-    descripcion:
-      "Chaqueta técnica para aventuras al aire libre. Membrana impermeable y transpirable que te protege del viento y la lluvia con estilo urbano.",
-    imagen: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80",
-    categoria: 3,
-  },
-  {
-    id: 8,
-    nombre: "Zapatillas Urban Boost",
-    valor: 178000,
-    beneficios: ["Suela de amortiguación", "Transpirable", "Diseño unisex"],
-    descripcion:
-      "Zapatillas con tecnología de amortiguación avanzada para máxima comodidad en la ciudad. Diseño moderno que combina con cualquier look.",
-    imagen: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80",
-    categoria: 3,
-  },
-  {
-    id: 9,
-    nombre: "Bolso de Cuero Artesanal",
-    valor: 265000,
-    beneficios: ["Cuero genuino", "Hecho a mano", "Compartimentos organizados"],
-    descripcion:
-      "Bolso elaborado artesanalmente en cuero natural curtido al vegetal. Cada pieza es única, con herrajes dorados y forro interior de tela.",
-    imagen: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80",
-    categoria: 3,
   },
   {
     id: 10,
@@ -206,16 +176,7 @@ const PRODUCTOS = [
     imagen: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80",
     categoria: 2,
   },
-  {
-    id: 20,
-    nombre: "Vestido Floral Verano",
-    valor: 135000,
-    beneficios: ["Tela 100% algodón", "Tallas XS-XL", "Lavado a máquina"],
-    descripcion:
-      "Vestido midi con estampado floral en colores vibrantes. Corte favorecedor con escote en V y falda con vuelo. Perfecto para ocasiones especiales o el día a día.",
-    imagen: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=80",
-    categoria: 3,
-  },
+  
   {
     id: 21,
     nombre: "Tablet Educativa Kids",
@@ -259,4 +220,4 @@ const PRODUCTOS = [
 ];
 
 // Número de WhatsApp del vendedor (con código de país, sin +)
-const WHATSAPP_NUMERO = "573001234567";
+const WHATSAPP_NUMERO = "573125028026";
