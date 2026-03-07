@@ -396,17 +396,30 @@ function compartirProducto(prod) {
   url.searchParams.set("p", encodeId(prod.id));
   const enlace = url.toString();
 
+  const beneficioTop = prod.beneficios[0] || "";
+
+  // Texto sin enlace (navigator.share añade la URL aparte)
+  const textoShare =
+    `🌿 ¡Esto te va a interesar!\n\n` +
+    `*${prod.nombre}*\n` +
+    `✅ ${beneficioTop}\n` +
+    `💵 Solo *${formatoPrecio(prod.valor)}*\n\n` +
+    `👇 Míralo aquí:`;
+
+  // Texto completo con enlace (para copiar al portapapeles)
+  const textoCompleto = textoShare + `\n${enlace}`;
+
   if (navigator.share) {
     navigator.share({
       title: prod.nombre,
-      text: `Mira este producto: ${prod.nombre} — ${formatoPrecio(prod.valor)}`,
+      text: textoShare,   // sin enlace, navigator.share añade la url solo
       url: enlace,
     }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(enlace).then(() => {
+    navigator.clipboard.writeText(textoCompleto).then(() => {
       const btn = document.getElementById("btn-compartir-modal");
       const original = btn.innerHTML;
-      btn.innerHTML = "✓ Enlace copiado";
+      btn.innerHTML = "✓ ¡Copiado!";
       btn.style.background = "#1a6b3c";
       btn.style.color = "#fff";
       setTimeout(() => {
