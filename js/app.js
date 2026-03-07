@@ -194,7 +194,6 @@ function renderCarrito() {
   const lista  = document.getElementById("carrito-lista");
   const faltan = DESCUENTO_MIN - prods.length;
 
-  // Items
   lista.innerHTML = prods.map((p) => `
     <div class="carrito-item">
       <img class="carrito-item-img" src="${p.imagen}" alt="${p.nombre}"
@@ -212,7 +211,6 @@ function renderCarrito() {
     btn.addEventListener("click", () => eliminarDelCarrito(Number(btn.dataset.id)));
   });
 
-  // Banner
   const banner = document.getElementById("carrito-banner");
   if (aplica) {
     banner.innerHTML = `🎉 ¡Descuento del 5% aplicado por llevar ${prods.length} productos!`;
@@ -225,7 +223,6 @@ function renderCarrito() {
     banner.className = "";
   }
 
-  // Totales
   document.getElementById("carrito-subtotal").textContent = formatoPrecio(subtotal);
   const descRow = document.getElementById("carrito-descuento-row");
   descRow.style.display = aplica ? "flex" : "none";
@@ -264,13 +261,26 @@ function enviarWhatsappCarrito() {
 // ============================================================
 function abrirModal(prod) {
   productoModal = prod;
-  document.getElementById("modal-img").src = prod.imagen;
-  document.getElementById("modal-img").alt = prod.nombre;
+  document.getElementById("modal-img").src               = prod.imagen;
+  document.getElementById("modal-img").alt               = prod.nombre;
   document.getElementById("modal-categoria").textContent = CATEGORIAS[prod.categoria];
   document.getElementById("modal-nombre").textContent    = prod.nombre;
   document.getElementById("modal-precio").textContent    = formatoPrecio(prod.valor);
   document.getElementById("modal-desc").textContent      = prod.descripcion;
   document.getElementById("modal-beneficios").innerHTML  = prod.beneficios.map((b) => `<li>${b}</li>`).join("");
+
+  // ── Modo de consumo: aparece solo si el producto tiene el campo ──
+  const seccion = document.getElementById("modal-consumo-seccion");
+  const texto   = document.getElementById("modal-consumo-texto");
+  if (prod.consumo) {
+    texto.textContent    = prod.consumo;
+    seccion.style.display = "block";
+  } else {
+    texto.textContent    = "";
+    seccion.style.display = "none";
+  }
+  // ────────────────────────────────────────────────────────────────
+
   actualizarBtnSeleccionModal();
   document.getElementById("btn-whatsapp-modal").onclick = () => enviarWhatsappProducto(prod);
   document.getElementById("overlay").classList.add("activo");
@@ -323,7 +333,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderFiltros();
   renderCatalogo();
 
-  // Modal producto
   document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target.id === "overlay") cerrarModal();
   });
@@ -332,18 +341,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (productoModal) toggleSeleccion(productoModal.id);
   });
 
-  // Panel inferior
   document.getElementById("btn-limpiar").addEventListener("click", limpiarSeleccion);
   document.getElementById("btn-whatsapp-panel").addEventListener("click", abrirCarrito);
 
-  // Carrito
   document.getElementById("cart-btn").addEventListener("click", abrirCarrito);
   document.getElementById("carrito-overlay").addEventListener("click", cerrarCarrito);
   document.getElementById("btn-cerrar-carrito").addEventListener("click", cerrarCarrito);
   document.getElementById("btn-carrito-limpiar").addEventListener("click", limpiarSeleccion);
   document.getElementById("btn-carrito-whatsapp").addEventListener("click", enviarWhatsappCarrito);
 
-  // ESC
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { carritoAbierto ? cerrarCarrito() : cerrarModal(); }
   });
