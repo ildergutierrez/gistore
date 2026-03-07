@@ -132,7 +132,7 @@ const PRODUCTOS = [
 ];
 
 // Número de WhatsApp del vendedor (con código de país, sin +)
-const WHATSAPP_NUMERO = "573125028026";
+const WHATSAPP_NUMERO = "573145891108";
 
 
  /*
