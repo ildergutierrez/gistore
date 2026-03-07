@@ -69,7 +69,82 @@ const PRODUCTOS = [
     imagen: "img/productos/2/5_40_omega3.jpeg",
     categoria: 1,
   },
+  {
+    id: 6,
+    nombre: "Ginkgo Biloba",
+    valor: 45000,
+    beneficios: ["Mejorar el flujo sanguíneo cerebral y periférico", "Mejora la memoria y la concentración", "Actua como potente Antioxidante", "Reduce la fatiga mental y el estrés"],
+    descripcion: "Es un suplemento natural enfocado en mejorar la circulación sanguínea, la función cognitiva (memoria, concentración) y reducir el estrés oxidativo. Se emplea para aliviar problemas circulatorios periféricos (piernas), síntomas de demencia leve y mejorar el equilibrio nervioso.",
+    consumo: "Complemento alimenticio, no sustituye una dieta equilibrada. : 'Es importante no exceder la dosis diaria recomendada y consultar a un profesional de la salud antes de iniciar su consumo'.",
+    imagen: "img/productos/2/6_32_ginkgo.jpeg",
+    categoria: 1,
+  },
+  {
+    id: 7,
+    nombre: "ASHWAGANDHA KSM-66",
+    valor: 60000,
+    beneficios: ["Reduce el estrés y el cortisol", "Mejora del Sueño", "Rendimiento Físico y Mental", "Apoyo Hormonal"],
+    descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado (5% withanólidos), reconocido por su respaldo científico en la reducción de estrés, cortisol y mejora del sueño. Se considera una de las formas más puras y potentes, ideal para mejorar la memoria, la fuerza física y el equilibrio hormonal",
+    consumo: "se toma comúnmente en dosis de 300 a 600 mg al día, preferiblemente dividida en dos tomas (mañana y noche) con alimentos. Es importante consultar a un profesional de la salud antes de comenzar su consumo, especialmente para personas con condiciones médicas preexistentes o que estén tomando otros medicamentos.",
+    imagen: "img/productos/2/7_45_ksm-66.jpeg",
+    categoria: 1,
+  },
+   {
+    id: 8,
+    nombre: " GLUCOSAMIN 1500 mg",
+    valor: 54000,
+    beneficios: ["Salud Articular", "Mejora la elasticidad de la piel", "Alivio del Dolor","Mejora la Hidratación"],
+    descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado (5% withanólidos), reconocido por su respaldo científico en la reducción de estrés, cortisol y mejora del sueño. Se considera una de las formas más puras y potentes, ideal para mejorar la memoria, la fuerza física y el equilibrio hormonal",
+    consumo: "Se suele recomendar tomar dos cápsulas/comprimidos diarios con las comidas, o según las indicaciones de un profesional. Aviso: Este suplemento no es un medicamento y su eficacia puede variar según el individuo.",
+    imagen: "img/productos/2/8_40_glucosamin.jpeg",
+    categoria: 1,
+  },
+  {
+    id: 9,
+    nombre: "GAF-PLUS",
+    valor: 41000,
+    beneficios: ["Huesos fuertes", "Articulaciones flexible", "Energia vital"],
+    descripcion: "Suplemento multivitamínico líquido de hierbas y vitaminas, diseñado para aumentar la energía y fortalecer el sistema inmunológico.",
+    consumo: "Se recomienda tomar una copa (15 ml) dos veces al día. Debe conservarse refrigerado una vez abierto y consumirse en el menor tiempo posible. No es un medicamento, y se debe verificar su registro sanitario.",
+    imagen: "img/productos/2/9_30_gaf-plus.jpeg",
+    categoria: 1,
+  },
+  {
+    id: 10,
+    nombre: "Salud de la mujer",
+    valor: 30000,
+    beneficios: ["Desinflamante Femenino", "Alivia colicos menstruales", "Disminuye el flujo y las molestias"],
+    descripcion: "Los jarabes para la 'Salud de la Mujer' son suplementos nutricionales formulados con hierbas (como hinojo, manzanilla, naranja) y extractos naturales, diseñados para regular el ciclo menstrual, aliviar cólicos, reducir inflamación uterina y equilibrar hormonas.",
+    consumo: "se recomienda tomar vía oral, frecuentemente 3 veces al día. Generalmente se indica antes de las comidas para mejorar el ciclo menstrual, fertilidad y malestares, aunque siempre se debe verificar la etiqueta específica. Nota: Aunque los jarabes herbolarios son comunes, se recomienda consultar a un médico antes de iniciar su consumo, especialmente si hay condiciones preexistentes o embarazo.",
+    imagen: "img/productos/2/10_23_salud_de_la_mujer.jpeg",
+    categoria: 1,
+  },
+ {
+    id: 11,
+    nombre: "Vita Celebrina - Jarabe",
+    valor: 40000,
+    beneficios: ["Mejora la memoria", "Aumenta la concentración","Refuerza el rendimiento mental"],
+    descripcion: "Suplemento dietario rico en vitaminas (A, B1, B2, B3, B6, C, E) y minerales, diseñado para apoyar la función cognitiva, mejorar la memoria, la concentración y el sistema inmunológico en niños y adultos",
+    consumo: "A menudo se recomienda para niños mayores de 4 años, con dosis de 2 cucharaditas diarias. Nota: Este producto es un suplemento nutricional y no un medicamento.",
+    imagen: "img/productos/2/11_28_vitacelebrina_jarabe.jpeg",
+    categoria: 1,
+  },
 ];
 
 // Número de WhatsApp del vendedor (con código de país, sin +)
 const WHATSAPP_NUMERO = "573125028026";
+
+
+ /*
+ {
+    id: 0,
+    nombre: "",
+    valor: 30000,
+    beneficios: ["", ""],
+    descripcion: "",
+    consumo: "",
+    imagen: "",
+    categoria: 1,
+  },
+
+  */
