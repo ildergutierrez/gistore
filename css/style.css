@@ -472,3 +472,243 @@ footer span { color: var(--dorado-claro); }
   padding: .75rem 1rem;
   border-radius: 0 8px 8px 0;
 }
+
+/* ── Cantidad en carrito ── */
+.carrito-item-cantidad {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin-left: auto;
+  margin-right: .5rem;
+}
+.qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--verde-claro);
+  background: transparent;
+  color: var(--verde-oscuro);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background .15s;
+}
+.qty-btn:hover { background: var(--verde-suave); }
+.qty-num {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--verde-oscuro);
+}
+
+/* ── Buscador ─────────────────────────────────────────────── */
+.busqueda-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: .75rem;
+}
+.busqueda-input {
+  width: 100%;
+  padding: .55rem 2.4rem .55rem 1rem;
+  border: 1.5px solid #d1e8db;
+  border-radius: 999px;
+  font-size: .95rem;
+  font-family: inherit;
+  color: var(--texto);
+  background: #fff;
+  outline: none;
+  transition: border-color .2s;
+}
+.busqueda-input:focus { border-color: var(--verde-claro); }
+.busqueda-limpiar {
+  position: absolute;
+  right: .55rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  padding: .2rem;
+}
+.busqueda-limpiar:hover { color: var(--verde-oscuro); }
+
+/* ── Botón compartir en modal ─────────────────────────────── */
+.btn-compartir-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 1.5px solid #d1e8db;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--verde-oscuro);
+  font-size: .95rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  margin-top: .5rem;
+}
+.btn-compartir-modal:hover {
+  background: var(--verde-suave);
+  border-color: var(--verde-claro);
+}
+
+/* ── Buscador en header ───────────────────────────────────── */
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.busqueda-header-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.busqueda-header-input {
+  width: 100%;
+  padding: .55rem 2.6rem .55rem 2.4rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: .92rem;
+  font-family: inherit;
+  outline: none;
+  transition: background .2s;
+  backdrop-filter: blur(4px);
+}
+.busqueda-header-input::placeholder { color: rgba(255,255,255,0.65); }
+.busqueda-header-input:focus {
+  background: rgba(255,255,255,0.28);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.35);
+}
+
+.busqueda-icono {
+  position: absolute;
+  left: .75rem;
+  color: rgba(255,255,255,0.75);
+  pointer-events: none;
+}
+
+.busqueda-limpiar {
+  position: absolute;
+  right: .6rem;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  font-size: .75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.busqueda-limpiar:hover { background: rgba(255,255,255,0.35); }
+
+@media (max-width: 600px) {
+  .busqueda-header-wrap { max-width: 100%; }
+  .header-inner { flex-wrap: wrap; gap: .5rem; }
+  .busqueda-header-wrap { order: 3; width: 100%; max-width: 100%; }
+}
+
+/* ── Modal acciones rediseño ──────────────────────────────── */
+.modal-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  margin-top: 1.2rem;
+}
+
+.modal-acciones-fila {
+  display: flex;
+  gap: .6rem;
+}
+
+.modal-acciones-fila .btn-compartir-modal,
+.modal-acciones-fila .btn-seleccionar-modal {
+  flex: 1;
+}
+
+/* Compartir — bordes verdes sólidos excepto arriba */
+.btn-compartir-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: .65rem 1rem;
+  background: transparent;
+  color: var(--verde-oscuro);
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-top: none;
+  border-right: 2px solid var(--verde-claro);
+  border-bottom: 2px solid var(--verde-claro);
+  border-left: 2px solid var(--verde-claro);
+  border-radius: 0 0 10px 10px;
+  transition: background .15s;
+}
+.btn-compartir-modal:hover { background: var(--verde-suave); }
+
+/* Añadir — igual que antes */
+.btn-seleccionar-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  padding: .65rem 1rem;
+  background: transparent;
+  color: var(--verde-oscuro);
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid var(--verde-claro);
+  border-radius: 10px;
+  transition: background .15s;
+}
+.btn-seleccionar-modal:hover,
+.btn-seleccionar-modal.activo { background: var(--verde-suave); }
+.btn-seleccionar-modal.activo {
+  background: var(--verde-claro);
+  color: #fff;
+  border-color: var(--verde-claro);
+}
+
+/* ── Tarjeta: imagen clickeable abre modal ────────────────── */
+.tarjeta-img-wrap {
+  cursor: zoom-in;
+}
+.tarjeta-img-wrap:hover img {
+  transform: scale(1.03);
+  transition: transform .25s ease;
+}
+.tarjeta-img-wrap img {
+  transition: transform .25s ease;
+}
+
+/* Área de texto/precio → cursor pointer para seleccionar */
+.tarjeta-body {
+  cursor: pointer;
+}
