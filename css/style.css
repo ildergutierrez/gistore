@@ -98,7 +98,7 @@ header {
 .filtros-wrap {
   background: var(--blanco);
   border-bottom: 1px solid var(--gris-300);
-  padding: 1rem 2rem;
+  padding: .75rem 1.5rem;
   position: sticky;
   top: 72px;
   z-index: 90;
@@ -109,21 +109,37 @@ header {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: .7rem;
-  flex-wrap: wrap;
+  gap: .5rem;
+  /* scroll horizontal en móvil — una sola fila limpia */
+  overflow-x: auto;
+  overflow-y: visible;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-.filtro-label { font-size: .82rem; font-weight: 600; color: var(--gris-500); text-transform: uppercase; letter-spacing: .5px; }
+.filtros-inner::-webkit-scrollbar { display: none; }
+.filtro-label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--gris-500);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .filtro-btn {
   background: var(--gris-100);
   border: 2px solid transparent;
   border-radius: 50px;
-  padding: .4rem 1rem;
+  padding: .38rem .95rem;
   font-family: 'DM Sans', sans-serif;
-  font-size: .87rem;
+  font-size: .84rem;
   font-weight: 500;
   color: var(--gris-700);
   cursor: pointer;
   transition: var(--transicion);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .filtro-btn:hover  { border-color: var(--verde-claro); color: var(--verde); }
 .filtro-btn.activo { background: var(--verde); color: var(--blanco); border-color: var(--verde); }
