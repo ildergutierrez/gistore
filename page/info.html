@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Info — GI Store</title>
+  <title>Ayuda — GI Store</title>
   <meta name="description" content="Todo lo que necesitas saber sobre cómo funciona GI Store: pedidos, envíos, pagos, membresías y más." />
   <link rel="icon" href="../img/favicon/gi-icono.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../css/style.css" />
@@ -21,13 +21,8 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; color: var(--texto); background: #f9fdf9; line-height: 1.7; }
 
-    /* Header */
-    header { background: var(--verde-oscuro); padding: .9rem 1.5rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
-    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
-    .logo img { height: 44px; display: block; }
-    .header-nav { margin-left: auto; display: flex; gap: .5rem; }
-    .header-nav a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .9rem; font-weight: 500; padding: .45rem .85rem; border-radius: 999px; transition: background .15s, color .15s; }
-    .header-nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    /* Header — hereda responsive de style.css */
+    header { background: var(--verde-oscuro); }
     .header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; }
 
     /* Hero */
@@ -91,7 +86,7 @@
       <nav class="header-nav">
         <a href="../index.html">Catálogo</a>
         <a href="nosotros.html">Nosotros</a>
-        <a href="#" class="activo">Info</a>
+        <a href="#" class="activo">Ayuda</a>
       </nav>
     </div>
   </header>

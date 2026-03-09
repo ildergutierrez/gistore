@@ -30,34 +30,8 @@
       line-height: 1.7;
     }
 
-    /* ── Header (idéntico al catálogo) ─────────────────── */
-    header {
-      background: var(--verde-oscuro);
-      padding: .9rem 1.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 12px rgba(0,0,0,.18);
-    }
-    .header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .logo img { height: 44px; display: block; }
-    .header-nav { margin-left: auto; display: flex; gap: .5rem; }
-    .header-nav a {
-      color: rgba(255,255,255,.85);
-      text-decoration: none;
-      font-size: .9rem;
-      font-weight: 500;
-      padding: .45rem .85rem;
-      border-radius: 999px;
-      transition: background .15s, color .15s;
-    }
-    .header-nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    /* Header — hereda estilos y responsive de style.css */
+    header { background: var(--verde-oscuro); }
     .header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; }
 
     /* ── Hero ───────────────────────────────────────────── */
@@ -260,7 +234,7 @@
       </div>
       <nav class="header-nav">
         <a href="../index.html">Catálogo</a>
-        <a href="#" class="activo">Nosotros</a>
+        <a href="nosotros.html" class="activo">Nosotros</a>
         <a href="info.html">Ayuda</a>
       </nav>
     </div>
@@ -362,4 +336,4 @@
     </section>
   </div>
 
-      <p style="margin-top:2rem;font-size:.9rem;color:#6b7280;">Pedidos, pagos o envíos: <a href="info.html" style="color:#1a6b3c;font-weight:600;">visita nuestra página de <b>ayuda</b> →</a></p>
+      <p style="margin-top:2rem;font-size:.9rem;color:#6b7280;">Pedidos, pagos o envíos: <a href="info.html" style="color:#1a6b3c;font-weight:600;">visita nuestra página de <b>Ayuda</b> →</a></p>

@@ -144,6 +144,13 @@ header {
 .filtro-btn:hover  { border-color: var(--verde-claro); color: var(--verde); }
 .filtro-btn.activo { background: var(--verde); color: var(--blanco); border-color: var(--verde); }
 
+@media (max-width: 600px) {
+  .filtros-wrap { padding: .55rem .9rem; }
+  .filtros-inner { gap: 6px; }
+  .filtro-label { font-size: .7rem; margin-right: 2px; }
+  .filtro-btn { font-size: .78rem; padding: .3rem .75rem; }
+}
+
 /* ============================================================
    MAIN / GRILLA
    ============================================================ */
@@ -648,9 +655,36 @@ footer span { color: var(--dorado-claro); }
 .busqueda-limpiar:hover { background: rgba(255,255,255,0.35); }
 
 @media (max-width: 600px) {
-  .busqueda-header-wrap { max-width: 100%; }
-  .header-inner { flex-wrap: wrap; gap: .5rem; }
-  .busqueda-header-wrap { order: 3; width: 100%; max-width: 100%; }
+  header { padding: 0 .9rem; }
+
+  .header-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: .55rem 0;
+    gap: 0;
+    row-gap: .4rem;
+  }
+
+  /* Fila 1: logo + nav en la misma línea */
+  .logo img { height: 38px; }
+
+  .header-nav {
+    margin-left: auto;
+    gap: 2px;
+  }
+  .header-nav a {
+    font-size: .76rem;
+    padding: .3rem .55rem;
+    border-radius: 999px;
+  }
+
+  /* Fila 2: buscador al 100% */
+  .busqueda-header-wrap {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
 }
 
 /* ── Modal acciones rediseño ──────────────────────────────── */
@@ -752,3 +786,4 @@ footer span { color: var(--dorado-claro); }
   white-space: nowrap;
 }
 .header-nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+.header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; font-weight: 600; }

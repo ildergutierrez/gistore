@@ -436,11 +436,11 @@ function abrirModal(prod) {
   document.getElementById("modal-desc").textContent      = prod.descripcion;
   document.getElementById("modal-beneficios").innerHTML  = prod.beneficios.map((b) => "<li>" + b + "</li>").join("");
 
-  // Modo de consumo
+  //  sobre el producto
   const seccion = document.getElementById("modal-consumo-seccion");
   const texto   = document.getElementById("modal-consumo-texto");
-  if (prod.consumo) {
-    texto.textContent     = prod.consumo;
+  if (prod.recomendacion) {
+    texto.textContent     = prod.recomendacion;
     seccion.style.display = "block";
   } else {
     texto.textContent     = "";

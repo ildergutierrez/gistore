@@ -41,7 +41,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Desintoxicacion Natural", "Soporte Epatico", "Digestión saludable", "Purificación del cuerpo"],
     descripcion: "El Boldo + Clorofila y Menta es un suplemento natural que combina boldo, clorofila, menta, sábila y albahaca, ofreciendo una acción refrescante, depurativa y revitalizante. Este suplemento es ideal para quienes buscan un detox natural, apoyo digestivo y frescura interna y externa. Su fórmula está diseñada para apoyar la digestión, la desintoxicación y el bienestar general del organismo.",
-    consumo: "Disolver una cucharada en un vaso de agua y consumir después de las comidas principales o según indicación profesional. Este suplemento es una opción natural para quienes desean mejorar su salud digestiva y general.",
+    recomendacion: "Disolver una cucharada en un vaso de agua y consumir después de las comidas principales o según indicación profesional. Este suplemento es una opción natural para quienes desean mejorar su salud digestiva y general.",
     imagen: "img/productos/2/1_25_clorofila_menta.jpeg",
   },
   {
@@ -52,7 +52,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Función Muscular y Nerviosa", "Regulación de la Presión Arterial", "Salud Ósea", "Alivio de Migrañas", "Apoyo Digestivo"],
     descripcion: "El Citrato y Cloruro de Magnesio 4 en 1 es un suplemento que combina varios beneficios para la salud:",
-    consumo: "Dosis recomendada: Tomar 1 cápsula al día, preferiblemente con las comidas. - Consulta médica: Para dosificación personalizada, consulta con un especialista.",
+    recomendacion: "Dosis recomendada: Tomar 1 cápsula al día, preferiblemente con las comidas. - Consulta médica: Para dosificación personalizada, consulta con un especialista.",
     imagen: "img/productos/2/2_38_citrato.jpeg",
   },
   {
@@ -63,7 +63,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Antioxidante Potente", "Salud de la Piel", "Protección Cardiovascular", "Mejora de la Salud Ocular", "Apoyo al Sistema Inmunológico"],
     descripcion: "La Vitamina E 1000 UI es un suplemento dietario que actúa como un potente antioxidante, ayudando a combatir los radicales libres en el cuerpo. Sus beneficios incluyen:",
-    consumo: "Dosis Recomendada: La dosis de 1000 UI se puede tomar diariamente, pero es importante consultar a un médico antes de comenzar cualquier suplementación, especialmente para mujeres embarazadas o personas con condiciones de salud específicas. Forma de Consumo: La vitamina E es liposoluble, por lo que se recomienda tomarla con alimentos que contengan grasa para mejorar su absorción.",
+    recomendacion: "Dosis Recomendada: La dosis de 1000 UI se puede tomar diariamente, pero es importante consultar a un médico antes de comenzar cualquier suplementación, especialmente para mujeres embarazadas o personas con condiciones de salud específicas. Forma de recomendacion: La vitamina E es liposoluble, por lo que se recomienda tomarla con alimentos que contengan grasa para mejorar su absorción.",
     imagen: "img/productos/2/3_40_vitamina_E.jpeg",
   },
   {
@@ -73,8 +73,8 @@ const PRODUCTOS = [
     categoria: 1,
     whatsapp: 1,
     beneficios: ["Antioxidante Potente", "Relajación Muscular", "Salud Ósea", "Mejora de la Salud Ocular", "Reduce el Estrés Oxidativo", "Salud Ocular"],
-    descripcion: "El Citrato de Magnesio y la Vitamina E se complementan para apoyar la salud muscular, nerviosa, cardiovascular y antioxidante, siendo seguros para consumo diario.",
-    consumo: "Se recomienda tomar 2 gomitas al día para obtener los beneficios de ambos ingredientes, preferiblemente después de una comida. Este combo es ideal para quienes buscan un suplemento que apoye la salud desde adentro y facilite la adherencia a una rutina de bienestar.",
+    descripcion: "El Citrato de Magnesio y la Vitamina E se complementan para apoyar la salud muscular, nerviosa, cardiovascular y antioxidante, siendo seguros para recomendacion diario.",
+    recomendacion: "Se recomienda tomar 2 gomitas al día para obtener los beneficios de ambos ingredientes, preferiblemente después de una comida. Este combo es ideal para quienes buscan un suplemento que apoye la salud desde adentro y facilite la adherencia a una rutina de bienestar.",
     imagen: "img/productos/2/4_40_magnecio+vitaminaE.jpeg",
   },
   {
@@ -85,7 +85,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Apoya la salud celebral y Cognitiva", "Reduce la inflamación corporal", "Mejora la salud Cardiovascular", "Mejor la hidratación y salud de la piel"],
     descripcion: "Los ácidos grasos omega-3 son esenciales para la salud y ofrecen una variedad de beneficios para la salud física y mental. Aquí hay una lista de los beneficios del omega-3:",
-    consumo: "Dosis diaria recomendada: La Organización Mundial de la Salud (OMS) recomienda entre 250 y 2000 mg al día, dependiendo de la edad y la etapa de la vida.",
+    recomendacion: "Dosis diaria recomendada: La Organización Mundial de la Salud (OMS) recomienda entre 250 y 2000 mg al día, dependiendo de la edad y la etapa de la vida.",
     imagen: "img/productos/2/5_40_omega3.jpeg",
   },
   {
@@ -96,7 +96,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Mejorar el flujo sanguíneo cerebral y periférico", "Mejora la memoria y la concentración", "Actua como potente Antioxidante", "Reduce la fatiga mental y el estrés"],
     descripcion: "Es un suplemento natural enfocado en mejorar la circulación sanguínea, la función cognitiva (memoria, concentración) y reducir el estrés oxidativo. Se emplea para aliviar problemas circulatorios periféricos (piernas), síntomas de demencia leve y mejorar el equilibrio nervioso.",
-    consumo: "Complemento alimenticio, no sustituye una dieta equilibrada. Es importante no exceder la dosis diaria recomendada y consultar a un profesional de la salud antes de iniciar su consumo.",
+    recomendacion: "Complemento alimenticio, no sustituye una dieta equilibrada. Es importante no exceder la dosis diaria recomendada y consultar a un profesional de la salud antes de iniciar su recomendacion.",
     imagen: "img/productos/2/6_32_ginkgo.jpeg",
   },
   {
@@ -107,7 +107,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Reduce el estrés y el cortisol", "Mejora del Sueño", "Rendimiento Físico y Mental", "Apoyo Hormonal"],
     descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado (5% withanólidos), reconocido por su respaldo científico en la reducción de estrés, cortisol y mejora del sueño. Se considera una de las formas más puras y potentes, ideal para mejorar la memoria, la fuerza física y el equilibrio hormonal.",
-    consumo: "Se toma comúnmente en dosis de 300 a 600 mg al día, preferiblemente dividida en dos tomas (mañana y noche) con alimentos. Es importante consultar a un profesional de la salud antes de comenzar su consumo, especialmente para personas con condiciones médicas preexistentes o que estén tomando otros medicamentos.",
+    recomendacion: "Se toma comúnmente en dosis de 300 a 600 mg al día, preferiblemente dividida en dos tomas (mañana y noche) con alimentos. Es importante consultar a un profesional de la salud antes de comenzar su recomendacion, especialmente para personas con condiciones médicas preexistentes o que estén tomando otros medicamentos.",
     imagen: "img/productos/2/7_45_ksm-66.jpeg",
   },
   {
@@ -118,7 +118,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Salud Articular", "Mejora la elasticidad de la piel", "Alivio del Dolor", "Mejora la Hidratación"],
     descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado (5% withanólidos), reconocido por su respaldo científico en la reducción de estrés, cortisol y mejora del sueño. Se considera una de las formas más puras y potentes, ideal para mejorar la memoria, la fuerza física y el equilibrio hormonal.",
-    consumo: "Se suele recomendar tomar dos cápsulas/comprimidos diarios con las comidas, o según las indicaciones de un profesional. Aviso: Este suplemento no es un medicamento y su eficacia puede variar según el individuo.",
+    recomendacion: "Se suele recomendar tomar dos cápsulas/comprimidos diarios con las comidas, o según las indicaciones de un profesional. Aviso: Este suplemento no es un medicamento y su eficacia puede variar según el individuo.",
     imagen: "img/productos/2/8_40_glucosamin.jpeg",
   },
   {
@@ -129,7 +129,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Huesos fuertes", "Articulaciones flexible", "Energia vital"],
     descripcion: "Suplemento multivitamínico líquido de hierbas y vitaminas, diseñado para aumentar la energía y fortalecer el sistema inmunológico.",
-    consumo: "Se recomienda tomar una copa (15 ml) dos veces al día. Debe conservarse refrigerado una vez abierto y consumirse en el menor tiempo posible. No es un medicamento, y se debe verificar su registro sanitario.",
+    recomendacion: "Se recomienda tomar una copa (15 ml) dos veces al día. Debe conservarse refrigerado una vez abierto y consumirse en el menor tiempo posible. No es un medicamento, y se debe verificar su registro sanitario.",
     imagen: "img/productos/2/9_30_gaf-plus.jpeg",
   },
   {
@@ -140,7 +140,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Desinflamante Femenino", "Alivia colicos menstruales", "Disminuye el flujo y las molestias"],
     descripcion: "Los jarabes para la 'Salud de la Mujer' son suplementos nutricionales formulados con hierbas (como hinojo, manzanilla, naranja) y extractos naturales, diseñados para regular el ciclo menstrual, aliviar cólicos, reducir inflamación uterina y equilibrar hormonas.",
-    consumo: "Se recomienda tomar vía oral, frecuentemente 3 veces al día. Generalmente se indica antes de las comidas para mejorar el ciclo menstrual, fertilidad y malestares, aunque siempre se debe verificar la etiqueta específica. Nota: Aunque los jarabes herbolarios son comunes, se recomienda consultar a un médico antes de iniciar su consumo, especialmente si hay condiciones preexistentes o embarazo.",
+    recomendacion: "Se recomienda tomar vía oral, frecuentemente 3 veces al día. Generalmente se indica antes de las comidas para mejorar el ciclo menstrual, fertilidad y malestares, aunque siempre se debe verificar la etiqueta específica. Nota: Aunque los jarabes herbolarios son comunes, se recomienda consultar a un médico antes de iniciar su recomendacion, especialmente si hay condiciones preexistentes o embarazo.",
     imagen: "img/productos/2/10_23_salud_de_la_mujer.jpeg",
   },
   {
@@ -151,7 +151,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Mejora la memoria", "Aumenta la concentración", "Refuerza el rendimiento mental"],
     descripcion: "Suplemento dietario rico en vitaminas (A, B1, B2, B3, B6, C, E) y minerales, diseñado para apoyar la función cognitiva, mejorar la memoria, la concentración y el sistema inmunológico en niños y adultos.",
-    consumo: "A menudo se recomienda para niños mayores de 4 años, con dosis de 2 cucharaditas diarias. Nota: Este producto es un suplemento nutricional y no un medicamento.",
+    recomendacion: "A menudo se recomienda para niños mayores de 4 años, con dosis de 2 cucharaditas diarias. Nota: Este producto es un suplemento nutricional y no un medicamento.",
     imagen: "img/productos/2/11_28_vitacelebrina_jarabe.jpeg",
   },
   {
@@ -162,7 +162,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Aporta Energia", "Refuerza las defensas", "Crecimiento saludable"],
     descripcion: "Suplemento alimenticio que contiene vitaminas y minerales esenciales para el desarrollo infantil.",
-    consumo: "Se recomienda tomar una medida de 3 veces al día para obtener los beneficios. No se debe usar si hay hipersensibilidad a los componentes del producto.",
+    recomendacion: "Se recomienda tomar una medida de 3 veces al día para obtener los beneficios. No se debe usar si hay hipersensibilidad a los componentes del producto.",
     imagen: "img/productos/2/12_24_enervital.jpeg",
   },
   {
@@ -173,7 +173,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Apoyo a la Memoria", "Mejora la concentración", "Reduce el estrés y la ansiedad", "Función neurologica saludable"],
     descripcion: "Suplemento dietario, frecuentemente encontrado en forma líquida (jarabe) o cápsulas, diseñado para apoyar la función cognitiva, mejorar la memoria, la concentración y calmar síntomas de ansiedad o estrés. Contiene principalmente vitaminas del complejo B (B1, B6, B12), extracto de trigo rojo y minerales como glicerofosfatos.",
-    consumo: "Generalmente recomendado para adultos, con posologías indicadas por el fabricante (ej. 20 ml tres veces al día en algunas presentaciones).",
+    recomendacion: "Generalmente recomendado para adultos, con posologías indicadas por el fabricante (ej. 20 ml tres veces al día en algunas presentaciones).",
     imagen: "img/productos/2/13_25_neurizinc.jpeg",
   },
   {
@@ -184,7 +184,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Piel radiante y elastica", "Equilibrio Electrolitico", "Reducción de la inflamación", "Salud Cardiovascular y Cerebral"],
     descripcion: "Suplemento nutricional en forma de cápsulas, rico en ácidos grasos omega-3, diseñado para apoyar la salud del corazón y el cerebro.",
-    consumo: "Se recomienda tomar 2 cápsulas al día con las comidas, o según indicación del médico.",
+    recomendacion: "Se recomienda tomar 2 cápsulas al día con las comidas, o según indicación del médico.",
     imagen: "img/productos/2/14_40_gaf-plus_omega3.jpeg",
   },
   {
@@ -195,7 +195,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Mejora la salud de la piel: Apoya la elasticidad, firmeza y reduce arrugas finas.", "Salud articular y cartílago: Ayuda a mantener la integridad del cartílago.", "Cabello y uñas fuertes: Fomenta el crecimiento capilar y fortalece uñas quebradizas.", "Soporte muscular: Contribuye a la recuperación después del ejercicio.", "Bienestar general: Promueve un envejecimiento saludable."],
     descripcion: "Suplemento de colágeno hidrolizado en cápsulas diseñado para promover la integridad estructural de todo el cuerpo y un envejecimiento saludable.",
-    consumo: "Se recomienda consultar la etiqueta del producto para obtener instrucciones de uso personalizadas, incluyendo la cantidad diaria sugerida y el momento adecuado para tomarlo. Generalmente se consume por vía oral.",
+    recomendacion: "Se recomienda consultar la etiqueta del producto para obtener instrucciones de uso personalizadas, incluyendo la cantidad diaria sugerida y el momento adecuado para tomarlo. Generalmente se consume por vía oral.",
     imagen: "img/productos/2/15_35_colageno_hidrolizado.jpeg",
   },
   {
@@ -206,7 +206,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Apoyo al sistema inmunitario: mantiene las defensas naturales del cuerpo fuertes.", "Huesos y dientes fuertes: mejora la absorción de calcio.", "Mejora el estado de ánimo y la energía: combate la fatiga y el cansancio."],
     descripcion: "Suplemento nutricional de Vitamina D3 con una alta concentración de 4.000 UI por cápsula, diseñado como complemento diario para una vida saludable y el fortalecimiento del sistema óseo.",
-    consumo: "Ingerir 1 cápsula al día (dosis recomendada de 4.000 UI indicada en el envase), preferiblemente con una de las comidas principales para mejorar su absorción.",
+    recomendacion: "Ingerir 1 cápsula al día (dosis recomendada de 4.000 UI indicada en el envase), preferiblemente con una de las comidas principales para mejorar su absorción.",
     imagen: "img/productos/2/16_30_vitaminaD3.jpeg",
   },
   {
@@ -217,7 +217,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Refuerzo Inmunológico: fortalece las defensas naturales del organismo.", "Protección Antioxidante: protege las células contra el daño oxidativo.", "Piel Saludable y Cicatrización: apoya la formación de colágeno y la reparación de tejidos.", "Más Energía: contribuye a reducir el cansancio y la fatiga."],
     descripcion: "Suplemento nutricional de alta potencia que combina 1.000mg de Vitamina C con Zinc, diseñado para maximizar la protección del sistema inmune y promover la salud de la piel.",
-    consumo: "Se recomienda tomar 1 cápsula al día, preferiblemente con alimentos. La dosis de 1.000mg es la concentración estándar diaria para adultos indicada en el envase.",
+    recomendacion: "Se recomienda tomar 1 cápsula al día, preferiblemente con alimentos. La dosis de 1.000mg es la concentración estándar diaria para adultos indicada en el envase.",
     imagen: "img/productos/2/17_28_vitaminaC_capsulas.jpeg",
   },
   {
@@ -228,7 +228,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Reduce la tos y expulsa las flemas.", "Dilata los bronquios.", "Ayuda a respirar mejor.", "Alivia la congestión."],
     descripcion: "Jarabe expectorante y broncodilatador diseñado para limpiar las vías respiratorias y facilitar la expulsión de secreciones pulmonares, mejorando la capacidad respiratoria.",
-    consumo: "Se administra por vía oral. La dosis recomendada suele variar según la edad (adultos y niños), por lo que se debe verificar la dosificación exacta en el reverso del empaque o bajo indicación médica.",
+    recomendacion: "Se administra por vía oral. La dosis recomendada suele variar según la edad (adultos y niños), por lo que se debe verificar la dosificación exacta en el reverso del empaque o bajo indicación médica.",
     imagen: "img/productos/2/18_25_pulmonar.jpeg",
   },
   {
@@ -239,7 +239,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Refuerza el sistema inmunológico", "Mejora la salud intestinal", "Fuente de Omega 3, 6 y 9", "Aporta calcio y magnesio"],
     descripcion: "Alimento en polvo a base de calostro bovino liofilizado, enriquecido con proteína de suero de leche, calcio y magnesio. Sabor a vainilla.",
-    consumo: "Mezclar la porción recomendada en agua o leche. Al ser un alimento en polvo de 600g, se sugiere seguir las indicaciones del envase para la dosificación diaria según la edad.",
+    recomendacion: "Mezclar la porción recomendada en agua o leche. Al ser un alimento en polvo de 600g, se sugiere seguir las indicaciones del envase para la dosificación diaria según la edad.",
     imagen: "img/productos/2/19_35_calostro.jpeg",
   },
   {
@@ -250,7 +250,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Crecimiento muscular: Proteína de soya y suero de leche para un desarrollo fuerte.", "Desarrollo cognitivo: Calcio y magnesio para función cerebral y ósea óptima.", "Energía sostenida: Contiene maltodextrina para un aporte duradero en actividades.", "Bienestar general: Nutrición completa para un crecimiento feliz y saludable."],
     descripcion: "Alimento en polvo a base de fécula de maíz y maltodextrina, enriquecido con proteína de soya, suero de leche, calcio y magnesio. Sabor vainilla fresa.",
-    consumo: "Producto en polvo (600g) para disolver. Se recomienda seguir las instrucciones de preparación del envase para obtener la porción nutricional adecuada para niños.",
+    recomendacion: "Producto en polvo (600g) para disolver. Se recomienda seguir las instrucciones de preparación del envase para obtener la porción nutricional adecuada para niños.",
     imagen: "img/productos/2/20_30_aptmaxNiño.jpeg",
   },
   {
@@ -261,7 +261,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Salud Ósea y Dental: Enriquecido con calcio para fortalecer huesos y dientes.", "Apoyo Articular y Muscular: Ayuda al mantenimiento de las articulaciones.", "Cuidado de la Piel y el Cabello: Promueve la elasticidad y firmeza.", "Alivio de la Fatiga y Cansancio: Contribuye a mejorar los niveles de energía.", "Función Muscular Normal: El magnesio apoya el correcto funcionamiento de los músculos."],
     descripcion: "Suplemento alimenticio en polvo (600g) a base de fécula de maíz, maltodextrina, citrato de magnesio, colágeno hidrolizado y calcio. Diseñado para un bienestar integral con un agradable sabor a vainilla.",
-    consumo: "Al ser un alimento en polvo, se recomienda disolver la porción indicada por el fabricante en agua o tu bebida favorita. Consultar la tabla nutricional al respaldo para la dosis diaria sugerida.",
+    recomendacion: "Al ser un alimento en polvo, se recomienda disolver la porción indicada por el fabricante en agua o tu bebida favorita. Consultar la tabla nutricional al respaldo para la dosis diaria sugerida.",
     imagen: "img/productos/2/21_35_citrato_de_magnecio.jpeg",
   },
   {
@@ -272,7 +272,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Apoyo Cognitivo: Mejora la memoria y la concentración.", "Salud Cardiovascular: El Omega 3 ayuda a mantener un corazón sano.", "Energía Mental: Aumenta la vitalidad y el enfoque.", "Protección Antioxidante: Vitamina E para combatir el estrés oxidativo."],
     descripcion: "Suplemento nutricional 100% natural diseñado para potenciar el rendimiento cerebral y proteger el sistema cardiovascular mediante una mezcla de ácidos grasos esenciales y antioxidantes.",
-    consumo: "El empaque contiene 20 tablecaps y 10 ampolletas. Se recomienda ingerir según las indicaciones de la caja para un tratamiento completo de vitalidad mental.",
+    recomendacion: "El empaque contiene 20 tablecaps y 10 ampolletas. Se recomienda ingerir según las indicaciones de la caja para un tratamiento completo de vitalidad mental.",
     imagen: "img/productos/2/22_25_VitacelebrinaFrancesa.jpeg",
   },
   {
@@ -283,7 +283,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Limpieza arterial: Ayuda a limpiar arterias y venas de placa, promoviendo una circulación más libre.", "Control de lípidos: Reduce el colesterol y los triglicéridos mediante ingredientes clave.", "Fortalecimiento vascular: Fortalece las paredes de los vasos sanguíneos aportando elasticidad.", "Mejora del flujo sanguíneo: Reduce la sensación de pesadez y fatiga en las piernas.", "Salud cardiovascular: Apoya la función cardíaca general."],
     descripcion: "Suplemento dietario con fórmula mejorada sin azúcar, diseñado específicamente para la salud del sistema circulatorio y cardiovascular. Es apto para personas diabéticas.",
-    consumo: "Se administra por vía oral. Al ser un suplemento dietario, se recomienda seguir las indicaciones del envase respecto a la dosis diaria (generalmente 1 o 2 cápsulas) para obtener los beneficios de limpieza venosa.",
+    recomendacion: "Se administra por vía oral. Al ser un suplemento dietario, se recomienda seguir las indicaciones del envase respecto a la dosis diaria (generalmente 1 o 2 cápsulas) para obtener los beneficios de limpieza venosa.",
     imagen: "img/productos/2/23_25_barrido.jpeg",
   },
   {
@@ -294,7 +294,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Limpieza profunda y desintoxicación del sistema digestivo.", "Combate el estreñimiento y mejora el tránsito intestinal.", "Potente reductor de peso natural y medidas corporales.", "Regula los niveles de colesterol, azúcar y grasa corporal.", "Contiene 10 extractos naturales (Linaza, Té Verde, Alcachofa, entre otros)."],
     descripcion: "Solución integral para el bienestar colónico que combina la acción depurativa de Lax Colon con la fibra metabólica de Max Colon. Nota: Cada producto por separado tiene un valor de $40.000.",
-    consumo: "Lax Colon: Seguir indicaciones del envase para la limpieza diaria. Max Colon: Disolver la fibra en agua o jugo antes de las comidas principales.",
+    recomendacion: "Lax Colon: Seguir indicaciones del envase para la limpieza diaria. Max Colon: Disolver la fibra en agua o jugo antes de las comidas principales.",
     imagen: "img/productos/2/24_50_par_laxcolon_y_Maxcolon.jpeg",
   },
   {
@@ -305,7 +305,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Salud de la Piel: Mejora la elasticidad y apariencia cutánea.", "Fortalece el Cabello: La biotina contribuye a un cabello más resistente y sano.", "Uñas Fuertes: Ayuda a evitar la debilidad y quiebre de las uñas.", "Bienestar Articular: El colágeno y magnesio apoyan la salud de las articulaciones.", "Soporte Inmune: Enriquecido con Vitaminas A, C, E, Zinc y Selenio para las defensas."],
     descripcion: "Suplemento líquido de 375ml con fórmula avanzada que combina colágeno hidrolizado, biotina y magnesio. Endulzado con fructosa e incluye un complejo vitamínico y mineral completo.",
-    consumo: "Se ingiere por vía oral. Se recomienda seguir las instrucciones de uso indicadas en el envase o consultar a un profesional de la salud, preferiblemente en la mañana.",
+    recomendacion: "Se ingiere por vía oral. Se recomienda seguir las instrucciones de uso indicadas en el envase o consultar a un profesional de la salud, preferiblemente en la mañana.",
     imagen: "img/productos/2/25_25_colageno_biotina.jpeg",
   },
   {
@@ -316,7 +316,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Apoyo a la memoria y concentración: Gracias al Ginkgo Biloba.", "Salud cardiovascular y cerebral: Aporte de Omega 3, 6 y 9.", "Energía y vitalidad: Con Ginseng, Polen y Maca para el rendimiento físico.", "Rendimiento mental: Nutrición esencial con Jalea Real.", "Equilibrio y adaptógeno: Ayuda al cuerpo a adaptarse al estrés diario."],
     descripcion: "Tónico reconstituyente de 500 ML formulado con una potente mezcla de extractos naturales (Ginkgo Biloba, Ginseng, Maca) y nutrientes esenciales diseñados para mejorar la función cognitiva y la vitalidad general.",
-    consumo: "Se administra por vía oral. Al ser un tónico líquido de 500 ML, se recomienda seguir la dosificación sugerida en el empaque (generalmente una copa dosificadora al día) preferiblemente con el desayuno.",
+    recomendacion: "Se administra por vía oral. Al ser un tónico líquido de 500 ML, se recomienda seguir la dosificación sugerida en el empaque (generalmente una copa dosificadora al día) preferiblemente con el desayuno.",
     imagen: "img/productos/2/26_25_Vino_celebral.jpeg",
   },
   {
@@ -327,7 +327,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Tratamiento para afecciones articulares: Alivio de síntomas de artritis y artrosis.", "Reducción del dolor: Ayuda a mitigar dolores en huesos y molestias musculares.", "Alivio lumbar: Útil en casos de dolor de espalda y agotamiento físico.", "Propiedades regenerativas: Promocionado para la salud del cartílago."],
     descripcion: "Producto natural en presentación de 25 grageas, comercializado como un suplemento de origen cubano bajo la marca Cochi Medio. Está enfocado en el tratamiento de procesos degenerativos articulares y dolores osteomusculares.",
-    consumo: "Se administra por vía oral. Según descripciones comerciales, el envase contiene 25 grageas para un tratamiento específico, aunque debido a las alertas sanitarias, se recomienda encarecidamente consultar a un médico antes de su uso.",
+    recomendacion: "Se administra por vía oral. Según descripciones comerciales, el envase contiene 25 grageas para un tratamiento específico, aunque debido a las alertas sanitarias, se recomienda encarecidamente consultar a un médico antes de su uso.",
     imagen: "img/productos/2/27_20_artrin.jpeg",
   },
   {
@@ -338,7 +338,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Salud Cardiovascular: Contribuye al control de la presión arterial y niveles de colesterol.", "Refuerzo Inmunitario: Propiedades antibióticas naturales del ajo.", "Acción Antioxidante: Enriquecido con Vitaminas C, B1 y B6 para proteger las células.", "Efecto Depurativo: El perejil y el limón ayudan a la eliminación de toxinas.", "Sin mal aliento: Tabletas recubiertas que facilitan la ingesta sin el sabor fuerte del ajo."],
     descripcion: "Suplemento dietario integral en tabletas recubiertas que combina las propiedades del ajo con perejil, limón y un complejo vitamínico (B1, B6 y C) para el bienestar circulatorio.",
-    consumo: "Se administra por vía oral. El envase contiene 180 tabletas recubiertas. Se recomienda seguir la dosis diaria indicada en el empaque para complementar la nutrición.",
+    recomendacion: "Se administra por vía oral. El envase contiene 180 tabletas recubiertas. Se recomienda seguir la dosis diaria indicada en el empaque para complementar la nutrición.",
     imagen: "img/productos/2/28_20_ajo_regoff.jpeg",
   },
   {
@@ -349,7 +349,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Fuerza y Energía Natural: Ideal para el rendimiento físico diario.", "Salud Física y Vitalidad: Promueve el bienestar general del cuerpo.", "Soporte al Sistema Inmunológico: Ayuda a fortalecer las defensas.", "Concentración y Agudeza Mental: Apoya las funciones cognitivas."],
     descripcion: "Jalea tradicional de 500g elaborada con borojó y miel, diseñada como un suplemento energético y reconstituyente natural para toda la familia.",
-    consumo: "Versátil en su uso: se puede consumir directamente con una cuchara, mezclar en jugos o bebidas, o utilizar como esparcible sobre pan o galletas.",
+    recomendacion: "Versátil en su uso: se puede consumir directamente con una cuchara, mezclar en jugos o bebidas, o utilizar como esparcible sobre pan o galletas.",
     imagen: "img/productos/2/29_20_Boromil.jpeg",
   },
   {
@@ -360,7 +360,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Aumento de energía y resistencia física: Ideal para combatir la fatiga.", "Mejora del desempeño y la confianza: Apoya la seguridad en actividades íntimas.", "Salud y vitalidad general: Promueve un estado de bienestar masculino.", "Fórmula natural: Elaborada con ingredientes botánicos para el equilibrio del cuerpo."],
     descripcion: "Suplemento líquido de 1000 ml diseñado como una fórmula natural para el bienestar integral. Su composición busca potenciar el vigor físico y la vitalidad masculina mediante extractos naturales.",
-    consumo: "Se administra por vía oral. Al ser una presentación de gran volumen (1 litro), se recomienda ingerir una copa dosificadora diaria, preferiblemente con alimentos para una mejor asimilación.",
+    recomendacion: "Se administra por vía oral. Al ser una presentación de gran volumen (1 litro), se recomienda ingerir una copa dosificadora diaria, preferiblemente con alimentos para una mejor asimilación.",
     imagen: "img/productos/2/30_30_KLG.jpeg",
   },
   {
@@ -371,7 +371,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Vitalidad Natural: Potencia el vigor y la resistencia física.", "Fuerza y Energía: Ideal para combatir el agotamiento y mejorar el rendimiento.", "Bienestar Diario: Contribuye a un estado de salud general equilibrado.", "Concentración Clara: Apoya la agudeza mental y el enfoque.", "Poder Ancestral: Basado en secretos tradicionales para la vitalidad masculina."],
     descripcion: "Tónico vigorizante de origen ancestral diseñado para potenciar la fuerza física y mental. Presentación líquida que combina ingredientes naturales tradicionales para revelar un bienestar superior.",
-    consumo: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales o según las indicaciones del envase.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales o según las indicaciones del envase.",
     imagen: "img/productos/2/31_30_el_abuelo.jpeg",
   },
   {
@@ -382,7 +382,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Mejora la circulación: Optimiza el flujo sanguíneo venoso.", "Alivia várices: Combate su aparición y las molestias asociadas.", "Reduce pesadez: Ayuda a sentir las piernas más ligeras.", "Disminuye hinchazón: Reduce la inflamación de tobillos y pies.", "Alivio y confort: Brinda bienestar diario para las extremidades."],
     descripcion: "Suplemento líquido de 375 ml formulado para contribuir al mantenimiento de la circulación venosa de las piernas, mejorando la salud vascular y reduciendo los síntomas de cansancio.",
-    consumo: "Se administra por vía oral. Se recomienda consultar al médico o seguir las instrucciones del empaque sobre el modo de uso para promover una mejor circulación.",
+    recomendacion: "Se administra por vía oral. Se recomienda consultar al médico o seguir las instrucciones del empaque sobre el modo de uso para promover una mejor circulación.",
     imagen: "img/productos/2/32_20_castañodeindia.jpeg",
   },
   {
@@ -393,7 +393,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Incrementa el deseo sexual: Estimula la libido de forma natural.", "Brinda energía y vitalidad: Combate el cansancio físico.", "Mejora el rendimiento: Aumenta la resistencia y el desempeño.", "Aumenta la potencia masculina: Favorece una respuesta sexual más fuerte.", "Fórmula Multi-Extractos: Con Maca, Guaraná, Tribulus Terrestris y Yohimbina."],
     descripcion: "Suplemento líquido de 1000 ml con sabor a Fruit Punch (Frutos Rojos). Es una potente mezcla de 7 ingredientes naturales y precursores diseñados para maximizar la potencia sexual y el vigor masculino.",
-    consumo: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria o aproximadamente 30 minutos antes de la actividad física para aprovechar su efecto energético.",
+    recomendacion: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria o aproximadamente 30 minutos antes de la actividad física para aprovechar su efecto energético.",
     imagen: "img/productos/2/33_30_rompe_colchon.jpeg",
   },
   {
@@ -404,7 +404,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Restaura la Potencia Masculina: Ayuda a recuperar el vigor.", "Incrementa el Deseo Sexual: Actúa como estimulante natural.", "Proporciona Energía y Vitalidad: Combate el agotamiento físico.", "Mejora el Rendimiento Físico: Ideal para una mayor resistencia.", "Fórmula con Adaptógenos: Contiene Ginseng, Muira Puama, Damiana, Ashwagandha y Raíz de Maca."],
     descripcion: "Vigorizante ancestral formulado con una potente mezcla de extractos naturales conocidos por sus propiedades energéticas y afrodisíacas, diseñado para potenciar la vitalidad masculina de forma integral.",
-    consumo: "Se administra por vía oral. Se recomienda tomar la dosis sugerida en el envase, generalmente una copa dosificadora diaria o antes de realizar actividad física intensa.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar la dosis sugerida en el envase, generalmente una copa dosificadora diaria o antes de realizar actividad física intensa.",
     imagen: "img/productos/2/34_30_el_abuelo.jpeg",
   },
   {
@@ -415,7 +415,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Favorece el Sistema Nervioso: Apoya la función cognitiva y el equilibrio mental.", "Alivia el Dolor Muscular: Ayuda a la relajación y recuperación de los músculos.", "Fortalece los Huesos: Contribuye a la densidad ósea junto con el colágeno.", "Energía y Vitalidad: Brinda un impulso físico para el día a día.", "Triple Fuente de Magnesio: Contiene Cloruro de magnesio y Bisglicinato de magnesio."],
     descripcion: "Suplemento dietético líquido de 1000 ml de alta calidad (A1). Su fórmula avanzada combina Colágeno Marino con Vitamina C y dos tipos de magnesio para una máxima absorción y bienestar integral.",
-    consumo: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria, preferiblemente en la mañana o según indicación profesional.",
+    recomendacion: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria, preferiblemente en la mañana o según indicación profesional.",
     imagen: "img/productos/2/35_35_megaMagnecio.jpeg",
   },
   {
@@ -426,7 +426,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Fortalecimiento Muscular: Por su aporte de proteína de suero de leche y albúmina.", "Energía y Vitalidad Sostenida: Gracias a su contenido de malta.", "Apoyo Inmunológico y Cognitivo: Enriquecido con Vitaminas A, D y Zinc.", "Salud de Cabello, Piel y Uñas: Por la acción combinada del zinc y la albúmina.", "Bienestar Digestivo y Metabólico: Contiene levadura de cerveza."],
     descripcion: "Alimento en polvo y granulado de 700g a base de suero de leche con albúmina de huevo, levadura de cerveza y malta. Es una fuente de nutrición avanzada ideal para deportistas y personas activas.",
-    consumo: "Se administra por vía oral. Al ser un producto granulado, se recomienda disolver la porción indicada en el envase en leche, agua o jugos, preferiblemente después de la actividad física o con el desayuno.",
+    recomendacion: "Se administra por vía oral. Al ser un producto granulado, se recomienda disolver la porción indicada en el envase en leche, agua o jugos, preferiblemente después de la actividad física o con el desayuno.",
     imagen: "img/productos/2/36_30_vtalGranulada.jpeg",
   },
   {
@@ -437,7 +437,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["Alivia el dolor articular: Ayuda con la inflamación de las articulaciones.", "Fortalece ligamentos y tendones: Mejora la resistencia de los tejidos conectivos.", "Protege los cartílagos: Contribuye a evitar el desgaste prematuro.", "Previene la osteoporosis: Apoya la salud ósea general.", "Enriquecido con Omega 3 y 6: Aporta ácidos grasos esenciales para el bienestar."],
     descripcion: "Suplemento nutricional líquido diseñado específicamente para el cuidado de las articulaciones y el sistema óseo. Su fórmula combina glucosamina y condroitina con el poder antiinflamatorio de los omegas.",
-    consumo: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales para una óptima absorción.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales para una óptima absorción.",
     imagen: "img/productos/2/37_30_glucosamina.jpeg",
   },
    {
@@ -454,7 +454,7 @@ const PRODUCTOS = [
         "Endulzado con Stevia: Opción saludable sin azúcares añadidos."
     ],
     descripcion: "Suplemento nutricional líquido de 375 ml con sabor a naranja. Combina el poder antioxidante de la Vitamina C con las propiedades protectoras de la Echinacea para un bienestar integral.",
-    consumo: "Se administra por vía oral. Se recomienda tomar la dosis diaria indicada en el envase (375 ml de contenido total), preferiblemente por la mañana.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar la dosis diaria indicada en el envase (375 ml de contenido total), preferiblemente por la mañana.",
     imagen: "img/productos/2/38_20_vitamiaC.jpeg",
   },
  {
@@ -471,7 +471,7 @@ const PRODUCTOS = [
         "Enriquecido con Vitamina E: Aporta propiedades antioxidantes."
     ],
     descripcion: "Suplemento vitamínico líquido de calidad A-1 en presentación de 1000 ml. Formulado con colágeno hidrolizado y biotina, endulzado con stevia para un cuidado integral de la belleza y la salud articular.",
-    consumo: "Se administra por vía oral. Se recomienda seguir las instrucciones de uso indicadas en el envase o por un profesional de la salud.",
+    recomendacion: "Se administra por vía oral. Se recomienda seguir las instrucciones de uso indicadas en el envase o por un profesional de la salud.",
     imagen: "img/productos/2/39_25_colageno.jpeg",
   },
 
@@ -489,7 +489,7 @@ const PRODUCTOS = [
         "Reduce la fatiga: Ayuda a mantener un bienestar general."
     ],
     descripcion: "Tónico vitamínico, reconstituyente y vigorizante en presentación de jarabe de 500 ml. Formulado para proporcionar una fuente rica de nutrientes que promueven la vitalidad y el rendimiento óptimo del cuerpo.",
-    consumo: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas principales.",
     imagen: "img/productos/2/40_21_totovital.jpeg",
   },
  {
@@ -506,7 +506,7 @@ const PRODUCTOS = [
         "Depurativo Natural: Mezcla de 12 extractos (Smilax Officinalis) para limpiar el organismo."
     ],
     descripcion: "Suplemento natural en jarabe formulado con 12 extractos botánicos. Está diseñado para conservar en buen estado el hígado y los riñones mediante una acción depurativa y digestiva integral.",
-    consumo: "Se administra por vía oral. Se recomienda tomarlo con regularidad para obtener resultados óptimos. El fabricante sugiere un tratamiento completo de 3 frascos.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomarlo con regularidad para obtener resultados óptimos. El fabricante sugiere un tratamiento completo de 3 frascos.",
     imagen: "img/productos/2/41_20_zarzaparrilla.jpeg",
   },
  {
@@ -522,7 +522,7 @@ const PRODUCTOS = [
         "Bienestar general: Promueve la salud del sistema nervioso y la función muscular normal."
     ],
     descripcion: "Complemento alimenticio líquido de alta calidad (A1) en presentación de 1000 ml. Su fórmula balanceada está diseñada para optimizar la recuperación muscular y el rendimiento diario.",
-    consumo: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas para asegurar una correcta absorción de los minerales.",
+    recomendacion: "Se administra por vía oral. Se recomienda tomar una copa dosificadora diaria, preferiblemente con una de las comidas para asegurar una correcta absorción de los minerales.",
     imagen: "img/productos/2/42_35_citrato_de_potacsio.jpeg",
   },
  {
@@ -539,7 +539,7 @@ const PRODUCTOS = [
         "Equilibrio Neuro-Emocional: Contribuye a un estado de ánimo estable."
     ],
     descripcion: "Reconstituyente cerebral líquido de 1000 ml de calidad A1. Es un complemento diario 100% natural, elaborado con ingredientes orgánicos diseñado para nutrir la mente y el cuerpo de forma integral.",
-    consumo: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria para obtener los beneficios de nutrición cerebral y vitalidad.",
+    recomendacion: "Se administra por vía oral. Al ser una presentación de 1000 ml, se recomienda tomar una copa dosificadora diaria para obtener los beneficios de nutrición cerebral y vitalidad.",
     imagen: "img/productos/2/43_30_vino_nutri.jpeg",
   },
 
@@ -553,7 +553,7 @@ const PRODUCTOS = [
     whatsapp: 1,
     beneficios: ["", ""],
     descripcion: "",
-    consumo: "",
+    recomendacion: "",
     imagen: "img/productos/2/.jpeg",
   },
   */
