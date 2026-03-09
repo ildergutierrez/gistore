@@ -4,16 +4,18 @@
 //  producto apunta al id de este diccionario.
 // ============================================================
 const WHATSAPP_NUMEROS = {
-  1: { numero: "573145891108", color: "#1a6b3c" },  // verde
-  2: { numero: "",             color: "#2563eb" },  // azul
-  3: { numero: "",             color: "#dc2626" },  // rojo
-  4: { numero: "",             color: "#7c3aed" },  // morado
-  5: { numero: "",             color: "#d97706" },  // naranja
-  6: { numero: "",             color: "#0891b2" },  // celeste
-  7: { numero: "",             color: "#be185d" },  // rosado
-  8: { numero: "",             color: "#065f46" },  // verde oscuro
-  9: { numero: "",             color: "#92400e" },  // café
-  10:{ numero: "",             color: "#374151" },  // gris
+  // membrecia: 1 → productos visibles en el catálogo
+  // membrecia: 0 → productos ocultos (vendedor inactivo)
+  1: { numero: "573145891108", color: "#1a6b3c", membrecia: 1 },  // verde
+  2: { numero: "",             color: "#2563eb", membrecia: 0 },  // azul
+  3: { numero: "",             color: "#dc2626", membrecia: 0 },  // rojo
+  4: { numero: "",             color: "#7c3aed", membrecia: 0 },  // morado
+  5: { numero: "",             color: "#d97706", membrecia: 0 },  // naranja
+  6: { numero: "",             color: "#0891b2", membrecia: 0 },  // celeste
+  7: { numero: "",             color: "#be185d", membrecia: 0 },  // rosado
+  8: { numero: "",             color: "#065f46", membrecia: 0 },  // verde oscuro
+  9: { numero: "",             color: "#92400e", membrecia: 0 },  // café
+  10:{ numero: "",             color: "#374151", membrecia: 0 },  // gris
 };
 
 // ============================================================

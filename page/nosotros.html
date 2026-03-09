@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiénes Somos — GI Store</title>
+  <meta name="description" content="Conoce a GI Store: plataforma de catálogo digital donde vendedores independientes publican sus productos. Envíos nacionales en Colombia." />
+  <link rel="icon" href="../img/favicon/gi-icono.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── Variables y reset ──────────────────────────────── */
+    :root {
+      --verde-oscuro:  #1a6b3c;
+      --verde-claro:   #2d9e5f;
+      --verde-suave:   #e8f5ee;
+      --verde-medio:   #d1ead9;
+      --texto:         #1a2e22;
+      --gris-500:      #6b7280;
+      --gris-700:      #374151;
+      --blanco:        #ffffff;
+      --sombra:        0 4px 24px rgba(26,107,60,.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--texto);
+      background: #f9fdf9;
+      line-height: 1.7;
+    }
+
+    /* ── Header (idéntico al catálogo) ─────────────────── */
+    header {
+      background: var(--verde-oscuro);
+      padding: .9rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo img { height: 44px; display: block; }
+    .header-nav { margin-left: auto; display: flex; gap: .5rem; }
+    .header-nav a {
+      color: rgba(255,255,255,.85);
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 500;
+      padding: .45rem .85rem;
+      border-radius: 999px;
+      transition: background .15s, color .15s;
+    }
+    .header-nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; }
+
+    /* ── Hero ───────────────────────────────────────────── */
+    .nos-hero {
+      background: linear-gradient(135deg, var(--verde-oscuro) 0%, #2d9e5f 60%, #3dba74 100%);
+      color: #fff;
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .nos-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .nos-hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 999px;
+      padding: .3rem 1rem;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .nos-hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: .8rem;
+      line-height: 1.15;
+    }
+    .nos-hero p {
+      font-size: 1.1rem;
+      opacity: .88;
+      max-width: 560px;
+      margin: 0 auto 2rem;
+    }
+    .nos-hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      color: var(--verde-oscuro);
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .75rem 1.6rem;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .nos-hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+
+    /* ── Secciones generales ────────────────────────────── */
+    .seccion {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+    .seccion-tag {
+      display: inline-block;
+      background: var(--verde-suave);
+      color: var(--verde-oscuro);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .3rem .8rem;
+      border-radius: 999px;
+      margin-bottom: .9rem;
+    }
+    .seccion h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+      font-weight: 800;
+      color: var(--texto);
+      margin-bottom: .6rem;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+    .seccion-lead {
+      font-size: 1.05rem;
+      color: var(--gris-500);
+      max-width: 620px;
+      margin-bottom: 3rem;
+    }
+    .divisor {
+      border: none;
+      border-top: 1.5px solid var(--verde-medio);
+      margin: 0 1.5rem;
+    }
+
+    /* ── Quiénes somos — 2 cols ─────────────────────────── */
+    .quienes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .quienes-texto p { color: var(--gris-700); margin-bottom: 1rem; font-size: 1rem; }
+    .quienes-visual {
+      background: linear-gradient(135deg, var(--verde-suave), var(--verde-medio));
+      border-radius: 20px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--sombra);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--verde-suave);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .stat-label { font-size: .8rem; color: var(--gris-500); font-weight: 500; }
+    .stat-val { font-size: 1.05rem; font-weight: 700; color: var(--texto); }
+
+    /* ── Cómo funciona — pasos ───────────────────────────── */
+    .pasos-bg { background: var(--verde-suave); }
+    .pasos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .paso {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem;
+      box-shadow: var(--sombra);
+      position: relative;
+      transition: transform .2s;
+    }
+    .paso:hover { transform: translateY(-4px); }
+    .paso-num {
+      width: 36px;
+      height: 36px;
+      background: var(--verde-oscuro);
+      color: #fff;
+      font-weight: 800;
+      font-size: .9rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .paso-icono { font-size: 1.8rem; margin-bottom: .6rem; }
+    .paso h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; color: var(--texto); }
+    .paso p { font-size: .88rem; color: var(--gris-500); line-height: 1.6; }
+
+    /* ── Aclaraciones importantes ───────────────────────── */
+    .avisos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+    .aviso {
+      border-radius: 14px;
+      padding: 1.4rem 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .aviso-info    { background: #eff6ff; border-left: 4px solid #3b82f6; }
+    .aviso-warn    { background: #fffbeb; border-left: 4px solid #f59e0b; }
+    .aviso-success { background: var(--verde-suave); border-left: 4px solid var(--verde-claro); }
+    .aviso-neutral { background: #f8fafc; border-left: 4px solid #94a3b8; }
+    .aviso-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+    .aviso h4 { font-size: .95rem; font-weight: 700; margin-bottom: .3rem; color: var(--texto); }
+    .aviso p  { font-size: .88rem; color: var(--gris-700); line-height: 1.6; }
+
+    /* ── Membresía vendedores ───────────────────────────── */
+    .membresia-bg { background: linear-gradient(135deg, #0f3d24 0%, var(--verde-oscuro) 100%); }
+    .membresia-bg .seccion-tag { background: rgba(255,255,255,.12); color: #fff; }
+    .membresia-bg h2 { color: #fff; }
+    .membresia-bg .seccion-lead { color: rgba(255,255,255,.75); }
+    .membresia-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .membresia-card {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem;
+      color: #fff;
+      transition: background .2s;
+    }
+    .membresia-card:hover { background: rgba(255,255,255,.14); }
+    .membresia-card .icono { font-size: 2rem; margin-bottom: .8rem; }
+    .membresia-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .membresia-card p { font-size: .88rem; opacity: .8; line-height: 1.6; }
+    .membresia-cta {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+    .membresia-cta a {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      color: var(--verde-oscuro);
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .85rem 2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,.2);
+      transition: transform .15s;
+    }
+    .membresia-cta a:hover { transform: translateY(-2px); }
+    .membresia-cta p { color: rgba(255,255,255,.6); font-size: .82rem; margin-top: .8rem; }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    footer {
+      background: var(--verde-oscuro);
+      color: rgba(255,255,255,.7);
+      text-align: center;
+      padding: 1.8rem 1rem;
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+    footer span { color: #fff; font-weight: 600; }
+    footer a { color: rgba(255,255,255,.75); text-decoration: none; }
+    footer a:hover { color: #fff; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .quienes-grid { grid-template-columns: 1fr; }
+      .nos-hero { padding: 3.5rem 1.2rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <a href="../index.html">
+          <img src="../img/favicon/favicon.svg" alt="GI Store" />
+        </a>
+      </div>
+      <nav class="header-nav">
+        <a href="../index.html">Catálogo</a>
+        <a href="nosotros.html" class="activo">Quiénes somos</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="nos-hero">
+    <div class="nos-hero-badge">📋 Plataforma de Catálogo Digital</div>
+    <h1>Conectamos vendedores<br>con compradores en Colombia</h1>
+    <p>GI Store es una plataforma donde vendedores independientes publican sus productos y los clientes los descubren fácilmente.</p>
+    <a href="../index.html" class="nos-hero-cta">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Ver catálogo
+    </a>
+  </section>
+
+  <!-- QUIÉNES SOMOS -->
+  <section class="seccion">
+    <span class="seccion-tag">Nuestra historia</span>
+    <h2>¿Qué es GI Store?</h2>
+    <p class="seccion-lead">Una plataforma pensada para que vendedores independientes tengan presencia digital profesional y los clientes encuentren lo que buscan.</p>
+
+    <div class="quienes-grid">
+      <div class="quienes-texto">
+        <p><strong>GI Store no es una tienda propia.</strong> Somos una plataforma de catálogo digital donde cada producto que ves pertenece a un vendedor independiente que ha activado su membresía para publicarlo.</p>
+        <p>Nuestro rol es presentar los productos de forma clara, ordenada y atractiva. El proceso de compra, envío y atención al cliente lo maneja directamente cada vendedor a través de WhatsApp.</p>
+        <p>Operamos con cobertura de <strong>envíos nacionales en Colombia</strong>, aunque las condiciones específicas de despacho dependen de cada vendedor.</p>
+      </div>
+      <div class="quienes-visual">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div>
+            <div class="stat-label">Modelo de negocio</div>
+            <div class="stat-val">Catálogo por membresía</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🇨🇴</div>
+          <div>
+            <div class="stat-label">Cobertura</div>
+            <div class="stat-val">Envíos nacionales Colombia</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💬</div>
+          <div>
+            <div class="stat-label">Canal de contacto</div>
+            <div class="stat-val">WhatsApp directo con el vendedor</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div>
+            <div class="stat-label">Acceso al catálogo</div>
+            <div class="stat-val">Gratis · Sin registro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divisor" />
+
+  <!-- CÓMO FUNCIONA -->
+  <div class="pasos-bg">
+    <section class="seccion">
+      <span class="seccion-tag">Paso a paso</span>
+      <h2>¿Cómo funciona el catálogo?</h2>
+      <p class="seccion-lead">El proceso es sencillo: explora, elige y contacta al vendedor directamente.</p>
+
+      <div class="pasos-grid">
+        <div class="paso">
+          <div class="paso-num">1</div>
+          <div class="paso-icono">🔍</div>
+          <h3>Explora el catálogo</h3>
+          <p>Navega libremente por todos los productos. Usa el buscador o los filtros por categoría para encontrar lo que necesitas.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">2</div>
+          <div class="paso-icono">🖼️</div>
+          <h3>Revisa el producto</h3>
+          <p>Haz clic en la imagen para abrir el detalle: descripción completa, beneficios, modo de consumo y precio.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">3</div>
+          <div class="paso-icono">🛒</div>
+          <h3>Arma tu pedido</h3>
+          <p>Añade varios productos a tu selección con el botón "Añadir". Puedes ajustar cantidades en el carrito.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">4</div>
+          <div class="paso-icono">💬</div>
+          <h3>Contáctate por WhatsApp</h3>
+          <p>Al enviar tu pedido, se abre WhatsApp directamente con el vendedor. Él coordina el pago, el envío y la entrega.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <hr class="divisor" />
+
+  <!-- ACLARACIONES IMPORTANTES -->
+  <section class="seccion">
+    <span class="seccion-tag">Información importante</span>
+    <h2>Lo que debes saber antes de comprar</h2>
+    <p class="seccion-lead">Para que tu experiencia sea clara y sin sorpresas, aquí explicamos cómo funciona cada parte del proceso.</p>
+
+    <div class="avisos-grid">
+
+      <div class="aviso aviso-info">
+        <div class="aviso-icon">💬</div>
+        <div>
+          <h4>El pedido se cierra por WhatsApp</h4>
+          <p>Al tocar "Comprar por WhatsApp" o "Enviar pedido", se abre un chat directo con el vendedor. Él confirmará disponibilidad, precio final, forma de pago y opciones de envío.</p>
+        </div>
+      </div>
+
+      <div class="aviso aviso-warn">
+        <div class="aviso-icon">⚠️</div>
+        <div>
+          <h4>El carrito no se guarda</h4>
+          <p>Al cerrar o recargar la página tu selección se borra. El catálogo no usa cuentas ni sesiones. Te recomendamos armar tu pedido en una sola sesión y enviarlo antes de cerrar.</p>
+        </div>
+      </div>
+
+      <div class="aviso aviso-info">
+        <div class="aviso-icon">🚚</div>
+        <div>
+          <h4>Envíos: el vendedor coordina</h4>
+          <p>GI Store tiene cobertura nacional, pero los detalles de despacho (transportadora, costo de envío, tiempo de entrega) los define directamente el vendedor por WhatsApp.</p>
+        </div>
+      </div>
+
+      <div class="aviso aviso-warn">
+        <div class="aviso-icon">💳</div>
+        <div>
+          <h4>No procesamos pagos</h4>
+          <p>GI Store no recibe ni gestiona ningún pago. Toda transacción económica se hace directamente entre el cliente y el vendedor. No tenemos pasarela de pagos.</p>
+        </div>
+      </div>
+
+      <div class="aviso aviso-success">
+        <div class="aviso-icon">🔗</div>
+        <div>
+          <h4>Puedes compartir productos</h4>
+          <p>Cada producto tiene un enlace único que puedes compartir por WhatsApp, redes o donde quieras. Al abrirlo, el producto aparece directamente en el catálogo.</p>
+        </div>
+      </div>
+
+      <div class="aviso aviso-neutral">
+        <div class="aviso-icon">📋</div>
+        <div>
+          <h4>Somos un catálogo, no una tienda</h4>
+          <p>GI Store no es responsable de los productos, precios ni condiciones de venta de cada vendedor. Somos el escaparate digital; la relación comercial es entre comprador y vendedor.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divisor" />
+
+  <!-- MEMBRESÍA VENDEDORES -->
+  <div class="membresia-bg">
+    <section class="seccion">
+      <span class="seccion-tag">Para vendedores</span>
+      <h2>¿Quieres publicar tus productos?</h2>
+      <p class="seccion-lead">Con una membresía activa, tus productos aparecen visibles en el catálogo para todos los visitantes de GI Store.</p>
+
+      <div class="membresia-cards">
+        <div class="membresia-card">
+          <div class="icono">📱</div>
+          <h3>Presencia digital inmediata</h3>
+          <p>Tu producto se muestra en el catálogo con imagen, descripción, precio y botón de contacto directo a tu WhatsApp.</p>
+        </div>
+        <div class="membresia-card">
+          <div class="icono">🔗</div>
+          <h3>Enlace compartible por producto</h3>
+          <p>Cada producto tiene su propio enlace único que puedes compartir en grupos, estados o redes sociales.</p>
+        </div>
+        <div class="membresia-card">
+          <div class="icono">⚡</div>
+          <h3>Activación y baja inmediata</h3>
+          <p>Tus productos se activan o desactivan según el estado de tu membresía, sin trámites ni esperas.</p>
+        </div>
+        <div class="membresia-card">
+          <div class="icono">💰</div>
+          <h3>Sin comisiones por venta</h3>
+          <p>GI Store cobra solo la membresía de publicación. No te cobramos nada por cada venta que realices.</p>
+        </div>
+      </div>
+
+      <div class="membresia-cta">
+        <a href="mailto:aplicativosawebs@gmail.com?subject=Consulta%20membres%C3%ADa%20GI%20Store&body=Hola%2C%20me%20interesa%20publicar%20mis%20productos%20en%20GI%20Store.%20Quisiera%20informaci%C3%B3n%20sobre%20la%20membres%C3%ADa.">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Consultar membresía por correo
+        </a>
+        <p>Escríbenos a <strong style="color:#fff">aplicativosawebs@gmail.com</strong> · Te respondemos a la brevedad</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 <span>GI Store</span> · Todos los derechos reservados<br>
+    Plataforma de Catálogo Digital · Colombia · <a href="../index.html">Ir al catálogo →</a></p>
+  </footer>
+
+</body>
+</html>
