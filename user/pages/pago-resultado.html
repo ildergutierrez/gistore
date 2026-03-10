@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resultado de Pago — GI Store</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <style>
+      .resultado-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--fondo);
+      }
+      .resultado-card {
+        background: var(--fondo-2);
+        border: 1.5px solid var(--borde);
+        border-radius: var(--radio-lg);
+        padding: 2.5rem 2rem;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: var(--sombra-md);
+      }
+      .resultado-icono { font-size: 3.5rem; margin-bottom: 1rem; }
+      .resultado-titulo {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        margin-bottom: .5rem;
+      }
+      .resultado-sub { font-size: .9rem; color: var(--texto-suave); margin-bottom: 1.5rem; line-height: 1.6; }
+      .resultado-ref {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        padding: .75rem 1rem;
+        font-size: .82rem;
+        color: var(--texto-suave);
+        margin-bottom: 1.5rem;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="resultado-wrap">
+      <div class="resultado-card" id="cardResultado">
+        <div class="resultado-icono">⏳</div>
+        <div class="resultado-titulo">Verificando pago...</div>
+        <div class="resultado-sub">Espera un momento mientras confirmamos tu transacción.</div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db, auth } from "../js/firebase.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+      const params = new URLSearchParams(location.search);
+      const ref    = params.get("ref") || "";
+      const estado = params.get("id")  ? "procesando" : "error";
+
+      const card = document.getElementById("cardResultado");
+
+      function renderOk() {
+        card.innerHTML = `
+          <div class="resultado-icono">✅</div>
+          <div class="resultado-titulo" style="color:var(--ok)">¡Pago recibido!</div>
+          <div class="resultado-sub">Tu membresía será activada en los próximos segundos automáticamente. Si no se refleja en 2 minutos, escríbenos.</div>
+          <div class="resultado-ref">Referencia: <strong>${ref}</strong></div>
+          <a href="membresia.html" class="btn btn-primary" style="display:inline-flex;text-decoration:none;margin-top:.5rem">Ver mi membresía</a>`;
+      }
+
+      function renderError() {
+        card.innerHTML = `
+          <div class="resultado-icono">❌</div>
+          <div class="resultado-titulo" style="color:var(--error)">Pago no completado</div>
+          <div class="resultado-sub">El pago fue cancelado o hubo un error. No se realizó ningún cobro. Puedes intentarlo de nuevo.</div>
+          <a href="membresia.html" class="btn btn-secundario" style="display:inline-flex;text-decoration:none;margin-top:.5rem">Volver e intentar de nuevo</a>`;
+      }
+
+      // Wompi redirige con parámetros — si viene con "id" el pago fue iniciado
+      if (params.get("id")) {
+        renderOk();
+      } else {
+        renderError();
+      }
+    </script>
+  </body>
+</html>

@@ -120,10 +120,15 @@ function renderMembresia(mem, vendedor) {
         <span class="badge badge-activo" style="font-size:.85rem;padding:.3rem .9rem">✓ Activa</span>
         <p style="font-size:.83rem;color:var(--texto-medio);margin-top:.5rem">Válida hasta: <strong>${mem.fecha_fin}</strong> · ${dias} días restantes</p>
       </div>
-      <a href="https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent('Hola, soy ' + vendedor.nombre + ' (ID: ' + vendedor.id + '), quiero renovar mi membresía de GI Store.')}"
-         target="_blank" class="btn btn-secundario">
-        💬 Renovar membresía
-      </a>
+      <div style="display:flex;flex-direction:column;gap:.6rem;align-items:flex-end">
+        <a href="membresia.html" class="btn btn-secundario" style="display:flex;align-items:center;gap:.4rem">
+          <span class="material-symbols-outlined" style="font-size:1.1rem">id_card</span> Renovar membresía
+        </a>
+        <a href="https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent('Hola, necesito ayuda con mi membresía de GI Store.')}"
+           target="_blank" style="font-size:.78rem;color:var(--texto-suave);text-decoration:none;display:flex;align-items:center;gap:.3rem">
+          💬 ¿Necesitas ayuda?
+        </a>
+      </div>
     </div>`;
 }
 
@@ -135,9 +140,14 @@ function membresiaHTML(estado, titulo, msg, vendedor) {
         <span class="badge badge-${estado}" style="font-size:.85rem;padding:.3rem .9rem">${titulo}</span>
         <p style="font-size:.83rem;color:var(--texto-medio);margin-top:.5rem">${msg}</p>
       </div>
-      <a href="https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent('Hola, soy ' + vendedor.nombre + ' (ID: ' + vendedor.id + '), quiero activar mi membresía de GI Store.')}"
-         target="_blank" class="btn btn-primary">
-        💬 Contactar administrador
-      </a>
+      <div style="display:flex;flex-direction:column;gap:.6rem;align-items:flex-end">
+        <a href="membresia.html" class="btn btn-primary" style="display:flex;align-items:center;gap:.4rem">
+          <span class="material-symbols-outlined" style="font-size:1.1rem">id_card</span> Activar membresía
+        </a>
+        <a href="https://wa.me/${WHATSAPP_ADMIN}?text=${encodeURIComponent('Hola, necesito ayuda con mi membresía de GI Store.')}"
+           target="_blank" style="font-size:.78rem;color:var(--texto-suave);text-decoration:none;display:flex;align-items:center;gap:.3rem">
+          💬 ¿Necesitas ayuda?
+        </a>
+      </div>
     </div>`;
 }

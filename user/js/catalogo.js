@@ -399,12 +399,18 @@ function mostrarAlertaMembresia(mem) {
         <strong style="color:#92400e;font-size:.9rem">Membresía inactiva</strong>
         <p style="color:#78350f;font-size:.82rem;margin:.2rem 0 0">${msg}</p>
       </div>
-      <a href="https://wa.me/573145891108?text=${encodeURIComponent('Hola, quiero renovar mi membresía de GI Store.')}"
-         target="_blank"
-         style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;
-                font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap">
-        💬 Renovar membresía
-      </a>
+      <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
+        <a href="membresia.html"
+           style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;
+                  font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:.35rem">
+          <span class="material-symbols-outlined" style="font-size:1rem">id_card</span> Ir a membresía
+        </a>
+        <a href="https://wa.me/573145891108?text=${encodeURIComponent('Hola, necesito ayuda con mi membresía de GI Store.')}"
+           target="_blank"
+           style="font-size:.75rem;color:#92400e;text-decoration:none">
+          💬 ¿Necesitas ayuda?
+        </a>
+      </div>
     </div>`;
 }
 

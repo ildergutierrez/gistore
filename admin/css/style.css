@@ -657,9 +657,15 @@ body {
   background: var(--fondo-2);
   border: 1.5px solid var(--borde);
   border-radius: var(--radio);
-  overflow: hidden;
+  overflow: visible;           /* permite scroll horizontal en tablaWrap */
   box-shadow: var(--sombra);
   animation: entrar .35s ease both;
+}
+
+/* Mantener bordes redondeados recortando el header y el pie del panel */
+.panel-header {
+  border-radius: var(--radio) var(--radio) 0 0;
+  overflow: hidden;
 }
 
 .panel-header {
@@ -699,6 +705,7 @@ body {
 
 table {
   width: 100%;
+  min-width: 480px;     /* evita colapso de columnas en pantallas pequeñas */
   border-collapse: collapse;
 }
 
@@ -721,6 +728,25 @@ td {
   border-bottom: 1px solid var(--fondo);
   color: var(--texto-medio);
   vertical-align: middle;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Textos importantes (nombre, strong, links) sí muestran completo */
+td strong,
+td a {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Imágenes en celda: respetar tamaño de celda */
+td img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 0;
 }
 
 tr:last-child td {
@@ -735,6 +761,9 @@ tr:hover td {
   display: flex;
   gap: .4rem;
   flex-wrap: wrap;
+  white-space: nowrap;
+  overflow: visible;
+  max-width: none;
 }
 
 .btn-tabla {
@@ -879,9 +908,36 @@ tr:hover td {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+
+/* ── Contenedor de tabla: scroll horizontal en lugar de desborde ── */
+#tablaWrap,
+.tabla-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Vista previa catálogo ── */
+#previaWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#previaWrap table {
+  min-width: 400px;
+}
+
 @media (max-width: 1000px) {
   .grilla-2 {
     grid-template-columns: 1fr;
+  }
+  .main {
+    padding: 1.5rem 1.5rem;
+  }
+  th {
+    padding: .65rem 1rem;
+  }
+  td {
+    padding: .7rem 1rem;
   }
 }
 
@@ -977,5 +1033,72 @@ tr:hover td {
 
   .topbar {
     padding-top: .25rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .65rem;
+  }
+
+  .topbar-der {
+    width: 100%;
+  }
+
+  .topbar-der .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Tabla compacta en móvil */
+  th {
+    padding: .5rem .65rem;
+    font-size: .63rem;
+  }
+
+  td {
+    padding: .55rem .65rem;
+    font-size: .8rem;
+    max-width: 130px;
+  }
+
+  /* Botones de acción en columna */
+  .td-acciones {
+    flex-direction: column;
+    gap: .25rem;
+  }
+
+  .btn-tabla {
+    font-size: .71rem;
+    padding: .28rem .55rem;
+  }
+
+  /* Panel-header en móvil */
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .4rem;
+  }
+
+  /* Modal más aprovechado en pantalla pequeña */
+  .modal {
+    padding: 1.25rem 1rem;
+    max-height: 96vh;
+  }
+
+  /* Catálogo: controles full-width */
+  #filtroVendedor,
+  #filtroEstado,
+  #ordenPDF {
+    width: 100%;
+  }
+
+  #btnExportar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Móvil muy estrecho ── */
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: 1fr;
   }
 }
