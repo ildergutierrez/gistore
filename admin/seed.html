@@ -5,31 +5,13 @@
   <title>Poblar BD — GIStore</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: monospace;
-      background: #0f1117;
-      color: #e2e8f0;
-      padding: 2rem;
-      min-height: 100vh;
-    }
+    body { font-family: monospace; background: #0f1117; color: #e2e8f0; padding: 2rem; min-height: 100vh; }
     h1  { color: #4ade80; margin-bottom: .5rem; font-size: 1.4rem; }
     p   { color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.6; }
     em  { color: #fbbf24; font-style: normal; font-weight: bold; }
-    #btn {
-      background: #1a6b3c; color: #fff; border: none;
-      padding: .75rem 2.5rem; border-radius: 8px;
-      font-size: 1rem; cursor: pointer; margin-bottom: 1.5rem;
-      transition: opacity .2s;
-    }
+    #btn { background: #1a6b3c; color: #fff; border: none; padding: .75rem 2.5rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-bottom: 1.5rem; transition: opacity .2s; }
     #btn:disabled { opacity: .45; cursor: not-allowed; }
-    #log {
-      background: #1e2130;
-      border-radius: 10px;
-      padding: 1.5rem;
-      line-height: 2;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
+    #log { background: #1e2130; border-radius: 10px; padding: 1.5rem; line-height: 2; max-height: 70vh; overflow-y: auto; }
     .ok  { color: #4ade80; }
     .err { color: #f87171; }
     .inf { color: #93c5fd; }
@@ -52,47 +34,40 @@ import {
   getFirestore, collection, doc,
   addDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyBymhSaKbs1o0fVvif5hs6Qd-ZAt2Y7Oa0",
-  authDomain:        "gistore-571b7.firebaseapp.com",
-  projectId:         "gistore-571b7",
-  storageBucket:     "gistore-571b7.firebasestorage.app",
-  messagingSenderId: "220432592098",
-  appId:             "1:220432592098:web:cfc218555464a56b2842bb"
+  apiKey:            "AIzaSyBviMH3re9aHjiLb5p-5hSjXd4gAchTvgI",
+  authDomain:        "gi-store-5a5eb.firebaseapp.com",
+  projectId:         "gi-store-5a5eb",
+  storageBucket:     "gi-store-5a5eb.firebasestorage.app",
+  messagingSenderId: "157652441199",
+  appId:             "1:157652441199:web:c42285a80f117f79cc159a"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
 
-// ── Log helper ─────────────────────────────────────────────
 const logEl = document.getElementById("log");
 function log(msg, tipo = "ok") {
   logEl.innerHTML += `<div class="${tipo}">${msg}</div>`;
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// ══════════════════════════════════════════════════════════
-//  DATOS INICIALES
-// ══════════════════════════════════════════════════════════
-
 const VENDEDOR = {
-  nombre:    "GI Store",
-  ciudad:    "Aguachica",
-  correo:    "aplicativosawebs@gmail.com",
-  whatsapp:  "573145891108",
-  color:     "#1a6b3c",
-  estado:    "activo",
-  uid_auth:  "",
+  nombre: "GI Store", ciudad: "Aguachica",
+  correo: "aplicativosawebs@gmail.com", whatsapp: "573145891108",
+  color: "#1a6b3c", estado: "activo", uid_auth: "",
   creado_en: new Date().toISOString(),
 };
 
 const MEMBRESIA = {
-  fecha_inicio: "2026-01-01",
-  fecha_fin:    "2027-01-01",
-  estado:       "activa",
-  notas:        "Membresía inicial del administrador",
-  creado_en:    new Date().toISOString(),
+  fecha_inicio: "2026-01-01", fecha_fin: "2027-01-01",
+  estado: "activa", notas: "Membresía inicial del administrador",
+  creado_en: new Date().toISOString(),
 };
 
 const CATEGORIAS = [
@@ -101,362 +76,65 @@ const CATEGORIAS = [
 ];
 
 const PRODUCTOS = [
-  {
-    nombre: "Boldo + Clorofila y Menta", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Desintoxicacion Natural","Soporte Epatico","Digestión saludable","Purificación del cuerpo"],
-    descripcion: "Suplemento natural que combina boldo, clorofila, menta, sábila y albahaca con acción refrescante, depurativa y revitalizante.",
-    recomendacion: "Disolver una cucharada en un vaso de agua y consumir después de las comidas principales.",
-    imagen: "img/productos/2/1_25_clorofila_menta.jpeg",
-  },
-  {
-    nombre: "Citrato y Cloruro de Magnesio - Potasio", valor: 50000,
-    categoria: "Productos naturales",
-    beneficios: ["Función Muscular y Nerviosa","Regulación de la Presión Arterial","Salud Ósea","Alivio de Migrañas","Apoyo Digestivo"],
-    descripcion: "Suplemento de Magnesio 4 en 1 que combina varios beneficios para la salud muscular y nerviosa.",
-    recomendacion: "Tomar 1 cápsula al día, preferiblemente con las comidas.",
-    imagen: "img/productos/2/2_38_citrato.jpeg",
-  },
-  {
-    nombre: "Vitamina E - 1.000 UI", valor: 52000,
-    categoria: "Productos naturales",
-    beneficios: ["Antioxidante Potente","Salud de la Piel","Protección Cardiovascular","Mejora de la Salud Ocular","Apoyo al Sistema Inmunológico"],
-    descripcion: "Suplemento dietario que actúa como potente antioxidante ayudando a combatir los radicales libres.",
-    recomendacion: "La dosis de 1000 UI se puede tomar diariamente con alimentos que contengan grasa para mejorar su absorción.",
-    imagen: "img/productos/2/3_40_vitamina_E.jpeg",
-  },
-  {
-    nombre: "Duo de bienestar Integral: Citrato de Magnesio + Vitamina E", valor: 55000,
-    categoria: "Productos naturales",
-    beneficios: ["Antioxidante Potente","Relajación Muscular","Salud Ósea","Mejora de la Salud Ocular","Reduce el Estrés Oxidativo"],
-    descripcion: "Combinación de Citrato de Magnesio y Vitamina E para apoyar la salud muscular, nerviosa, cardiovascular y antioxidante.",
-    recomendacion: "Tomar 2 gomitas al día, preferiblemente después de una comida.",
-    imagen: "img/productos/2/4_40_magnecio+vitaminaE.jpeg",
-  },
-  {
-    nombre: "Omega 3", valor: 55000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoya la salud cerebral y Cognitiva","Reduce la inflamación corporal","Mejora la salud Cardiovascular","Mejora la hidratación y salud de la piel"],
-    descripcion: "Los ácidos grasos omega-3 son esenciales para la salud física y mental.",
-    recomendacion: "La OMS recomienda entre 250 y 2000 mg al día dependiendo de la edad.",
-    imagen: "img/productos/2/5_40_omega3.jpeg",
-  },
-  {
-    nombre: "Ginkgo Biloba", valor: 45000,
-    categoria: "Productos naturales",
-    beneficios: ["Mejorar el flujo sanguíneo cerebral y periférico","Mejora la memoria y la concentración","Actua como potente Antioxidante","Reduce la fatiga mental y el estrés"],
-    descripcion: "Suplemento natural para mejorar la circulación sanguínea, la función cognitiva y reducir el estrés oxidativo.",
-    recomendacion: "No exceder la dosis diaria recomendada. Consultar profesional antes de iniciar.",
-    imagen: "img/productos/2/6_32_ginkgo.jpeg",
-  },
-  {
-    nombre: "ASHWAGANDHA KSM-66", valor: 60000,
-    categoria: "Productos naturales",
-    beneficios: ["Reduce el estrés y el cortisol","Mejora del Sueño","Rendimiento Físico y Mental","Apoyo Hormonal"],
-    descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado con 5% withanólidos.",
-    recomendacion: "Dosis de 300 a 600 mg al día, dividida en dos tomas (mañana y noche) con alimentos.",
-    imagen: "img/productos/2/7_45_ksm-66.jpeg",
-  },
-  {
-    nombre: "GLUCOSAMIN 1500 mg", valor: 54000,
-    categoria: "Productos naturales",
-    beneficios: ["Salud Articular","Mejora la elasticidad de la piel","Alivio del Dolor","Mejora la Hidratación"],
-    descripcion: "Suplemento de glucosamina de alta concentración para la salud articular.",
-    recomendacion: "Tomar dos cápsulas diarias con las comidas.",
-    imagen: "img/productos/2/8_40_glucosamin.jpeg",
-  },
-  {
-    nombre: "GAF-PLUS", valor: 41000,
-    categoria: "Productos naturales",
-    beneficios: ["Huesos fuertes","Articulaciones flexible","Energia vital"],
-    descripcion: "Suplemento multivitamínico líquido de hierbas y vitaminas para aumentar la energía y fortalecer el sistema inmunológico.",
-    recomendacion: "Tomar una copa (15 ml) dos veces al día. Conservar refrigerado una vez abierto.",
-    imagen: "img/productos/2/9_30_gaf-plus.jpeg",
-  },
-  {
-    nombre: "Salud de la mujer", valor: 30000,
-    categoria: "Productos naturales",
-    beneficios: ["Desinflamante Femenino","Alivia colicos menstruales","Disminuye el flujo y las molestias"],
-    descripcion: "Jarabes formulados con hierbas para regular el ciclo menstrual, aliviar cólicos y equilibrar hormonas.",
-    recomendacion: "Tomar por vía oral 3 veces al día, generalmente antes de las comidas.",
-    imagen: "img/productos/2/10_23_salud_de_la_mujer.jpeg",
-  },
-  {
-    nombre: "Vita Celebrina - Jarabe", valor: 40000,
-    categoria: "Productos naturales",
-    beneficios: ["Mejora la memoria","Aumenta la concentración","Refuerza el rendimiento mental"],
-    descripcion: "Suplemento rico en vitaminas y minerales para apoyar la función cognitiva en niños y adultos.",
-    recomendacion: "Para niños mayores de 4 años, tomar 2 cucharaditas diarias.",
-    imagen: "img/productos/2/11_28_vitacelebrina_jarabe.jpeg",
-  },
-  {
-    nombre: "Enervital - Jarabe", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Aporta Energia","Refuerza las defensas","Crecimiento saludable"],
-    descripcion: "Suplemento alimenticio con vitaminas y minerales esenciales para el desarrollo infantil.",
-    recomendacion: "Tomar una medida 3 veces al día.",
-    imagen: "img/productos/2/12_24_enervital.jpeg",
-  },
-  {
-    nombre: "NeurisZinc - Capsulas", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoyo a la Memoria","Mejora la concentración","Reduce el estrés y la ansiedad","Función neurologica saludable"],
-    descripcion: "Suplemento para apoyar la función cognitiva, mejorar la memoria y calmar síntomas de ansiedad.",
-    recomendacion: "Posología indicada por el fabricante según presentación.",
-    imagen: "img/productos/2/13_25_neurizinc.jpeg",
-  },
-  {
-    nombre: "GAF-PLUS OMEGA 3, 6, 9", valor: 55000,
-    categoria: "Productos naturales",
-    beneficios: ["Piel radiante y elastica","Equilibrio Electrolitico","Reducción de la inflamación","Salud Cardiovascular y Cerebral"],
-    descripcion: "Suplemento en cápsulas rico en ácidos grasos omega-3 para apoyar la salud del corazón y el cerebro.",
-    recomendacion: "Tomar 2 cápsulas al día con las comidas.",
-    imagen: "img/productos/2/14_40_gaf-plus_omega3.jpeg",
-  },
-  {
-    nombre: "Colageno Hidrolizado Healthy Life", valor: 50000,
-    categoria: "Productos naturales",
-    beneficios: ["Mejora la salud de la piel","Salud articular y cartílago","Cabello y uñas fuertes","Soporte muscular","Bienestar general"],
-    descripcion: "Suplemento de colágeno hidrolizado en cápsulas para promover la integridad estructural del cuerpo.",
-    recomendacion: "Consultar la etiqueta del producto para instrucciones de uso personalizadas.",
-    imagen: "img/productos/2/15_35_colageno_hidrolizado.jpeg",
-  },
-  {
-    nombre: "Vitamina D3 Healthful Life", valor: 45000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoyo al sistema inmunitario","Huesos y dientes fuertes","Mejora el estado de ánimo y la energía"],
-    descripcion: "Suplemento de Vitamina D3 con 4.000 UI por cápsula para el fortalecimiento del sistema óseo.",
-    recomendacion: "Ingerir 1 cápsula al día con una comida principal para mejorar la absorción.",
-    imagen: "img/productos/2/16_30_vitaminaD3.jpeg",
-  },
-  {
-    nombre: "Vitamina C 1.000mg Healthful Life", valor: 40000,
-    categoria: "Productos naturales",
-    beneficios: ["Refuerzo Inmunológico","Protección Antioxidante","Piel Saludable y Cicatrización","Más Energía"],
-    descripcion: "Suplemento de 1.000mg de Vitamina C con Zinc para maximizar la protección del sistema inmune.",
-    recomendacion: "Tomar 1 cápsula al día, preferiblemente con alimentos.",
-    imagen: "img/productos/2/17_28_vitaminaC_capsulas.jpeg",
-  },
-  {
-    nombre: "Expectorante Pulmonar Plus Bronco Dilatador", valor: 36000,
-    categoria: "Productos naturales",
-    beneficios: ["Reduce la tos y expulsa las flemas","Dilata los bronquios","Ayuda a respirar mejor","Alivia la congestión"],
-    descripcion: "Jarabe expectorante y broncodilatador para limpiar las vías respiratorias y facilitar la respiración.",
-    recomendacion: "Dosis varía según la edad. Verificar en el empaque o bajo indicación médica.",
-    imagen: "img/productos/2/18_25_pulmonar.jpeg",
-  },
-  {
-    nombre: "Calostro Bovino Factor de Transferencia Omega 3, 6, 9", valor: 50000,
-    categoria: "Productos naturales",
-    beneficios: ["Refuerza el sistema inmunológico","Mejora la salud intestinal","Fuente de Omega 3, 6 y 9","Aporta calcio y magnesio"],
-    descripcion: "Alimento en polvo a base de calostro bovino liofilizado enriquecido con proteína de suero de leche.",
-    recomendacion: "Mezclar la porción recomendada en agua o leche según indicaciones del envase.",
-    imagen: "img/productos/2/19_35_calostro.jpeg",
-  },
-  {
-    nombre: "Niños Aptmax", valor: 42000,
-    categoria: "Productos naturales",
-    beneficios: ["Crecimiento muscular","Desarrollo cognitivo","Energía sostenida","Bienestar general"],
-    descripcion: "Alimento en polvo con proteína de soya, suero de leche, calcio y magnesio. Sabor vainilla fresa.",
-    recomendacion: "Seguir instrucciones de preparación del envase para la porción adecuada.",
-    imagen: "img/productos/2/20_30_aptmaxNiño.jpeg",
-  },
-  {
-    nombre: "Citrato de Magnesio + Colágeno Hidrolizado", valor: 50000,
-    categoria: "Productos naturales",
-    beneficios: ["Salud Ósea y Dental","Apoyo Articular y Muscular","Cuidado de la Piel y el Cabello","Alivio de la Fatiga","Función Muscular Normal"],
-    descripcion: "Suplemento en polvo de citrato de magnesio, colágeno hidrolizado y calcio con sabor vainilla.",
-    recomendacion: "Disolver la porción indicada en agua o bebida favorita.",
-    imagen: "img/productos/2/21_35_citrato_de_magnecio.jpeg",
-  },
-  {
-    nombre: "Vitacerebrina Francesa", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoyo Cognitivo","Salud Cardiovascular","Energía Mental","Protección Antioxidante"],
-    descripcion: "Suplemento 100% natural para potenciar el rendimiento cerebral y proteger el sistema cardiovascular.",
-    recomendacion: "El empaque contiene 20 tablecaps y 10 ampolletas. Seguir indicaciones para tratamiento completo.",
-    imagen: "img/productos/2/22_25_VitacelebrinaFrancesa.jpeg",
-  },
-  {
-    nombre: "Barrido Arterio Venoso", valor: 39000,
-    categoria: "Productos naturales",
-    beneficios: ["Limpieza arterial","Control de lípidos","Fortalecimiento vascular","Mejora del flujo sanguíneo","Salud cardiovascular"],
-    descripcion: "Suplemento dietario sin azúcar para la salud del sistema circulatorio. Apto para diabéticos.",
-    recomendacion: "Seguir indicaciones del envase. Generalmente 1 o 2 cápsulas diarias.",
-    imagen: "img/productos/2/23_25_barrido.jpeg",
-  },
-  {
-    nombre: "Combo Bienestar y Salud Digestiva (Lax Colon + Max Colon)", valor: 78000,
-    categoria: "Productos naturales",
-    beneficios: ["Limpieza profunda del sistema digestivo","Combate el estreñimiento","Reductor de peso natural","Regula colesterol y azúcar","Contiene 10 extractos naturales"],
-    descripcion: "Solución integral para el bienestar colónico combinando la acción depurativa de Lax Colon con la fibra de Max Colon.",
-    recomendacion: "Lax Colon: según indicaciones del envase. Max Colon: disolver en agua antes de comidas.",
-    imagen: "img/productos/2/24_50_par_laxcolon_y_Maxcolon.jpeg",
-  },
-  {
-    nombre: "Colágeno Hidrolizado + Biotina con Magnesio", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Salud de la Piel","Fortalece el Cabello","Uñas Fuertes","Bienestar Articular","Soporte Inmune"],
-    descripcion: "Suplemento líquido de 375ml con colágeno hidrolizado, biotina, magnesio y complejo vitamínico.",
-    recomendacion: "Seguir instrucciones del envase, preferiblemente en la mañana.",
-    imagen: "img/productos/2/25_25_colageno_biotina.jpeg",
-  },
-  {
-    nombre: "Vino Cerebral Tónico Reconstituyente", valor: 36000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoyo a la memoria y concentración","Salud cardiovascular y cerebral","Energía y vitalidad","Rendimiento mental","Equilibrio y adaptógeno"],
-    descripcion: "Tónico de 500ml con Ginkgo Biloba, Ginseng, Maca y nutrientes esenciales para mejorar la función cognitiva.",
-    recomendacion: "Una copa dosificadora al día preferiblemente con el desayuno.",
-    imagen: "img/productos/2/26_25_Vino_celebral.jpeg",
-  },
-  {
-    nombre: "Artrin Natural (Original Cubano)", valor: 31000,
-    categoria: "Productos naturales",
-    beneficios: ["Tratamiento articular","Reducción del dolor","Alivio lumbar","Propiedades regenerativas"],
-    descripcion: "Producto natural en 25 grageas enfocado en el tratamiento de procesos degenerativos articulares.",
-    recomendacion: "Consultar a un médico antes de su uso.",
-    imagen: "img/productos/2/27_20_artrin.jpeg",
-  },
-  {
-    nombre: "Ajo ROGOFF Garli (Improfarme)", valor: 31000,
-    categoria: "Productos naturales",
-    beneficios: ["Salud Cardiovascular","Refuerzo Inmunitario","Acción Antioxidante","Efecto Depurativo","Sin mal aliento"],
-    descripcion: "Tabletas recubiertas que combinan ajo con perejil, limón y complejo vitamínico para el bienestar circulatorio.",
-    recomendacion: "Seguir la dosis diaria indicada en el empaque. Envase con 180 tabletas.",
-    imagen: "img/productos/2/28_20_ajo_regoff.jpeg",
-  },
-  {
-    nombre: "Boromiel Jalea de Borojó", valor: 34000,
-    categoria: "Productos naturales",
-    beneficios: ["Fuerza y Energía Natural","Salud Física y Vitalidad","Soporte Inmunológico","Concentración y Agudeza Mental"],
-    descripcion: "Jalea de 500g elaborada con borojó y miel como suplemento energético reconstituyente.",
-    recomendacion: "Consumir directamente, mezclar en jugos o usar como esparcible.",
-    imagen: "img/productos/2/29_20_Boromil.jpeg",
-  },
-  {
-    nombre: "K.L.G Fórmula Natural (1000 ml)", valor: 45000,
-    categoria: "Vigorizantes",
-    beneficios: ["Aumento de energía y resistencia","Mejora del desempeño","Salud y vitalidad general","Fórmula natural"],
-    descripcion: "Suplemento líquido de 1000 ml para potenciar el vigor físico y la vitalidad masculina.",
-    recomendacion: "Una copa dosificadora diaria, preferiblemente con alimentos.",
-    imagen: "img/productos/2/30_30_KLG.jpeg",
-  },
-  {
-    nombre: "El Secreto del Abuelo Culion (Vigorizante Ancestral)", valor: 45000,
-    categoria: "Vigorizantes",
-    beneficios: ["Vitalidad Natural","Fuerza y Energía","Bienestar Diario","Concentración Clara","Poder Ancestral"],
-    descripcion: "Tónico vigorizante de origen ancestral para potenciar la fuerza física y mental.",
-    recomendacion: "Una copa dosificadora diaria con comidas principales.",
-    imagen: "img/productos/2/31_30_el_abuelo.jpeg",
-  },
-  {
-    nombre: "Castaño de Indias (Extracto Natural)", valor: 34000,
-    categoria: "Productos naturales",
-    beneficios: ["Mejora la circulación","Alivia várices","Reduce pesadez","Disminuye hinchazón","Alivio y confort"],
-    descripcion: "Suplemento líquido de 375 ml para la circulación venosa de las piernas.",
-    recomendacion: "Seguir instrucciones del empaque sobre modo de uso.",
-    imagen: "img/productos/2/32_20_castañodeindia.jpeg",
-  },
-  {
-    nombre: "Rompe Colchón (7 Potencias - Vuelve la Vida)", valor: 45000,
-    categoria: "Vigorizantes",
-    beneficios: ["Incrementa el deseo sexual","Brinda energía y vitalidad","Mejora el rendimiento","Aumenta la potencia masculina","Fórmula Multi-Extractos"],
-    descripcion: "Suplemento líquido de 1000 ml con 7 ingredientes naturales para maximizar la potencia y el vigor.",
-    recomendacion: "Una copa dosificadora diaria o 30 minutos antes de actividad física.",
-    imagen: "img/productos/2/33_30_rompe_colchon.jpeg",
-  },
-  {
-    nombre: "El Secreto del Abuelo Culión (Vigorizante Ancestral)", valor: 45000,
-    categoria: "Vigorizantes",
-    beneficios: ["Restaura la Potencia Masculina","Incrementa el Deseo Sexual","Proporciona Energía y Vitalidad","Mejora el Rendimiento Físico","Fórmula con Adaptógenos"],
-    descripcion: "Vigorizante ancestral con extractos naturales energéticos y afrodisíacos para la vitalidad masculina.",
-    recomendacion: "Una copa dosificadora diaria según indicaciones del envase.",
-    imagen: "img/productos/2/34_30_el_abuelo.jpeg",
-  },
-  {
-    nombre: "Mega Magnesio con Colágeno Marino", valor: 49000,
-    categoria: "Productos naturales",
-    beneficios: ["Favorece el Sistema Nervioso","Alivia el Dolor Muscular","Fortalece los Huesos","Energía y Vitalidad","Triple Fuente de Magnesio"],
-    descripcion: "Suplemento líquido de 1000 ml con Colágeno Marino, Vitamina C y dos tipos de magnesio.",
-    recomendacion: "Una copa dosificadora diaria, preferiblemente en la mañana.",
-    imagen: "img/productos/2/35_35_megaMagnecio.jpeg",
-  },
-  {
-    nombre: "VTAL Granulada", valor: 42000,
-    categoria: "Productos naturales",
-    beneficios: ["Fortalecimiento Muscular","Energía y Vitalidad Sostenida","Apoyo Inmunológico y Cognitivo","Salud de Cabello Piel y Uñas","Bienestar Digestivo"],
-    descripcion: "Alimento granulado de 700g a base de suero de leche con albúmina, levadura y malta.",
-    recomendacion: "Disolver la porción indicada en leche, agua o jugos.",
-    imagen: "img/productos/2/36_30_vtalGranulada.jpeg",
-  },
-  {
-    nombre: "Glucosamina + Chondroitina MF Natural", valor: 45000,
-    categoria: "Productos naturales",
-    beneficios: ["Alivia el dolor articular","Fortalece ligamentos y tendones","Protege los cartílagos","Previene la osteoporosis","Enriquecido con Omega 3 y 6"],
-    descripcion: "Suplemento líquido para articulaciones y sistema óseo con glucosamina, condroitina y omegas.",
-    recomendacion: "Una copa dosificadora diaria con comidas principales.",
-    imagen: "img/productos/2/37_30_glucosamina.jpeg",
-  },
-  {
-    nombre: "Vitamina C + Echinacea", valor: 32000,
-    categoria: "Productos naturales",
-    beneficios: ["Refuerzo del sistema inmunitario","Fortalece tus defensas","Energía natural y bienestar","100% Natural","Endulzado con Stevia"],
-    descripcion: "Suplemento líquido de 375 ml con Vitamina C y Echinacea. Sabor naranja endulzado con stevia.",
-    recomendacion: "Dosis diaria indicada en el envase, preferiblemente en la mañana.",
-    imagen: "img/productos/2/38_20_vitamiaC.jpeg",
-  },
-  {
-    nombre: "Colágeno Hidrolizado + Biotina", valor: 38000,
-    categoria: "Productos naturales",
-    beneficios: ["Mejora la elasticidad de la piel","Fortalece el cabello y las uñas","Hidratación profunda","Apoyo articular","Enriquecido con Vitamina E"],
-    descripcion: "Suplemento vitamínico líquido de 1000 ml con colágeno hidrolizado y biotina, endulzado con stevia.",
-    recomendacion: "Seguir instrucciones del envase o de un profesional de la salud.",
-    imagen: "img/productos/2/39_25_colageno.jpeg",
-  },
-  {
-    nombre: "Torovital Pharma Sangre de Toro", valor: 34000,
-    categoria: "Productos naturales",
-    beneficios: ["Aumento de energía y vigor","Apoyo al sistema inmunitario","Mejora el rendimiento físico y mental","Complejo vitamínico completo","Reduce la fatiga"],
-    descripcion: "Tónico vitamínico reconstituyente en jarabe de 500 ml para la vitalidad y rendimiento óptimo.",
-    recomendacion: "Una copa dosificadora diaria con comidas principales.",
-    imagen: "img/productos/2/40_21_totovital.jpeg",
-  },
-  {
-    nombre: "Jarabe de Zarzaparrilla Gomarti", valor: 33000,
-    categoria: "Productos naturales",
-    beneficios: ["Salud Hepática","Función Renal Óptima","Digestión de Grasas","Reduce la Inflamación","Depurativo Natural"],
-    descripcion: "Suplemento en jarabe con 12 extractos botánicos para conservar en buen estado el hígado y los riñones.",
-    recomendacion: "Tratamiento completo de 3 frascos según indicaciones del fabricante.",
-    imagen: "img/productos/2/41_20_zarzaparrilla.jpeg",
-  },
-  {
-    nombre: "Citrato de Potasio + Citrato de Magnesio", valor: 50000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoya la función muscular","Reduce el cansancio y la fatiga","Fórmula sinérgica de doble acción","Bienestar general"],
-    descripcion: "Complemento alimenticio líquido de 1000 ml para optimizar la recuperación muscular y el rendimiento diario.",
-    recomendacion: "Una copa dosificadora diaria con comidas para correcta absorción.",
-    imagen: "img/productos/2/42_35_citrato_de_potacsio.jpeg",
-  },
-  {
-    nombre: "Vino Nutri Cerebral", valor: 45000,
-    categoria: "Productos naturales",
-    beneficios: ["Apoyo Cognitivo Avanzado","Salud del Nervio Óptico","Energía y Vitalidad Global","Protección Neuronal","Equilibrio Neuro-Emocional"],
-    descripcion: "Reconstituyente cerebral líquido de 1000 ml 100% natural para nutrir la mente y el cuerpo.",
-    recomendacion: "Una copa dosificadora diaria para beneficios de nutrición cerebral.",
-    imagen: "img/productos/2/43_30_vino_nutri.jpeg",
-  },
+  { nombre: "Boldo + Clorofila y Menta", valor: 38000, categoria: "Productos naturales", beneficios: ["Desintoxicacion Natural","Soporte Epatico","Digestión saludable","Purificación del cuerpo"], descripcion: "Suplemento natural que combina boldo, clorofila, menta, sábila y albahaca con acción refrescante, depurativa y revitalizante.", recomendacion: "Disolver una cucharada en un vaso de agua y consumir después de las comidas principales.", imagen: "img/productos/2/1_25_clorofila_menta.jpeg" },
+  { nombre: "Citrato y Cloruro de Magnesio - Potasio", valor: 50000, categoria: "Productos naturales", beneficios: ["Función Muscular y Nerviosa","Regulación de la Presión Arterial","Salud Ósea","Alivio de Migrañas","Apoyo Digestivo"], descripcion: "Suplemento de Magnesio 4 en 1 que combina varios beneficios para la salud muscular y nerviosa.", recomendacion: "Tomar 1 cápsula al día, preferiblemente con las comidas.", imagen: "img/productos/2/2_38_citrato.jpeg" },
+  { nombre: "Vitamina E - 1.000 UI", valor: 52000, categoria: "Productos naturales", beneficios: ["Antioxidante Potente","Salud de la Piel","Protección Cardiovascular","Mejora de la Salud Ocular","Apoyo al Sistema Inmunológico"], descripcion: "Suplemento dietario que actúa como potente antioxidante ayudando a combatir los radicales libres.", recomendacion: "La dosis de 1000 UI se puede tomar diariamente con alimentos que contengan grasa para mejorar su absorción.", imagen: "img/productos/2/3_40_vitamina_E.jpeg" },
+  { nombre: "Duo de bienestar Integral: Citrato de Magnesio + Vitamina E", valor: 55000, categoria: "Productos naturales", beneficios: ["Antioxidante Potente","Relajación Muscular","Salud Ósea","Mejora de la Salud Ocular","Reduce el Estrés Oxidativo"], descripcion: "Combinación de Citrato de Magnesio y Vitamina E para apoyar la salud muscular, nerviosa, cardiovascular y antioxidante.", recomendacion: "Tomar 2 gomitas al día, preferiblemente después de una comida.", imagen: "img/productos/2/4_40_magnecio+vitaminaE.jpeg" },
+  { nombre: "Omega 3", valor: 55000, categoria: "Productos naturales", beneficios: ["Apoya la salud cerebral y Cognitiva","Reduce la inflamación corporal","Mejora la salud Cardiovascular","Mejora la hidratación y salud de la piel"], descripcion: "Los ácidos grasos omega-3 son esenciales para la salud física y mental.", recomendacion: "La OMS recomienda entre 250 y 2000 mg al día dependiendo de la edad.", imagen: "img/productos/2/5_40_omega3.jpeg" },
+  { nombre: "Ginkgo Biloba", valor: 45000, categoria: "Productos naturales", beneficios: ["Mejorar el flujo sanguíneo cerebral y periférico","Mejora la memoria y la concentración","Actua como potente Antioxidante","Reduce la fatiga mental y el estrés"], descripcion: "Suplemento natural para mejorar la circulación sanguínea, la función cognitiva y reducir el estrés oxidativo.", recomendacion: "No exceder la dosis diaria recomendada. Consultar profesional antes de iniciar.", imagen: "img/productos/2/6_32_ginkgo.jpeg" },
+  { nombre: "ASHWAGANDHA KSM-66", valor: 60000, categoria: "Productos naturales", beneficios: ["Reduce el estrés y el cortisol","Mejora del Sueño","Rendimiento Físico y Mental","Apoyo Hormonal"], descripcion: "Extracto de raíz de Withania somnifera de espectro completo, altamente concentrado con 5% withanólidos.", recomendacion: "Dosis de 300 a 600 mg al día, dividida en dos tomas (mañana y noche) con alimentos.", imagen: "img/productos/2/7_45_ksm-66.jpeg" },
+  { nombre: "GLUCOSAMIN 1500 mg", valor: 54000, categoria: "Productos naturales", beneficios: ["Salud Articular","Mejora la elasticidad de la piel","Alivio del Dolor","Mejora la Hidratación"], descripcion: "Suplemento de glucosamina de alta concentración para la salud articular.", recomendacion: "Tomar dos cápsulas diarias con las comidas.", imagen: "img/productos/2/8_40_glucosamin.jpeg" },
+  { nombre: "GAF-PLUS", valor: 41000, categoria: "Productos naturales", beneficios: ["Huesos fuertes","Articulaciones flexible","Energia vital"], descripcion: "Suplemento multivitamínico líquido de hierbas y vitaminas para aumentar la energía y fortalecer el sistema inmunológico.", recomendacion: "Tomar una copa (15 ml) dos veces al día. Conservar refrigerado una vez abierto.", imagen: "img/productos/2/9_30_gaf-plus.jpeg" },
+  { nombre: "Salud de la mujer", valor: 30000, categoria: "Productos naturales", beneficios: ["Desinflamante Femenino","Alivia colicos menstruales","Disminuye el flujo y las molestias"], descripcion: "Jarabes formulados con hierbas para regular el ciclo menstrual, aliviar cólicos y equilibrar hormonas.", recomendacion: "Tomar por vía oral 3 veces al día, generalmente antes de las comidas.", imagen: "img/productos/2/10_23_salud_de_la_mujer.jpeg" },
+  { nombre: "Vita Celebrina - Jarabe", valor: 40000, categoria: "Productos naturales", beneficios: ["Mejora la memoria","Aumenta la concentración","Refuerza el rendimiento mental"], descripcion: "Suplemento rico en vitaminas y minerales para apoyar la función cognitiva en niños y adultos.", recomendacion: "Para niños mayores de 4 años, tomar 2 cucharaditas diarias.", imagen: "img/productos/2/11_28_vitacelebrina_jarabe.jpeg" },
+  { nombre: "Enervital - Jarabe", valor: 38000, categoria: "Productos naturales", beneficios: ["Aporta Energia","Refuerza las defensas","Crecimiento saludable"], descripcion: "Suplemento alimenticio con vitaminas y minerales esenciales para el desarrollo infantil.", recomendacion: "Tomar una medida 3 veces al día.", imagen: "img/productos/2/12_24_enervital.jpeg" },
+  { nombre: "NeurisZinc - Capsulas", valor: 38000, categoria: "Productos naturales", beneficios: ["Apoyo a la Memoria","Mejora la concentración","Reduce el estrés y la ansiedad","Función neurologica saludable"], descripcion: "Suplemento para apoyar la función cognitiva, mejorar la memoria y calmar síntomas de ansiedad.", recomendacion: "Posología indicada por el fabricante según presentación.", imagen: "img/productos/2/13_25_neurizinc.jpeg" },
+  { nombre: "GAF-PLUS OMEGA 3, 6, 9", valor: 55000, categoria: "Productos naturales", beneficios: ["Piel radiante y elastica","Equilibrio Electrolitico","Reducción de la inflamación","Salud Cardiovascular y Cerebral"], descripcion: "Suplemento en cápsulas rico en ácidos grasos omega-3 para apoyar la salud del corazón y el cerebro.", recomendacion: "Tomar 2 cápsulas al día con las comidas.", imagen: "img/productos/2/14_40_gaf-plus_omega3.jpeg" },
+  { nombre: "Colageno Hidrolizado Healthy Life", valor: 50000, categoria: "Productos naturales", beneficios: ["Mejora la salud de la piel","Salud articular y cartílago","Cabello y uñas fuertes","Soporte muscular","Bienestar general"], descripcion: "Suplemento de colágeno hidrolizado en cápsulas para promover la integridad estructural del cuerpo.", recomendacion: "Consultar la etiqueta del producto para instrucciones de uso personalizadas.", imagen: "img/productos/2/15_35_colageno_hidrolizado.jpeg" },
+  { nombre: "Vitamina D3 Healthful Life", valor: 45000, categoria: "Productos naturales", beneficios: ["Apoyo al sistema inmunitario","Huesos y dientes fuertes","Mejora el estado de ánimo y la energía"], descripcion: "Suplemento de Vitamina D3 con 4.000 UI por cápsula para el fortalecimiento del sistema óseo.", recomendacion: "Ingerir 1 cápsula al día con una comida principal para mejorar la absorción.", imagen: "img/productos/2/16_30_vitaminaD3.jpeg" },
+  { nombre: "Vitamina C 1.000mg Healthful Life", valor: 40000, categoria: "Productos naturales", beneficios: ["Refuerzo Inmunológico","Protección Antioxidante","Piel Saludable y Cicatrización","Más Energía"], descripcion: "Suplemento de 1.000mg de Vitamina C con Zinc para maximizar la protección del sistema inmune.", recomendacion: "Tomar 1 cápsula al día, preferiblemente con alimentos.", imagen: "img/productos/2/17_28_vitaminaC_capsulas.jpeg" },
+  { nombre: "Expectorante Pulmonar Plus Bronco Dilatador", valor: 36000, categoria: "Productos naturales", beneficios: ["Reduce la tos y expulsa las flemas","Dilata los bronquios","Ayuda a respirar mejor","Alivia la congestión"], descripcion: "Jarabe expectorante y broncodilatador para limpiar las vías respiratorias y facilitar la respiración.", recomendacion: "Dosis varía según la edad. Verificar en el empaque o bajo indicación médica.", imagen: "img/productos/2/18_25_pulmonar.jpeg" },
+  { nombre: "Calostro Bovino Factor de Transferencia Omega 3, 6, 9", valor: 50000, categoria: "Productos naturales", beneficios: ["Refuerza el sistema inmunológico","Mejora la salud intestinal","Fuente de Omega 3, 6 y 9","Aporta calcio y magnesio"], descripcion: "Alimento en polvo a base de calostro bovino liofilizado enriquecido con proteína de suero de leche.", recomendacion: "Mezclar la porción recomendada en agua o leche según indicaciones del envase.", imagen: "img/productos/2/19_35_calostro.jpeg" },
+  { nombre: "Niños Aptmax", valor: 42000, categoria: "Productos naturales", beneficios: ["Crecimiento muscular","Desarrollo cognitivo","Energía sostenida","Bienestar general"], descripcion: "Alimento en polvo con proteína de soya, suero de leche, calcio y magnesio. Sabor vainilla fresa.", recomendacion: "Seguir instrucciones de preparación del envase para la porción adecuada.", imagen: "img/productos/2/20_30_aptmaxNiño.jpeg" },
+  { nombre: "Citrato de Magnesio + Colágeno Hidrolizado", valor: 50000, categoria: "Productos naturales", beneficios: ["Salud Ósea y Dental","Apoyo Articular y Muscular","Cuidado de la Piel y el Cabello","Alivio de la Fatiga","Función Muscular Normal"], descripcion: "Suplemento en polvo de citrato de magnesio, colágeno hidrolizado y calcio con sabor vainilla.", recomendacion: "Disolver la porción indicada en agua o bebida favorita.", imagen: "img/productos/2/21_35_citrato_de_magnecio.jpeg" },
+  { nombre: "Vitacerebrina Francesa", valor: 38000, categoria: "Productos naturales", beneficios: ["Apoyo Cognitivo","Salud Cardiovascular","Energía Mental","Protección Antioxidante"], descripcion: "Suplemento 100% natural para potenciar el rendimiento cerebral y proteger el sistema cardiovascular.", recomendacion: "El empaque contiene 20 tablecaps y 10 ampolletas. Seguir indicaciones para tratamiento completo.", imagen: "img/productos/2/22_25_VitacelebrinaFrancesa.jpeg" },
+  { nombre: "Barrido Arterio Venoso", valor: 39000, categoria: "Productos naturales", beneficios: ["Limpieza arterial","Control de lípidos","Fortalecimiento vascular","Mejora del flujo sanguíneo","Salud cardiovascular"], descripcion: "Suplemento dietario sin azúcar para la salud del sistema circulatorio. Apto para diabéticos.", recomendacion: "Seguir indicaciones del envase. Generalmente 1 o 2 cápsulas diarias.", imagen: "img/productos/2/23_25_barrido.jpeg" },
+  { nombre: "Combo Bienestar y Salud Digestiva (Lax Colon + Max Colon)", valor: 78000, categoria: "Productos naturales", beneficios: ["Limpieza profunda del sistema digestivo","Combate el estreñimiento","Reductor de peso natural","Regula colesterol y azúcar","Contiene 10 extractos naturales"], descripcion: "Solución integral para el bienestar colónico combinando la acción depurativa de Lax Colon con la fibra de Max Colon.", recomendacion: "Lax Colon: según indicaciones del envase. Max Colon: disolver en agua antes de comidas.", imagen: "img/productos/2/24_50_par_laxcolon_y_Maxcolon.jpeg" },
+  { nombre: "Colágeno Hidrolizado + Biotina con Magnesio", valor: 38000, categoria: "Productos naturales", beneficios: ["Salud de la Piel","Fortalece el Cabello","Uñas Fuertes","Bienestar Articular","Soporte Inmune"], descripcion: "Suplemento líquido de 375ml con colágeno hidrolizado, biotina, magnesio y complejo vitamínico.", recomendacion: "Seguir instrucciones del envase, preferiblemente en la mañana.", imagen: "img/productos/2/25_25_colageno_biotina.jpeg" },
+  { nombre: "Vino Cerebral Tónico Reconstituyente", valor: 36000, categoria: "Productos naturales", beneficios: ["Apoyo a la memoria y concentración","Salud cardiovascular y cerebral","Energía y vitalidad","Rendimiento mental","Equilibrio y adaptógeno"], descripcion: "Tónico de 500ml con Ginkgo Biloba, Ginseng, Maca y nutrientes esenciales para mejorar la función cognitiva.", recomendacion: "Una copa dosificadora al día preferiblemente con el desayuno.", imagen: "img/productos/2/26_25_Vino_celebral.jpeg" },
+  { nombre: "Artrin Natural (Original Cubano)", valor: 31000, categoria: "Productos naturales", beneficios: ["Tratamiento articular","Reducción del dolor","Alivio lumbar","Propiedades regenerativas"], descripcion: "Producto natural en 25 grageas enfocado en el tratamiento de procesos degenerativos articulares.", recomendacion: "Consultar a un médico antes de su uso.", imagen: "img/productos/2/27_20_artrin.jpeg" },
+  { nombre: "Ajo ROGOFF Garli (Improfarme)", valor: 31000, categoria: "Productos naturales", beneficios: ["Salud Cardiovascular","Refuerzo Inmunitario","Acción Antioxidante","Efecto Depurativo","Sin mal aliento"], descripcion: "Tabletas recubiertas que combinan ajo con perejil, limón y complejo vitamínico para el bienestar circulatorio.", recomendacion: "Seguir la dosis diaria indicada en el empaque. Envase con 180 tabletas.", imagen: "img/productos/2/28_20_ajo_regoff.jpeg" },
+  { nombre: "Boromiel Jalea de Borojó", valor: 34000, categoria: "Productos naturales", beneficios: ["Fuerza y Energía Natural","Salud Física y Vitalidad","Soporte Inmunológico","Concentración y Agudeza Mental"], descripcion: "Jalea de 500g elaborada con borojó y miel como suplemento energético reconstituyente.", recomendacion: "Consumir directamente, mezclar en jugos o usar como esparcible.", imagen: "img/productos/2/29_20_Boromil.jpeg" },
+  { nombre: "K.L.G Fórmula Natural (1000 ml)", valor: 45000, categoria: "Vigorizantes", beneficios: ["Aumento de energía y resistencia","Mejora del desempeño","Salud y vitalidad general","Fórmula natural"], descripcion: "Suplemento líquido de 1000 ml para potenciar el vigor físico y la vitalidad masculina.", recomendacion: "Una copa dosificadora diaria, preferiblemente con alimentos.", imagen: "img/productos/2/30_30_KLG.jpeg" },
+  { nombre: "El Secreto del Abuelo Culion (Vigorizante Ancestral)", valor: 45000, categoria: "Vigorizantes", beneficios: ["Vitalidad Natural","Fuerza y Energía","Bienestar Diario","Concentración Clara","Poder Ancestral"], descripcion: "Tónico vigorizante de origen ancestral para potenciar la fuerza física y mental.", recomendacion: "Una copa dosificadora diaria con comidas principales.", imagen: "img/productos/2/31_30_el_abuelo.jpeg" },
+  { nombre: "Castaño de Indias (Extracto Natural)", valor: 34000, categoria: "Productos naturales", beneficios: ["Mejora la circulación","Alivia várices","Reduce pesadez","Disminuye hinchazón","Alivio y confort"], descripcion: "Suplemento líquido de 375 ml para la circulación venosa de las piernas.", recomendacion: "Seguir instrucciones del empaque sobre modo de uso.", imagen: "img/productos/2/32_20_castañodeindia.jpeg" },
+  { nombre: "Rompe Colchón (7 Potencias - Vuelve la Vida)", valor: 45000, categoria: "Vigorizantes", beneficios: ["Incrementa el deseo sexual","Brinda energía y vitalidad","Mejora el rendimiento","Aumenta la potencia masculina","Fórmula Multi-Extractos"], descripcion: "Suplemento líquido de 1000 ml con 7 ingredientes naturales para maximizar la potencia y el vigor.", recomendacion: "Una copa dosificadora diaria o 30 minutos antes de actividad física.", imagen: "img/productos/2/33_30_rompe_colchon.jpeg" },
+  { nombre: "El Secreto del Abuelo Culión (Vigorizante Ancestral)", valor: 45000, categoria: "Vigorizantes", beneficios: ["Restaura la Potencia Masculina","Incrementa el Deseo Sexual","Proporciona Energía y Vitalidad","Mejora el Rendimiento Físico","Fórmula con Adaptógenos"], descripcion: "Vigorizante ancestral con extractos naturales energéticos y afrodisíacos para la vitalidad masculina.", recomendacion: "Una copa dosificadora diaria según indicaciones del envase.", imagen: "img/productos/2/34_30_el_abuelo.jpeg" },
+  { nombre: "Mega Magnesio con Colágeno Marino", valor: 49000, categoria: "Productos naturales", beneficios: ["Favorece el Sistema Nervioso","Alivia el Dolor Muscular","Fortalece los Huesos","Energía y Vitalidad","Triple Fuente de Magnesio"], descripcion: "Suplemento líquido de 1000 ml con Colágeno Marino, Vitamina C y dos tipos de magnesio.", recomendacion: "Una copa dosificadora diaria, preferiblemente en la mañana.", imagen: "img/productos/2/35_35_megaMagnecio.jpeg" },
+  { nombre: "VTAL Granulada", valor: 42000, categoria: "Productos naturales", beneficios: ["Fortalecimiento Muscular","Energía y Vitalidad Sostenida","Apoyo Inmunológico y Cognitivo","Salud de Cabello Piel y Uñas","Bienestar Digestivo"], descripcion: "Alimento granulado de 700g a base de suero de leche con albúmina, levadura y malta.", recomendacion: "Disolver la porción indicada en leche, agua o jugos.", imagen: "img/productos/2/36_30_vtalGranulada.jpeg" },
+  { nombre: "Glucosamina + Chondroitina MF Natural", valor: 45000, categoria: "Productos naturales", beneficios: ["Alivia el dolor articular","Fortalece ligamentos y tendones","Protege los cartílagos","Previene la osteoporosis","Enriquecido con Omega 3 y 6"], descripcion: "Suplemento líquido para articulaciones y sistema óseo con glucosamina, condroitina y omegas.", recomendacion: "Una copa dosificadora diaria con comidas principales.", imagen: "img/productos/2/37_30_glucosamina.jpeg" },
+  { nombre: "Vitamina C + Echinacea", valor: 32000, categoria: "Productos naturales", beneficios: ["Refuerzo del sistema inmunitario","Fortalece tus defensas","Energía natural y bienestar","100% Natural","Endulzado con Stevia"], descripcion: "Suplemento líquido de 375 ml con Vitamina C y Echinacea. Sabor naranja endulzado con stevia.", recomendacion: "Dosis diaria indicada en el envase, preferiblemente en la mañana.", imagen: "img/productos/2/38_20_vitamiaC.jpeg" },
+  { nombre: "Colágeno Hidrolizado + Biotina", valor: 38000, categoria: "Productos naturales", beneficios: ["Mejora la elasticidad de la piel","Fortalece el cabello y las uñas","Hidratación profunda","Apoyo articular","Enriquecido con Vitamina E"], descripcion: "Suplemento vitamínico líquido de 1000 ml con colágeno hidrolizado y biotina, endulzado con stevia.", recomendacion: "Seguir instrucciones del envase o de un profesional de la salud.", imagen: "img/productos/2/39_25_colageno.jpeg" },
+  { nombre: "Torovital Pharma Sangre de Toro", valor: 34000, categoria: "Productos naturales", beneficios: ["Aumento de energía y vigor","Apoyo al sistema inmunitario","Mejora el rendimiento físico y mental","Complejo vitamínico completo","Reduce la fatiga"], descripcion: "Tónico vitamínico reconstituyente en jarabe de 500 ml para la vitalidad y rendimiento óptimo.", recomendacion: "Una copa dosificadora diaria con comidas principales.", imagen: "img/productos/2/40_21_totovital.jpeg" },
+  { nombre: "Jarabe de Zarzaparrilla Gomarti", valor: 33000, categoria: "Productos naturales", beneficios: ["Salud Hepática","Función Renal Óptima","Digestión de Grasas","Reduce la Inflamación","Depurativo Natural"], descripcion: "Suplemento en jarabe con 12 extractos botánicos para conservar en buen estado el hígado y los riñones.", recomendacion: "Tratamiento completo de 3 frascos según indicaciones del fabricante.", imagen: "img/productos/2/41_20_zarzaparrilla.jpeg" },
+  { nombre: "Citrato de Potasio + Citrato de Magnesio", valor: 50000, categoria: "Productos naturales", beneficios: ["Apoya la función muscular","Reduce el cansancio y la fatiga","Fórmula sinérgica de doble acción","Bienestar general"], descripcion: "Complemento alimenticio líquido de 1000 ml para optimizar la recuperación muscular y el rendimiento diario.", recomendacion: "Una copa dosificadora diaria con comidas para correcta absorción.", imagen: "img/productos/2/42_35_citrato_de_potacsio.jpeg" },
+  { nombre: "Vino Nutri Cerebral", valor: 45000, categoria: "Productos naturales", beneficios: ["Apoyo Cognitivo Avanzado","Salud del Nervio Óptico","Energía y Vitalidad Global","Protección Neuronal","Equilibrio Neuro-Emocional"], descripcion: "Reconstituyente cerebral líquido de 1000 ml 100% natural para nutrir la mente y el cuerpo.", recomendacion: "Una copa dosificadora diaria para beneficios de nutrición cerebral.", imagen: "img/productos/2/43_30_vino_nutri.jpeg" },
 ];
 
-// ══════════════════════════════════════════════════════════
-//  EJECUTAR CARGA
-// ══════════════════════════════════════════════════════════
 document.getElementById("btn").addEventListener("click", async () => {
   const btn = document.getElementById("btn");
   btn.disabled = true;
   btn.textContent = "⏳ Cargando...";
 
   try {
-    // 1 — Vendedor principal
+    // 0 — Login para tener permisos de escritura
+    log("── Autenticando...", "inf");
+    const correo = prompt("Correo del admin:");
+    const pass   = prompt("Contraseña:");
+    await signInWithEmailAndPassword(auth, correo, pass);
+    log("✓ Autenticado correctamente");
+
+    // 1 — Vendedor
     log("── Creando vendedor principal...", "inf");
     const vendedorRef = doc(collection(db, "vendedores"));
     await setDoc(vendedorRef, VENDEDOR);
@@ -483,16 +161,12 @@ document.getElementById("btn").addEventListener("click", async () => {
     let count = 0;
     for (const p of PRODUCTOS) {
       await addDoc(collection(db, "productos"), {
-        nombre:        p.nombre,
-        valor:         p.valor,
-        descripcion:   p.descripcion,
-        recomendacion: p.recomendacion,
-        beneficios:    p.beneficios,
-        imagen:        p.imagen,
-        categoria_id:  catMap[p.categoria] || "",
-        vendedor_id:   vendedor_id,
-        activo:        true,
-        creado_en:     new Date().toISOString(),
+        nombre: p.nombre, valor: p.valor,
+        descripcion: p.descripcion, recomendacion: p.recomendacion,
+        beneficios: p.beneficios, imagen: p.imagen,
+        categoria_id: catMap[p.categoria] || "",
+        vendedor_id: vendedor_id,
+        activo: true, creado_en: new Date().toISOString(),
       });
       count++;
       log("✓ [" + count + "/43] " + p.nombre);
@@ -501,7 +175,6 @@ document.getElementById("btn").addEventListener("click", async () => {
     log("──────────────────────────────────────────", "inf");
     log("🎉 ¡Listo! Firestore poblado correctamente.", "fin");
     log("Vendedor ID: " + vendedor_id, "fin");
-    log("Guarda ese ID — lo necesitas para el admin.", "fin");
     btn.textContent = "✓ Completado";
 
   } catch (err) {

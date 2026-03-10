@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — GI Store</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" href="../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <style>
+    /* ── Login estilo revista: 3 columnas ── */
+    body.login-page {
+      display: grid;
+      grid-template-columns: 1fr 420px 1fr;
+      min-height: 100vh;
+      background: #0f1a14;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Panel izquierdo — verde oscuro con texto */
+    .lp-izq {
+      background: linear-gradient(160deg, #1a6b3c 0%, #0f3d22 100%);
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 3rem 2.5rem;
+      position: relative; overflow: hidden;
+    }
+    .lp-izq::before {
+      content: '';
+      position: absolute; top: -80px; left: -80px;
+      width: 320px; height: 320px; border-radius: 50%;
+      background: rgba(255,255,255,.04);
+    }
+    .lp-izq-logo {
+      position: absolute; top: 2.5rem; left: 2.5rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .lp-izq-logo-ico {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lp-izq-logo strong { font-size: 1rem; color: #fff; display: block; }
+    .lp-izq-logo span   { font-size: .72rem; color: rgba(255,255,255,.6); }
+    .lp-izq h2 {
+      font-size: 2rem; color: #fff; line-height: 1.2;
+      margin: 0 0 1rem; position: relative; z-index: 1;
+    }
+    .lp-izq h2 span { color: #81c784; }
+    .lp-izq p {
+      font-size: .87rem; color: rgba(255,255,255,.7);
+      line-height: 1.7; margin: 0; position: relative; z-index: 1;
+    }
+    .lp-izq-puntos {
+      display: flex; flex-direction: column; gap: .5rem;
+      margin-top: 1.5rem; position: relative; z-index: 1;
+    }
+    .lp-izq-puntos span {
+      font-size: .8rem; color: rgba(255,255,255,.8);
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .lp-izq-puntos span::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #81c784; flex-shrink: 0;
+    }
+
+    /* Centro — formulario */
+    .lp-centro {
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 0 60px rgba(0,0,0,.4);
+      z-index: 2;
+    }
+    .lp-centro-inner { width: 100%; }
+
+    /* Derecha — foto */
+    .lp-der {
+      position: relative; overflow: hidden;
+    }
+    .lp-der img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      filter: brightness(.75) saturate(1.1);
+    }
+    .lp-der::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to left, transparent 60%, #0f1a14 100%);
+    }
+
+    /* Form elementos */
+    .lp-logo { display: flex; align-items: center; gap: .75rem; margin-bottom: 2rem; }
+    .lp-logo-ico {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--verde); display: flex; align-items: center; justify-content: center;
+    }
+    .lp-logo strong { font-size: 1.05rem; color: var(--texto); display: block; line-height: 1.2; }
+    .lp-logo span   { font-size: .72rem; color: var(--texto-suave); }
+    .lp-titulo  { font-size: 1.55rem; font-weight: 700; color: var(--texto); margin: 0 0 .35rem; }
+    .lp-sub     { font-size: .85rem; color: var(--texto-suave); margin: 0 0 2rem; }
+    .lp-pie     { text-align: center; margin-top: 1.25rem; font-size: .74rem; color: #aaa; }
+
+    /* Olvidé contraseña panel */
+    #panelRecuperar { display:none; margin-top:1rem; padding:1rem;
+      background:var(--fondo); border:1.5px solid var(--borde); border-radius:10px; }
+
+    /* Responsive */
+    @media(max-width: 900px) {
+      body.login-page { grid-template-columns: 1fr; }
+      .lp-izq, .lp-der { display: none; }
+      .lp-centro { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body class="login-page">
+
+  <!-- Izquierda -->
+  <div class="lp-izq">
+    <div class="lp-izq-logo">
+      <div class="lp-izq-logo-ico">
+        <img src="../img/favicon/gi-icono-blanco.svg" style="width:22px;height:22px;object-fit:contain"/>
+      </div>
+      <div>
+        <strong>GI Store</strong>
+        <span>Panel Admin</span>
+      </div>
+    </div>
+    <h2>Control total<br/>de tu <span>negocio</span></h2>
+    <p>Gestiona vendedores, membresías, productos y catálogos desde un solo lugar.</p>
+    <div class="lp-izq-puntos">
+      <span>Gestión de vendedores y membresías</span>
+      <span>Administración de productos</span>
+      <span>Exportación de catálogos PDF</span>
+      <span>Control en tiempo real</span>
+    </div>
+  </div>
+
+  <!-- Centro — formulario -->
+  <div class="lp-centro">
+    <div class="lp-centro-inner">
+
+      <a href="../index.html" class="lp-logo" style="text-decoration:none" title="Ir al catálogo">
+        <div class="lp-logo-ico">
+          <img src="../img/favicon/gi-icono-blanco.svg" style="width:24px;height:24px;object-fit:contain"/>
+        </div>
+        <div>
+          <strong>GI Store</strong>
+          <span>Panel de Administración</span>
+        </div>
+      </a>
+
+      <h1 class="lp-titulo">Iniciar sesión</h1>
+      <p class="lp-sub">Solo el administrador puede acceder aquí</p>
+
+      <div class="msg-error" id="msgError">
+        <span>⚠&nbsp;</span><span id="textoError"></span>
+      </div>
+
+      <div class="campo">
+        <label>Correo electrónico</label>
+        <input type="email" id="correo" placeholder="admin@gistore.com" autocomplete="email"/>
+      </div>
+      <div class="campo">
+        <label>Contraseña</label>
+        <div style="position:relative">
+          <input type="password" id="contrasena" placeholder="••••••••"
+                 autocomplete="current-password" style="padding-right:2.8rem"/>
+          <button type="button" id="btnVerPass"
+                  style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--texto-suave)">👁</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="btnLogin"
+              style="padding:.85rem;font-size:.95rem;margin-top:.25rem">
+        <span class="btn-texto">Ingresar al panel</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div style="text-align:center;margin-top:.75rem">
+        <button type="button" id="btnOlvide"
+                style="background:none;border:none;color:var(--verde);font-size:.83rem;cursor:pointer;text-decoration:underline;padding:0">
+          ¿Olvidaste tu contraseña?
+        </button>
+      </div>
+
+      <!-- Panel recuperar -->
+      <div id="panelRecuperar">
+        <p style="font-size:.83rem;color:var(--texto-medio);margin-bottom:.75rem">
+          Ingresa tu correo y te enviaremos un enlace para restablecer la contraseña.
+        </p>
+        <div class="msg-error" id="msgErrorRecup" style="margin-bottom:.5rem"><span>⚠&nbsp;</span><span id="textoErrorRecup"></span></div>
+        <div class="msg-ok"    id="msgOkRecup"    style="margin-bottom:.5rem"><span>✓&nbsp;</span><span id="textoOkRecup"></span></div>
+        <input type="email" id="correoRecup" placeholder="tu@correo.com"
+               style="width:100%;padding:.65rem .9rem;border:1.5px solid var(--borde);border-radius:8px;font-size:.87rem;margin-bottom:.6rem;outline:none;background:var(--fondo);color:var(--texto)"/>
+        <div style="display:flex;gap:.5rem">
+          <button type="button" id="btnEnviarRecup" class="btn btn-primary" style="flex:1;padding:.65rem">
+            <span class="btn-texto">📧 Enviar enlace</span>
+            <div class="spinner"></div>
+          </button>
+          <button type="button" id="btnCancelarRecup" class="btn btn-secundario" style="padding:.65rem .9rem">Cancelar</button>
+        </div>
+      </div>
+
+      <p class="lp-pie">© 2026 GI Store · Solo administradores autorizados</p>
+    </div>
+  </div>
+
+  <!-- Derecha — foto CEO -->
+  <div class="lp-der">
+    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=90"
+         alt="Administrador"
+         onerror="this.parentElement.style.background='linear-gradient(160deg,#1a6b3c,#0f3d22)'"/>
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>
