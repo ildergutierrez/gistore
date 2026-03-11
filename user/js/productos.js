@@ -13,6 +13,11 @@ import { onAuthStateChanged }
 
 protegerPagina("../index.html");
 
+document.getElementById("fechaHoy").textContent = fechaHoy();
+document.getElementById("btnSalir").addEventListener("click", async () => {
+  await cerrarSesion(); window.location.href = "../index.html";
+});
+
 // ── Cloudinary ────────────────────────────────────────────
 const CLOUD_NAME    = "dqmrgerue";
 const UPLOAD_PRESET = "gi-store";
@@ -24,9 +29,7 @@ let vendedor           = null;
 let idEliminar         = "";
 let busqueda           = "";
 let archivoSeleccionado = null;
-
-// ── Inicializar elementos del DOM de forma segura ──────────
-function el(id) { return document.getElementById(id); }
+let authUser           = null;   // usuario autenticado actual
 
 // ── Cargar datos ──────────────────────────────────────────
 async function cargar(user) {
@@ -36,7 +39,9 @@ async function cargar(user) {
     vendedor = await obtenerVendedorPorUid(user.uid);
     if (!vendedor) return;
 
-    if (el("vendedorNombre")) el("vendedorNombre").textContent = vendedor.nombre;
+    // vendedorNombre existe solo en páginas con sidebar completo; proteger con guard
+    const elNom = document.getElementById("vendedorNombre");
+    if (elNom) elNom.textContent = vendedor.nombre;
     sessionStorage.setItem("vendedor_id", vendedor.id);
 
     // Verificar membresía
@@ -44,6 +49,7 @@ async function cargar(user) {
     const vigente = membresiaVigente(mem);
 
     if (!vigente) {
+      // Desactivar productos automáticamente si membresía vencida/inexistente
       await desactivarProductosVendedor(vendedor.id);
       mostrarBannerMembresia(mem);
       bloquearAcciones(true);
@@ -61,13 +67,11 @@ async function cargar(user) {
 }
 
 function mostrarBannerMembresia(mem) {
-  let banner = el("bannerMembresia");
+  let banner = document.getElementById("bannerMembresia");
   if (!banner) {
     banner = document.createElement("div");
     banner.id = "bannerMembresia";
-    const main = document.querySelector(".main");
-    if (main && main.children[1]) main.insertBefore(banner, main.children[1]);
-    else if (main) main.appendChild(banner);
+    document.querySelector(".main").insertBefore(banner, document.querySelector(".main").children[1]);
   }
   const msg = mem
     ? "Tu membresía venció el " + mem.fecha_fin + ". Tus productos están desactivados y no son visibles en el catálogo."
@@ -79,27 +83,21 @@ function mostrarBannerMembresia(mem) {
         <strong style="color:#92400e;font-size:.9rem">Membresía inactiva</strong>
         <p style="color:#78350f;font-size:.82rem;margin:.2rem 0 0">${msg}</p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
-        <a href="membresia.html"
-           style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:.35rem">
-          <span class="material-symbols-outlined" style="font-size:1rem">id_card</span> Ir a membresía
-        </a>
-        <a href="https://wa.me/573145891108?text=${encodeURIComponent('Hola, necesito ayuda con mi membresía de GI Store.')}"
-           target="_blank"
-           style="font-size:.75rem;color:#92400e;text-decoration:none">
-          💬 ¿Necesitas ayuda?
-        </a>
-      </div>
+      <a href="https://wa.me/573145891108?text=${encodeURIComponent('Hola, quiero renovar mi membresía de GI Store.')}"
+         target="_blank"
+         style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap">
+        💬 Renovar membresía
+      </a>
     </div>`;
 }
 
 function ocultarBannerMembresia() {
-  const banner = el("bannerMembresia");
+  const banner = document.getElementById("bannerMembresia");
   if (banner) banner.remove();
 }
 
 function bloquearAcciones(bloquear) {
-  const btnNuevo = el("btnNuevo");
+  const btnNuevo = document.getElementById("btnNuevo");
   if (!btnNuevo) return;
   if (bloquear) {
     btnNuevo.disabled = true;
@@ -120,7 +118,7 @@ function nombreCategoria(id) {
 }
 
 // ── Buscador ──────────────────────────────────────────────
-el("buscador").addEventListener("input", e => {
+document.getElementById("buscador").addEventListener("input", e => {
   busqueda = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   renderTabla();
 });
@@ -133,13 +131,10 @@ function renderTabla() {
       })
     : productos;
 
-  if (el("totalProductos"))
-    el("totalProductos").textContent =
-      filtrados.length + " producto" + (filtrados.length !== 1 ? "s" : "");
+  document.getElementById("totalProductos").textContent =
+    filtrados.length + " producto" + (filtrados.length !== 1 ? "s" : "");
 
-  const wrap = el("tablaWrap");
-  if (!wrap) return;
-
+  const wrap = document.getElementById("tablaWrap");
   if (!filtrados.length) {
     wrap.innerHTML = '<p class="vacio-txt">Sin productos. ¡Agrega tu primer producto!</p>';
     return;
@@ -181,13 +176,13 @@ function renderTabla() {
 }
 
 // ── Zona imagen ───────────────────────────────────────────
-const zonaImagen  = el("zonaImagen");
-const inputFile   = el("fImagenFile");
-const previstaDiv = el("previstaImagen");
-const imgPreview  = el("imgPreview");
-const imgNombre   = el("imgNombre");
-const imgEstado   = el("imgEstado");
-const btnQuitar   = el("btnQuitarImg");
+const zonaImagen  = document.getElementById("zonaImagen");
+const inputFile   = document.getElementById("fImagenFile");
+const previstaDiv = document.getElementById("previstaImagen");
+const imgPreview  = document.getElementById("imgPreview");
+const imgNombre   = document.getElementById("imgNombre");
+const imgEstado   = document.getElementById("imgEstado");
+const btnQuitar   = document.getElementById("btnQuitarImg");
 
 zonaImagen.addEventListener("click", () => inputFile.click());
 zonaImagen.addEventListener("dragover", e => { e.preventDefault(); zonaImagen.style.borderColor = "var(--verde)"; });
@@ -207,20 +202,20 @@ function seleccionarArchivo(file) {
   imgEstado.textContent = "Lista para guardar";
   imgEstado.style.color = "var(--texto-suave)";
   previstaDiv.style.display = "flex";
-  el("zonaTexto").innerHTML =
+  document.getElementById("zonaTexto").innerHTML =
     "<p style='font-size:.82rem;color:var(--verde);font-weight:600'>✓ Imagen seleccionada</p>";
 }
 
 btnQuitar.addEventListener("click", () => {
   archivoSeleccionado = null;
   inputFile.value = "";
-  el("fImagen").value = "";
+  document.getElementById("fImagen").value = "";
   previstaDiv.style.display = "none";
   resetZonaTexto();
 });
 
 function resetZonaTexto() {
-  el("zonaTexto").innerHTML = `
+  document.getElementById("zonaTexto").innerHTML = `
     <div style="font-size:2rem;margin-bottom:.4rem">🖼️</div>
     <p style="font-size:.85rem;color:var(--texto-medio);margin-bottom:.3rem"><strong>Haz clic para seleccionar</strong> o arrastra aquí</p>
     <p style="font-size:.75rem;color:var(--texto-suave)">JPG, PNG, WEBP — máx. 5MB</p>`;
@@ -244,10 +239,10 @@ async function subirImagen() {
 }
 
 // ── Modal crear ───────────────────────────────────────────
-el("btnNuevo").addEventListener("click", () => {
+document.getElementById("btnNuevo").addEventListener("click", () => {
   limpiarModal();
-  el("modalTitulo").textContent = "Nuevo producto";
-  el("productoId").value = "";
+  document.getElementById("modalTitulo").textContent = "Nuevo producto";
+  document.getElementById("productoId").value = "";
   llenarCategorias();
   ocultarMensajes();
   abrirModal("modalOverlay");
@@ -258,15 +253,15 @@ function abrirEditar(id) {
   const p = productos.find(x => x.id === id);
   if (!p) return;
   limpiarModal();
-  el("modalTitulo").textContent   = "Editar producto";
-  el("productoId").value           = p.id;
-  el("fNombre").value              = p.nombre        || "";
-  el("fValor").value               = p.valor         || "";
-  el("fDescripcion").value         = p.descripcion   || "";
-  el("fRecomendacion").value       = p.recomendacion || "";
-  el("fBeneficios").value          = (p.beneficios || []).join("\n");
-  el("fActivo").value              = String(p.activo ?? true);
-  el("fImagen").value              = p.imagen || "";
+  document.getElementById("modalTitulo").textContent   = "Editar producto";
+  document.getElementById("productoId").value           = p.id;
+  document.getElementById("fNombre").value              = p.nombre        || "";
+  document.getElementById("fValor").value               = p.valor         || "";
+  document.getElementById("fDescripcion").value         = p.descripcion   || "";
+  document.getElementById("fRecomendacion").value       = p.recomendacion || "";
+  document.getElementById("fBeneficios").value          = (p.beneficios || []).join("\n");
+  document.getElementById("fActivo").value              = String(p.activo ?? true);
+  document.getElementById("fImagen").value              = p.imagen || "";
   archivoSeleccionado = null;
   if (p.imagen) {
     imgPreview.src = p.imagen;
@@ -274,7 +269,7 @@ function abrirEditar(id) {
     imgEstado.textContent = "Imagen actual";
     imgEstado.style.color = "var(--texto-suave)";
     previstaDiv.style.display = "flex";
-    el("zonaTexto").innerHTML =
+    document.getElementById("zonaTexto").innerHTML =
       "<p style='font-size:.82rem;color:var(--verde);font-weight:600'>✓ Imagen actual cargada</p>";
   }
   llenarCategorias(p.categoria_id);
@@ -283,7 +278,7 @@ function abrirEditar(id) {
 }
 
 function llenarCategorias(seleccionada = "") {
-  el("fCategoria").innerHTML =
+  document.getElementById("fCategoria").innerHTML =
     `<option value="">— Categoría —</option>` +
     categorias.map(c =>
       `<option value="${c.id}" ${c.id === seleccionada ? "selected" : ""}>${c.nombre}</option>`
@@ -291,25 +286,25 @@ function llenarCategorias(seleccionada = "") {
 }
 
 // ── Guardar ───────────────────────────────────────────────
-el("btnGuardar").addEventListener("click", async () => {
-  const id           = el("productoId").value;
-  const nombre       = el("fNombre").value.trim();
-  const valor        = Number(el("fValor").value);
-  const categoria_id = el("fCategoria").value;
-  const descripcion  = el("fDescripcion").value.trim();
-  const recomendacion= el("fRecomendacion").value.trim();
-  const beneficios   = el("fBeneficios").value.split("\n").map(b => b.trim()).filter(Boolean);
-  const activo       = el("fActivo").value === "true";
+document.getElementById("btnGuardar").addEventListener("click", async () => {
+  const id           = document.getElementById("productoId").value;
+  const nombre       = document.getElementById("fNombre").value.trim();
+  const valor        = Number(document.getElementById("fValor").value);
+  const categoria_id = document.getElementById("fCategoria").value;
+  const descripcion  = document.getElementById("fDescripcion").value.trim();
+  const recomendacion= document.getElementById("fRecomendacion").value.trim();
+  const beneficios   = document.getElementById("fBeneficios").value.split("\n").map(b => b.trim()).filter(Boolean);
+  const activo       = document.getElementById("fActivo").value === "true";
 
   if (!nombre) { mostrarError("El nombre es obligatorio."); return; }
   if (!valor)  { mostrarError("El valor es obligatorio.");  return; }
 
-  const btn = el("btnGuardar");
+  const btn = document.getElementById("btnGuardar");
   btnCargando(btn, true);
   ocultarMensajes();
 
   try {
-    let imagen = el("fImagen").value;
+    let imagen = document.getElementById("fImagen").value;
     if (archivoSeleccionado) {
       imagen = await subirImagen();
       archivoSeleccionado = null;
@@ -325,8 +320,7 @@ el("btnGuardar").addEventListener("click", async () => {
       await crearProducto(datos);
       mostrarOk("Producto creado correctamente.");
     }
-    // FIX: pasar auth.currentUser para que cargar() funcione
-    await cargar(auth.currentUser);
+    await cargar(authUser);
     setTimeout(() => cerrarModal("modalOverlay"), 1200);
   } catch (e) {
     mostrarError("Error al guardar: " + e.message);
@@ -339,67 +333,51 @@ el("btnGuardar").addEventListener("click", async () => {
 // ── Eliminar ──────────────────────────────────────────────
 function abrirEliminar(id, nombre) {
   idEliminar = id;
-  el("nombreEliminar").textContent = nombre;
+  document.getElementById("nombreEliminar").textContent = nombre;
   abrirModal("modalEliminar");
 }
-el("btnConfirmarEliminar").addEventListener("click", async () => {
-  const btn = el("btnConfirmarEliminar");
+document.getElementById("btnConfirmarEliminar").addEventListener("click", async () => {
+  const btn = document.getElementById("btnConfirmarEliminar");
   btnCargando(btn, true);
   try {
     await eliminarProducto(idEliminar);
     cerrarModal("modalEliminar");
-    // FIX: pasar auth.currentUser para que cargar() funcione
-    await cargar(auth.currentUser);
+    await cargar(authUser);
   } catch (e) { console.error(e); }
   finally { btnCargando(btn, false); }
 });
 
 // ── Cerrar modales ────────────────────────────────────────
-el("btnCancelar").addEventListener("click", () => cerrarModal("modalOverlay"));
-el("btnCancelarEliminar").addEventListener("click", () => cerrarModal("modalEliminar"));
-el("modalOverlay").addEventListener("click", e => {
-  if (e.target === el("modalOverlay")) cerrarModal("modalOverlay");
+document.getElementById("btnCancelar").addEventListener("click", () => cerrarModal("modalOverlay"));
+document.getElementById("btnCancelarEliminar").addEventListener("click", () => cerrarModal("modalEliminar"));
+document.getElementById("modalOverlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("modalOverlay")) cerrarModal("modalOverlay");
 });
 
 // ── Helpers ───────────────────────────────────────────────
 function limpiarModal() {
   ["fNombre","fValor","fDescripcion","fRecomendacion","fBeneficios"].forEach(id => {
-    el(id).value = "";
+    document.getElementById(id).value = "";
   });
-  el("fActivo").value = "true";
-  el("fImagen").value = "";
+  document.getElementById("fActivo").value = "true";
+  document.getElementById("fImagen").value = "";
   archivoSeleccionado = null;
   previstaDiv.style.display = "none";
   resetZonaTexto();
 }
 function ocultarMensajes() {
-  el("msgError").classList.remove("visible");
-  el("msgOk").classList.remove("visible");
+  document.getElementById("msgError").classList.remove("visible");
+  document.getElementById("msgOk").classList.remove("visible");
 }
 function mostrarError(msg) {
-  el("textoError").textContent = msg;
-  el("msgError").classList.add("visible");
-  el("msgOk").classList.remove("visible");
+  document.getElementById("textoError").textContent = msg;
+  document.getElementById("msgError").classList.add("visible");
+  document.getElementById("msgOk").classList.remove("visible");
 }
 function mostrarOk(msg) {
-  el("textoOk").textContent = msg;
-  el("msgOk").classList.add("visible");
-  el("msgError").classList.remove("visible");
+  document.getElementById("textoOk").textContent = msg;
+  document.getElementById("msgOk").classList.add("visible");
+  document.getElementById("msgError").classList.remove("visible");
 }
 
-// FIX: inicializar fechaHoy y btnSalir DENTRO del onAuthStateChanged
-// para garantizar que el DOM esté listo y el usuario autenticado
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
-
-  // Setear fecha y botón salir de forma segura
-  if (el("fechaHoy")) el("fechaHoy").textContent = fechaHoy();
-  if (el("btnSalir")) {
-    el("btnSalir").addEventListener("click", async () => {
-      await cerrarSesion();
-      window.location.href = "../index.html";
-    });
-  }
-
-  cargar(user);
-});
+onAuthStateChanged(auth, (user) => { if (user) { authUser = user; cargar(user); } });

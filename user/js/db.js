@@ -17,7 +17,7 @@ async function obtenerVendedorPorUid(uid) {
   return { id: d.id, ...d.data() };
 }
 
-// ── Actualizar vendedor (para perfil) ─────────────────────
+// ── Actualizar vendedor (perfil) ──────────────────────────
 async function actualizarVendedor(id, datos) {
   await updateDoc(doc(db, "vendedores", id), {
     ...datos,
@@ -25,9 +25,7 @@ async function actualizarVendedor(id, datos) {
   });
 }
 
-// ── Obtener membresía del vendedor ────────────────────────
-// Nota: requiere índice en Firestore: vendedor_id ASC + fecha_fin DESC
-// Si falla, usar la versión sin orderBy
+// ── Membresía del vendedor ────────────────────────────────
 async function obtenerMembresiaVendedor(vendedor_id) {
   try {
     const q = query(
@@ -40,38 +38,59 @@ async function obtenerMembresiaVendedor(vendedor_id) {
     if (snap.empty) return null;
     const d = snap.docs[0];
     return { id: d.id, ...d.data() };
-  } catch (e) {
-    // Fallback sin orderBy si no existe el índice compuesto
+  } catch {
+    // Fallback sin índice compuesto
     const q2   = query(collection(db, "membresias"), where("vendedor_id", "==", vendedor_id));
     const snap = await getDocs(q2);
     if (snap.empty) return null;
-    // Ordenar manualmente por fecha_fin desc
     const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     docs.sort((a, b) => (b.fecha_fin || "").localeCompare(a.fecha_fin || ""));
     return docs[0];
   }
 }
 
-// ── Obtener categorías ────────────────────────────────────
+// ── ¿Es fundador vigente? ─────────────────────────────────
+// Devuelve { esFundador: bool, fechaVence: string|null }
+async function esFundadorVigente(vendedor_id) {
+  try {
+    const q    = query(collection(db, "fundadores"), where("vendedor_id", "==", vendedor_id));
+    const snap = await getDocs(q);
+    if (snap.empty) return { esFundador: false, fechaVence: null };
+    const f = snap.docs[0].data();
+    if (!f.fecha_registro) return { esFundador: false, fechaVence: null };
+    const fechaVence = new Date(f.fecha_registro);
+    fechaVence.setFullYear(fechaVence.getFullYear() + 1);
+    const vigente = new Date() < fechaVence;
+    return {
+      esFundador: vigente,
+      fechaVence: fechaVence.toISOString().split("T")[0],
+      fechaRegistro: f.fecha_registro,
+    };
+  } catch {
+    return { esFundador: false, fechaVence: null };
+  }
+}
+
+// ── Categorías ────────────────────────────────────────────
 async function obtenerCategorias() {
   try {
     const q    = query(collection(db, "categorias"), orderBy("orden"));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (e) {
+  } catch {
     const snap = await getDocs(collection(db, "categorias"));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
 }
 
-// ── Obtener productos del vendedor ────────────────────────
+// ── Productos del vendedor ────────────────────────────────
 async function obtenerMisProductos(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// ── Crear producto ────────────────────────────────────────
+// ── CRUD productos ────────────────────────────────────────
 async function crearProducto(datos) {
   const ref = await addDoc(collection(db, "productos"), {
     nombre:        datos.nombre        || "",
@@ -87,16 +106,12 @@ async function crearProducto(datos) {
   });
   return ref.id;
 }
-
-// ── Actualizar producto ───────────────────────────────────
 async function actualizarProducto(id, datos) {
   await updateDoc(doc(db, "productos", id), {
     ...datos,
     actualizado_en: new Date().toISOString(),
   });
 }
-
-// ── Eliminar producto ─────────────────────────────────────
 async function eliminarProducto(id) {
   await deleteDoc(doc(db, "productos", id));
 }
@@ -105,27 +120,25 @@ async function eliminarProducto(id) {
 async function desactivarProductosVendedor(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
-  const promesas = snap.docs.map(d =>
+  await Promise.all(snap.docs.map(d =>
     updateDoc(doc(db, "productos", d.id), {
       activo: false,
       actualizado_en: new Date().toISOString(),
     })
-  );
-  await Promise.all(promesas);
-  return snap.docs.length; // retorna cuántos se desactivaron
+  ));
+  return snap.docs.length;
 }
 
-// ── Reactivar todos los productos de un vendedor ───────────
+// ── Reactivar todos los productos de un vendedor ──────────
 async function reactivarProductosVendedor(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
-  const promesas = snap.docs.map(d =>
+  await Promise.all(snap.docs.map(d =>
     updateDoc(doc(db, "productos", d.id), {
       activo: true,
       actualizado_en: new Date().toISOString(),
     })
-  );
-  await Promise.all(promesas);
+  ));
   return snap.docs.length;
 }
 
@@ -138,6 +151,7 @@ function membresiaVigente(m) {
 export {
   obtenerVendedorPorUid,
   actualizarVendedor,
+  esFundadorVigente,
   desactivarProductosVendedor,
   reactivarProductosVendedor,
   obtenerMembresiaVendedor,
@@ -148,4 +162,3 @@ export {
   eliminarProducto,
   membresiaVigente,
 };
-// (este bloque se agrega al final — no reemplaza el archivo)

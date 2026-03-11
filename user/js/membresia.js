@@ -9,6 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { esFundadorVigente } from "./db.js";
 
 // ── Admin bloqueado (igual que el resto del portal) ─────────
 const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
@@ -128,11 +129,24 @@ function renderHistorial(pagos) {
 }
 
 // ── Inyectar botón Wompi ────────────────────────────────────
-function inyectarBotonWompi(vendedorId, monto, referencia, label) {
+async function inyectarBotonWompi(vendedorId, monto, referencia, label) {
   const wrap = document.getElementById("wompi-btn-wrap");
   if (!wrap) return;
 
-  const redirectUrl = `${location.origin}/user/pages/pago-resultado.html?ref=${referencia}`;
+  const montoEnCentavos = monto * 100;
+
+  // Calcular firma SHA-256 requerida por Wompi (sandbox y producción)
+  const firma = await calcularFirma(referencia, montoEnCentavos);
+
+  // Solo enviar redirect-url si el dominio está autorizado en Wompi.
+  // En local (127.x, localhost) Wompi lanza error de "URL inválida".
+  // En producción registra tu dominio en: Wompi → Desarrolladores → Configuración.
+  const esLocal = ["localhost","127.0.0.1","127.0.0.7"].includes(location.hostname)
+    || location.hostname.startsWith("192.168.");
+  const DOMINIO_PRODUCCION = "https://ildergutierrez.github.io";
+  const redirectUrl = esLocal
+    ? null
+    : `${DOMINIO_PRODUCCION}/gistore/user/pages/pago-resultado.html?ref=${referencia}`;
 
   // Wompi solo renderiza el botón cuando el <script> se inserta en el DOM.
   // Por eso hay que limpiar e insertar uno nuevo cada vez que cambia el plan.
@@ -143,9 +157,11 @@ function inyectarBotonWompi(vendedorId, monto, referencia, label) {
   script.setAttribute("data-render",                  "button");
   script.setAttribute("data-public-key",              WOMPI_LLAVE_PUBLICA);
   script.setAttribute("data-currency",                "COP");
-  script.setAttribute("data-amount-in-cents",         String(monto * 100));
+  script.setAttribute("data-amount-in-cents",         String(montoEnCentavos));
   script.setAttribute("data-reference",               referencia);
-  script.setAttribute("data-redirect-url",            redirectUrl);
+  script.setAttribute("data-signature:integrity",     firma);
+  if (redirectUrl)
+    script.setAttribute("data-redirect-url",          redirectUrl);
   script.setAttribute("data-customer-data:email",     auth.currentUser?.email || "");
   script.setAttribute("data-customer-data:full-name", auth.currentUser?.displayName || "");
 
@@ -178,11 +194,16 @@ function initSeleccionPlan(vendedorId) {
     inyectarBotonWompi(vendedorId, monto, ref, label);
   }
 
+  // Solo escuchar clicks en planes visibles
   planes.forEach(card => {
-    card.addEventListener("click", () => seleccionar(card));
+    if (card.style.display !== "none") {
+      card.addEventListener("click", () => seleccionar(card));
+    }
   });
 
-  const def = document.querySelector(".plan-card.seleccionado") || planes[0];
+  // Seleccionar el primero visible (o el que tenga clase "seleccionado")
+  const def = document.querySelector(".plan-card.seleccionado:not([style*='display: none']):not([style*='display:none'])")
+           || Array.from(planes).find(c => c.style.display !== "none");
   if (def) seleccionar(def);
 }
 
@@ -290,6 +311,30 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     renderHistorial(pagos);
+
+    // Verificar si es fundador → mostrar/ocultar plan y corregir precio
+    try {
+      const infoFund  = await esFundadorVigente(vendedorId);
+      const cardFund  = document.getElementById("planFundador");
+      const cardEst   = document.getElementById("planEstandar");
+      if (cardFund) {
+        if (infoFund?.esFundador) {
+          // Sí es fundador: mostrar tarjeta (estaba oculta por defecto)
+          cardFund.style.display = "";
+          // Precio correcto 15000
+          cardFund.dataset.monto = "15000";
+          cardFund.dataset.label = "Plan Fundador · 1 mes";
+          const precioEl = cardFund.querySelector(".plan-precio");
+          if (precioEl) precioEl.innerHTML = "$15.000 <span>/mes</span>";
+          // Seleccionar el plan fundador por defecto
+          cardEst?.classList.remove("seleccionado");
+          cardFund.classList.add("seleccionado");
+        }
+        // Si NO es fundador, la tarjeta queda oculta (display:none en HTML)
+      }
+    } catch (eFund) {
+      console.warn("No se pudo verificar fundador:", eFund.message);
+    }
 
     // Botón Wompi usa el ID del documento del vendedor como referencia
     initSeleccionPlan(vendedorId);

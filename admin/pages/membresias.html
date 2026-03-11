@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Membresías — GI Store Admin</title>
   <link rel="stylesheet" href="../css/style.css"/>
-    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg"/>
 </head>
 <body>
 
@@ -16,12 +16,11 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar">
-    <a href="#" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none;display:flex;align-items:center;gap:.75rem;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
-    <div class="sidebar-logo-icono"><img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/></div>
-    <div class="sidebar-logo-txt">
-      <strong>GI Store</strong>
-      <span>Admin Panel</span>
+  <a href="../../index.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none">
+    <div class="sidebar-logo-icono">
+      <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/>
     </div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Admin Panel</span></div>
   </a>
   <nav class="nav">
     <div class="nav-titulo">General</div>
@@ -53,23 +52,27 @@
     </div>
   </div>
 
-  <div class="panel">
+  <!-- Panel membresías -->
+  <div class="panel" style="margin-bottom:1.5rem">
     <div class="panel-header">
       <h2>🎫 Lista de membresías</h2>
       <span id="totalMembresias" style="font-size:.8rem;color:var(--texto-suave)"></span>
     </div>
     <div id="tablaWrap"><p class="cargando-txt">Cargando...</p></div>
   </div>
+
+  <!-- Panel fundadores -->
+  <div class="panel" id="panelFundadores">
+    <p class="cargando-txt">Cargando fundadores...</p>
+  </div>
 </main>
 
-<!-- ── Modal Crear / Editar ── -->
+<!-- ── Modal Crear / Editar membresía ── -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-titulo" id="modalTitulo">Nueva membresía</div>
-
     <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
     <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
-
     <input type="hidden" id="membresiaId"/>
 
     <div class="campo">
@@ -78,13 +81,15 @@
       <div id="vendedorEncontrado"></div>
       <input type="hidden" id="fVendedor"/>
     </div>
-    <div class="campo">
-      <label>Fecha de inicio</label>
-      <input type="date" id="fInicio"/>
-    </div>
-    <div class="campo">
-      <label>Fecha de fin</label>
-      <input type="date" id="fFin"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem">
+      <div class="campo">
+        <label>Fecha de inicio</label>
+        <input type="date" id="fInicio"/>
+      </div>
+      <div class="campo">
+        <label>Fecha de fin</label>
+        <input type="date" id="fFin"/>
+      </div>
     </div>
     <div class="campo">
       <label>Estado</label>
@@ -98,7 +103,6 @@
       <label>Notas (opcional)</label>
       <textarea id="fNotas" placeholder="Observaciones sobre esta membresía..."></textarea>
     </div>
-
     <div class="modal-acciones">
       <button class="btn btn-secundario" id="btnCancelar">Cancelar</button>
       <button class="btn btn-primary"    id="btnGuardar">
@@ -109,17 +113,45 @@
   </div>
 </div>
 
-<!-- ── Modal Confirmar Eliminar ── -->
+<!-- ── Modal Confirmar Revocar membresía ── -->
 <div class="modal-overlay" id="modalEliminar">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-titulo">⚠ Eliminar membresía</div>
-    <p style="color:var(--texto-medio);font-size:.9rem;margin-bottom:1rem;">
-      ¿Estás seguro? Esta acción no se puede deshacer.
+  <div class="modal" style="max-width:420px">
+    <div class="modal-titulo">⚠ Revocar membresía</div>
+    <p style="color:var(--texto-medio);font-size:.9rem;margin-bottom:.5rem">
+      ¿Revocar la membresía de <strong id="nombreEliminar" style="color:var(--error)"></strong>?
     </p>
+    <div style="background:var(--error-bg);border:1.5px solid var(--error-borde);border-radius:8px;
+                padding:.75rem 1rem;font-size:.82rem;color:var(--error);margin-bottom:1.25rem">
+      ⛔ Todos los productos de este vendedor quedarán <strong>inactivos</strong>
+      y no serán visibles en el catálogo hasta que se cree una nueva membresía.
+    </div>
     <div class="modal-acciones">
       <button class="btn btn-secundario" id="btnCancelarEliminar">Cancelar</button>
       <button class="btn btn-peligro"    id="btnConfirmarEliminar">
-        <span class="btn-texto">Sí, eliminar</span>
+        <span class="btn-texto">Sí, revocar</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal Registrar fundador ── -->
+<div class="modal-overlay" id="modalFundadorOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-titulo">⭐ Registrar vendedor fundador</div>
+    <p style="color:var(--texto-medio);font-size:.85rem;margin-bottom:1rem">
+      Selecciona el vendedor a registrar como fundador. Tendrá el plan fundador durante
+      <strong>1 año</strong> desde hoy. Solo están disponibles los vendedores que aún
+      no están en el programa.
+    </p>
+    <div class="campo">
+      <label>Vendedor</label>
+      <select id="fFundadorVendedor"></select>
+    </div>
+    <div class="modal-acciones">
+      <button class="btn btn-secundario" id="btnCancelarFundador">Cancelar</button>
+      <button class="btn btn-primary"    id="btnGuardarFundador">
+        <span class="btn-texto">⭐ Registrar fundador</span>
         <div class="spinner"></div>
       </button>
     </div>
@@ -134,27 +166,12 @@
     var sidebar = document.querySelector('.sidebar');
     var overlay = document.getElementById('sidebarOverlay');
     if (!btnH || !sidebar || !overlay) return;
-
-    function abrir() {
-      sidebar.classList.add('abierto');
-      overlay.classList.add('visible');
-      btnH.classList.add('abierto');
-    }
-    function cerrar() {
-      sidebar.classList.remove('abierto');
-      overlay.classList.remove('visible');
-      btnH.classList.remove('abierto');
-    }
-
-    btnH.addEventListener('click', function() {
-      sidebar.classList.contains('abierto') ? cerrar() : abrir();
-    });
+    function abrir() { sidebar.classList.add('abierto'); overlay.classList.add('visible'); btnH.classList.add('abierto'); }
+    function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
+    btnH.addEventListener('click', function() { sidebar.classList.contains('abierto') ? cerrar() : abrir(); });
     overlay.addEventListener('click', cerrar);
-
     document.querySelectorAll('.nav a').forEach(function(a) {
-      a.addEventListener('click', function() {
-        if (window.innerWidth <= 700) cerrar();
-      });
+      a.addEventListener('click', function() { if (window.innerWidth <= 700) cerrar(); });
     });
   });
 </script>
