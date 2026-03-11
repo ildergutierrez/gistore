@@ -1,5 +1,15 @@
 // ============================================================
-//  catalogo.js — Catálogo PDF estilo revista editorial
+//  catalogo.js — Portal Vendedor · v8  ✦ ULTRA PREMIUM
+//  ✦ Estilo revista de lujo (Ésika / Yanbal / Avon / Natura)
+//  ✦ Sin páginas en blanco entre categorías
+//  ✦ Tarjetas con impacto visual máximo para incentivar compra
+//  ✦ Etiquetas promocionales: "NUEVO", "MÁS VENDIDO", etc.
+//  ✦ Estrellas de valoración decorativas
+//  ✦ Banners de categoría con degradado + patrón de marca
+//  ✦ Portada con estadísticas y CTA de contacto
+//  ✦ Paginación responsive 25 por página
+//  ✦ Footer en cada página via jsPDF
+//  ✦ Auth verificada: protegerPagina bloquea sin sesión
 // ============================================================
 import { cerrarSesion, protegerPagina } from "./auth.js";
 import { obtenerVendedorPorUid, obtenerMisProductos, obtenerCategorias,
@@ -15,8 +25,11 @@ let productos  = [];
 let categorias = [];
 let vendedor   = null;
 
-function el(id) { return document.getElementById(id); }
+const el = id => document.getElementById(id);
 
+// ══════════════════════════════════════════════════════════
+//  CARGA Y FILTRADO
+// ══════════════════════════════════════════════════════════
 async function cargar(user) {
   try {
     if (!user) return;
@@ -44,49 +57,119 @@ function filtrarOrdenar() {
   if (filtro === "inactivos") lista = lista.filter(p => !p.activo);
   if (orden === "nombre")    lista.sort((a,b) => a.nombre.localeCompare(b.nombre));
   if (orden === "valor")     lista.sort((a,b) => a.valor - b.valor);
-  if (orden === "categoria") lista.sort((a,b) => nombreCategoria(a.categoria_id).localeCompare(nombreCategoria(b.categoria_id)));
+  if (orden === "categoria") lista.sort((a,b) =>
+    nombreCategoria(a.categoria_id).localeCompare(nombreCategoria(b.categoria_id)));
   return lista;
 }
 
-function renderPrevia() {
-  const lista = filtrarOrdenar();
-  if (el("totalPrevia")) el("totalPrevia").textContent = lista.length + " productos";
+// ══════════════════════════════════════════════════════════
+//  PAGINACIÓN VISTA PREVIA — 25 por página, responsive
+// ══════════════════════════════════════════════════════════
+const POR_PAG = 25;
+let pagActual = 1;
+
+function renderPrevia() { pagActual = 1; renderPag(); }
+
+function renderPag() {
+  const lista     = filtrarOrdenar();
+  const total     = lista.length;
+  const totalPags = Math.max(1, Math.ceil(total / POR_PAG));
+  if (pagActual > totalPags) pagActual = totalPags;
+
+  const desde  = (pagActual - 1) * POR_PAG;
+  const pagina = lista.slice(desde, desde + POR_PAG);
+
+  if (el("totalPrevia"))
+    el("totalPrevia").textContent = total + " producto" + (total !== 1 ? "s" : "") +
+      (totalPags > 1 ? "  ·  pág. " + pagActual + " / " + totalPags : "");
+
   const wrap = el("previaCatalogo");
   if (!wrap) return;
+
   if (!lista.length) {
     wrap.innerHTML = '<p class="vacio-txt">Sin productos para mostrar.</p>';
     return;
   }
+
+  const filas = pagina.map(p => {
+    const src = p.imagen
+      ? (p.imagen.startsWith("http") ? p.imagen : "../../" + p.imagen)
+      : null;
+    return `<tr>
+      <td style="padding:7px 8px">
+        ${src
+          ? `<img src="${src}" style="width:42px;height:42px;object-fit:cover;border-radius:7px;display:block;border:1.5px solid var(--borde)">`
+          : `<div style="width:42px;height:42px;border-radius:7px;background:var(--verde-claro);display:flex;align-items:center;justify-content:center;font-size:1.3rem">📦</div>`}
+      </td>
+      <td style="padding:7px 8px"><strong style="font-size:.875rem">${p.nombre}</strong></td>
+      <td style="padding:7px 8px;white-space:nowrap;font-size:.875rem">${formatoPrecio(p.valor)}</td>
+      <td style="padding:7px 8px;font-size:.82rem">${nombreCategoria(p.categoria_id)}</td>
+      <td style="padding:7px 8px">
+        <span class="badge badge-${p.activo ? "activo" : "inactivo"}" style="font-size:.75rem">
+          ${p.activo ? "Activo" : "Inactivo"}
+        </span>
+      </td>
+    </tr>`;
+  }).join("");
+
+  const paginador = totalPags > 1 ? buildPaginador(pagActual, totalPags) : "";
+
   wrap.innerHTML = `
-    <table>
-      <thead>
-        <tr><th>Imagen</th><th>Nombre</th><th>Valor</th><th>Categoría</th><th>Estado</th></tr>
-      </thead>
-      <tbody>
-        ${lista.map(p => `
-          <tr>
-            <td>${p.imagen
-              ? `<img src="${p.imagen}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1.5px solid var(--borde)">`
-              : `<div style="width:44px;height:44px;border-radius:8px;background:var(--verde-claro);display:flex;align-items:center;justify-content:center">📦</div>`
-            }</td>
-            <td><strong>${p.nombre}</strong></td>
-            <td>${formatoPrecio(p.valor)}</td>
-            <td>${nombreCategoria(p.categoria_id)}</td>
-            <td><span class="badge badge-${p.activo?'activo':'inactivo'}">${p.activo?'Activo':'Inactivo'}</span></td>
-          </tr>`).join("")}
-      </tbody>
-    </table>`;
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="min-width:460px;width:100%">
+        <thead><tr>
+          <th style="padding:8px;width:54px">Img</th>
+          <th style="padding:8px">Nombre</th>
+          <th style="padding:8px">Valor</th>
+          <th style="padding:8px">Categoría</th>
+          <th style="padding:8px">Estado</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+    ${paginador}`;
+
+  wrap.querySelectorAll("[data-pag]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      pagActual = parseInt(btn.dataset.pag);
+      renderPag();
+      wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+}
+
+function buildPaginador(actual, total) {
+  const MAX = window.innerWidth < 500 ? 3 : 5;
+  let ini = Math.max(1, actual - Math.floor(MAX / 2));
+  let fin = Math.min(total, ini + MAX - 1);
+  if (fin - ini < MAX - 1) ini = Math.max(1, fin - MAX + 1);
+  const TAM = window.innerWidth < 500 ? "44px" : "36px";
+  const FS  = window.innerWidth < 500 ? ".9rem" : ".82rem";
+  const s = on =>
+    `min-width:${TAM};height:${TAM};padding:0 8px;border-radius:8px;` +
+    `font-size:${FS};font-weight:600;cursor:pointer;` +
+    `background:${on ? "var(--verde)" : "var(--fondo-2)"};` +
+    `color:${on ? "#fff" : "var(--texto)"};` +
+    `border:1.5px solid ${on ? "var(--verde)" : "var(--borde)"};` +
+    `display:inline-flex;align-items:center;justify-content:center;transition:background .15s;`;
+  let btns = "";
+  if (actual > 1)   btns += `<button data-pag="${actual-1}" style="${s(false)}">&#8592;</button>`;
+  for (let i = ini; i <= fin; i++)
+    btns += `<button data-pag="${i}" style="${s(i===actual)}">${i}</button>`;
+  if (actual < total) btns += `<button data-pag="${actual+1}" style="${s(false)}">&#8594;</button>`;
+  const info = `<span style="font-size:.8rem;color:var(--texto-suave);white-space:nowrap">Pag. ${actual} / ${total}</span>`;
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:1.25rem;padding:.75rem 0;flex-wrap:wrap">${btns}${info}</div>`;
 }
 
 if (el("filtroEstado")) el("filtroEstado").addEventListener("change", renderPrevia);
 if (el("ordenPDF"))     el("ordenPDF").addEventListener("change",    renderPrevia);
 
-// ── Imagen a base64 ───────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+//  HELPERS PDF
+// ══════════════════════════════════════════════════════════
 function resolverImg(url) {
   if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
-  url = url.replace(/\\/g, "/");
-  url = url.replace(/^[A-Za-z]:\/.*?\/gistore\//, "");
+  if (url.startsWith("http") || url.startsWith("data:")) return url;
+  url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "");
   if (url.startsWith("img/")) url = "../../" + url;
   return new URL(url, window.location.href).href;
 }
@@ -94,12 +177,10 @@ function resolverImg(url) {
 async function imgABase64(url) {
   if (!url) return "";
   try {
-    const urlFinal = resolverImg(url);
-    if (!urlFinal) return "";
-    const r = await fetch(urlFinal);
+    const r = await fetch(resolverImg(url));
     if (!r.ok) return "";
     const b = await r.blob();
-    return await new Promise((res) => {
+    return await new Promise(res => {
       const fr = new FileReader();
       fr.onload  = () => res(fr.result);
       fr.onerror = () => res("");
@@ -109,279 +190,731 @@ async function imgABase64(url) {
 }
 
 function logoSVG(color) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 38">
-    <rect width="120" height="38" rx="8" fill="${color}"/>
-    <text x="60" y="24" font-family="Georgia,serif" font-size="16" font-weight="bold"
-          fill="white" text-anchor="middle" letter-spacing="3">GI Store</text>
-  </svg>`;
-  return "data:image/svg+xml;base64," + btoa(svg);
+  const s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 44"><rect width="160" height="44" rx="10" fill="${color}"/><text x="80" y="29" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="4">GI Store</text></svg>`;
+  return "data:image/svg+xml;base64," + btoa(s);
 }
 
 function shiftColor(hex, amt) {
   try {
-    const n = parseInt(hex.replace("#",""),16);
-    const clamp = v => Math.max(0, Math.min(255, v));
-    const r = clamp((n >> 16) + amt);
-    const g = clamp(((n >> 8) & 0xFF) + amt);
-    const b = clamp((n & 0xFF) + amt);
-    return "#" + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+    const n = parseInt(hex.replace("#",""),16), c = v => Math.max(0,Math.min(255,v));
+    return "#"+((1<<24)+(c((n>>16)+amt)<<16)+(c(((n>>8)&0xFF)+amt)<<8)+c((n&0xFF)+amt)).toString(16).slice(1);
   } catch { return hex; }
 }
 
 function hexRgba(hex, a) {
   try {
-    const n = parseInt(hex.replace("#",""),16);
+    const n=parseInt(hex.replace("#",""),16);
     return `rgba(${n>>16},${(n>>8)&0xFF},${n&0xFF},${a})`;
   } catch { return hex; }
 }
 
-function tarjetaPar(p, imgSrc, color, num) {
-  const precio = formatoPrecio(p.valor);
-  const cat    = nombreCategoria(p.categoria_id).toUpperCase();
-  const desc   = (p.descripcion   || "").substring(0, 200);
-  const uso    = (p.recomendacion || "").substring(0, 160);
-  const numStr = String(num).padStart(2,"0");
+// Etiqueta promo pseudo-aleatoria por índice
+function etiquetaPromo(idx) {
+  const et = [
+    { txt:"MAS VENDIDO", bg:"#ff6b35", icon:"★" },
+    { txt:"NUEVO",       bg:"#7c3aed", icon:"+" },
+    { txt:"FAVORITO",    bg:"#db2777", icon:"♥" },
+    { txt:"ESPECIAL",    bg:"#059669", icon:"●" },
+    { txt:"PREMIUM",     bg:"#b45309", icon:"◆" },
+    { txt:"RECOMENDADO", bg:"#0284c7", icon:"✓" },
+  ];
+  return et[idx % et.length];
+}
 
+// Estrellas (4 llenas + 1 vacía = 4.5 look)
+function estrellas(color) {
+  return `<span style="color:${color};font-size:9.5px;letter-spacing:1px">&#9733;&#9733;&#9733;&#9733;</span><span style="color:${color}66;font-size:9.5px">&#9733;</span>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  PALETAS POR CATEGORÍA
+// ══════════════════════════════════════════════════════════
+const PALETAS = {
+  salud:   { bg:"#f0faf4", bg2:"#e2f5e9", accent:"#1a6b3c", dark:"#0d3d22", mid:"#2d9a5a",
+             tag:"#d4edde", tagTxt:"#1a6b3c", icon:"leaf", bannerIcon:"&#127807;",
+             grad:"linear-gradient(135deg,#1a6b3c 0%,#2d9a5a 55%,#0d3d22 100%)" },
+  vigori:  { bg:"#fff8f0", bg2:"#fff0dd", accent:"#e05a00", dark:"#8a3600", mid:"#f07020",
+             tag:"#fde8d0", tagTxt:"#e05a00", icon:"bolt", bannerIcon:"&#9889;",
+             grad:"linear-gradient(135deg,#e05a00 0%,#f07020 55%,#8a3600 100%)" },
+  belleza: { bg:"#fff5f8", bg2:"#ffe5f0", accent:"#c2185b", dark:"#880e4f", mid:"#e91e8c",
+             tag:"#fce4ec", tagTxt:"#c2185b", icon:"flower", bannerIcon:"&#127800;",
+             grad:"linear-gradient(135deg,#c2185b 0%,#e91e8c 55%,#880e4f 100%)" },
+  hogar:   { bg:"#fdf6f0", bg2:"#f5e5d0", accent:"#9c4a1a", dark:"#5c2a0a", mid:"#c06030",
+             tag:"#fde8d8", tagTxt:"#9c4a1a", icon:"home", bannerIcon:"&#127968;",
+             grad:"linear-gradient(135deg,#9c4a1a 0%,#c06030 55%,#5c2a0a 100%)" },
+  moda:    { bg:"#f9f5ff", bg2:"#ede5ff", accent:"#6a1b9a", dark:"#3a0066", mid:"#8e24aa",
+             tag:"#ede7f6", tagTxt:"#6a1b9a", icon:"shirt", bannerIcon:"&#128141;",
+             grad:"linear-gradient(135deg,#6a1b9a 0%,#8e24aa 55%,#3a0066 100%)" },
+  tecnol:  { bg:"#f0f4ff", bg2:"#dde8ff", accent:"#1565c0", dark:"#003080", mid:"#1976d2",
+             tag:"#e3f2fd", tagTxt:"#1565c0", icon:"cpu", bannerIcon:"&#128187;",
+             grad:"linear-gradient(135deg,#1565c0 0%,#1976d2 55%,#003080 100%)" },
+  default: { bg:"#f5f3ef", bg2:"#e8e4da", accent:"#1a6b3c", dark:"#0d3d22", mid:"#2d9a5a",
+             tag:"#d4edde", tagTxt:"#1a6b3c", icon:"box", bannerIcon:"&#128722;",
+             grad:"linear-gradient(135deg,#1a6b3c 0%,#2d9a5a 55%,#0d3d22 100%)" },
+};
+
+function getPaleta(cat) {
+  const n = (cat||"").toLowerCase();
+  if (n.includes("salud")||n.includes("bienestar"))                        return PALETAS.salud;
+  if (n.includes("vigor")||n.includes("energia")||n.includes("natural"))   return PALETAS.vigori;
+  if (n.includes("belleza")||n.includes("cuidado")||n.includes("personal"))return PALETAS.belleza;
+  if (n.includes("hogar")||n.includes("casa"))                             return PALETAS.hogar;
+  if (n.includes("moda")||n.includes("ropa")||n.includes("accesorio"))     return PALETAS.moda;
+  if (n.includes("tecno")||n.includes("electr"))                           return PALETAS.tecnol;
+  return PALETAS.default;
+}
+
+// ══════════════════════════════════════════════════════════
+//  BANNER DE CATEGORÍA — INLINE (62px fijo, no genera página)
+// ══════════════════════════════════════════════════════════
+function bannerCategoria(cat, pal, secNum, totalSec) {
   return `
-  <div style="
-    display:flex; height:220px; margin-bottom:20px;
-    border-radius:16px; overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,0,0,.13);
-    page-break-inside:avoid; background:#fff;
-  ">
-    <div style="
-      width:220px; min-width:220px; position:relative; overflow:hidden;
-      background:${imgSrc ? '#111' : shiftColor(color,60)};
-    ">
-      ${imgSrc
-        ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;opacity:.92"/>`
-        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px">📦</div>`
-      }
-      <div style="
-        position:absolute; top:12px; left:12px;
-        font-family:Georgia,serif; font-size:28px; font-weight:bold;
-        color:rgba(255,255,255,.35); line-height:1;
-      ">${numStr}</div>
-      <div style="
-        position:absolute; bottom:0; left:0; right:0;
-        padding:28px 12px 10px;
-        background:linear-gradient(transparent, rgba(0,0,0,.6));
-      ">
-        <span style="
-          font-size:9px; font-weight:800; letter-spacing:.15em;
-          color:rgba(255,255,255,.9); text-transform:uppercase;
-        ">${cat}</span>
+  <div style="display:flex;align-items:stretch;margin:14px 0 10px;border-radius:14px;
+              overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.18);height:62px;">
+    <!-- Banda icono izquierda -->
+    <div style="width:60px;min-width:60px;background:rgba(0,0,0,.28);
+                display:flex;align-items:center;justify-content:center;
+                font-size:24px;flex-shrink:0">${pal.bannerIcon}</div>
+    <!-- Contenido central con degradado -->
+    <div style="flex:1;padding:0 18px;background:${pal.grad};
+                display:flex;flex-direction:column;justify-content:center;
+                position:relative;overflow:hidden;">
+      <div style="position:absolute;right:-28px;top:-28px;width:110px;height:110px;
+                  border-radius:50%;background:rgba(255,255,255,.06)"></div>
+      <div style="font-size:6.5px;letter-spacing:.26em;text-transform:uppercase;
+                  color:rgba(255,255,255,.55);margin-bottom:3px;font-family:Arial">
+        Coleccion
       </div>
+      <div style="font-family:Georgia,serif;font-size:17px;font-weight:bold;
+                  color:#fff;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.2)">${cat}</div>
     </div>
-    <div style="flex:1; padding:20px 22px; display:flex; flex-direction:column; justify-content:space-between; background:#fff;">
-      <div>
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:10px;">
-          <h2 style="
-            font-family:Georgia,serif; font-size:17px; font-weight:bold;
-            color:#1a1a1a; margin:0; line-height:1.25; flex:1;
-          ">${p.nombre}</h2>
-          <div style="
-            background:${color}; color:#fff;
-            padding:6px 14px; border-radius:24px;
-            font-size:13px; font-weight:700;
-            white-space:nowrap; flex-shrink:0;
-            box-shadow:0 2px 8px ${hexRgba(color,.35)};
-          ">${precio}</div>
-        </div>
-        <div style="height:2px; background:linear-gradient(to right,${color},transparent); margin-bottom:10px; border-radius:2px;"></div>
-        ${desc ? `<p style="
-          font-size:11.5px; color:#444; line-height:1.65; margin:0 0 10px;
-          font-family:Arial,sans-serif;
-        ">${desc}</p>` : ""}
-      </div>
-      ${uso ? `
-      <div style="
-        background:${hexRgba(color,.07)};
-        border-left:3px solid ${color};
-        border-radius:0 8px 8px 0;
-        padding:8px 12px;
-      ">
-        <div style="font-size:8.5px; font-weight:800; color:${color}; text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px;">✦ Modo de uso</div>
-        <p style="font-size:10.5px; color:#333; margin:0; line-height:1.55; font-family:Arial,sans-serif;">${uso}</p>
-      </div>` : ""}
+    <!-- Contador derecha -->
+    <div style="width:68px;min-width:68px;background:rgba(0,0,0,.30);
+                display:flex;flex-direction:column;align-items:center;
+                justify-content:center;flex-shrink:0">
+      <div style="font-size:6px;color:rgba(255,255,255,.45);font-family:Arial;
+                  text-transform:uppercase;letter-spacing:.18em;margin-bottom:1px">Secc.</div>
+      <div style="font-family:Georgia,serif;font-size:16px;font-weight:bold;
+                  color:rgba(255,255,255,.9);line-height:1">${secNum}</div>
+      <div style="font-size:7px;color:rgba(255,255,255,.4);font-family:Arial">de ${totalSec}</div>
     </div>
   </div>`;
 }
 
-function tarjetaImpar(p, imgSrc, color, num) {
+// ══════════════════════════════════════════════════════════
+//  TARJETA HERO PREMIUM — 250px alto
+// ══════════════════════════════════════════════════════════
+function tarjetaHero(p, imgSrc, pal, color, num) {
   const precio = formatoPrecio(p.valor);
-  const cat    = nombreCategoria(p.categoria_id).toUpperCase();
+  const cat    = nombreCategoria(p.categoria_id);
   const desc   = (p.descripcion   || "").substring(0, 200);
-  const uso    = (p.recomendacion || "").substring(0, 160);
-  const numStr = String(num).padStart(2,"0");
+  const uso    = (p.recomendacion || "").substring(0, 125);
+  const numStr = String(num).padStart(2, "0");
+  const promo  = etiquetaPromo(num - 1);
 
   return `
-  <div style="
-    display:flex; height:220px; margin-bottom:20px;
-    border-radius:16px; overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,0,0,.13);
-    page-break-inside:avoid; background:#fff;
-  ">
-    <div style="flex:1; padding:20px 22px; display:flex; flex-direction:column; justify-content:space-between; background:#fff;">
-      <div>
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:10px;">
-          <h2 style="
-            font-family:Georgia,serif; font-size:17px; font-weight:bold;
-            color:#1a1a1a; margin:0; line-height:1.25; flex:1;
-          ">${p.nombre}</h2>
-          <div style="
-            background:${color}; color:#fff;
-            padding:6px 14px; border-radius:24px;
-            font-size:13px; font-weight:700;
-            white-space:nowrap; flex-shrink:0;
-            box-shadow:0 2px 8px ${hexRgba(color,.35)};
-          ">${precio}</div>
+  <div style="display:flex;height:250px;margin-bottom:12px;border-radius:18px;overflow:hidden;
+              box-shadow:0 6px 28px rgba(0,0,0,.16);">
+    <!-- Contenido izquierda -->
+    <div style="flex:1;display:flex;flex-direction:column;background:${pal.bg};
+                min-width:0;position:relative;overflow:hidden">
+      <!-- Franja de color superior -->
+      <div style="height:4px;background:${pal.grad};flex-shrink:0"></div>
+      <div style="padding:13px 17px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
+        <!-- Badges y número -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="background:${pal.tag};border:1.5px solid ${pal.accent}28;
+                        padding:3px 10px;border-radius:20px;display:inline-flex;
+                        align-items:center;gap:4px;margin-bottom:5px">
+              <span style="font-size:7px;font-weight:800;letter-spacing:.15em;
+                           color:${pal.tagTxt};text-transform:uppercase">${cat}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              ${estrellas(pal.accent)}
+              <span style="font-size:7px;color:${pal.accent};font-family:Arial;font-weight:700">4.8</span>
+            </div>
+          </div>
+          <span style="font-family:Georgia,serif;font-size:44px;font-weight:bold;
+                       color:${pal.accent}0d;line-height:1;margin-top:-4px">${numStr}</span>
         </div>
-        <div style="height:2px; background:linear-gradient(to right,${color},transparent); margin-bottom:10px; border-radius:2px;"></div>
-        ${desc ? `<p style="
-          font-size:11.5px; color:#444; line-height:1.65; margin:0 0 10px;
-          font-family:Arial,sans-serif;
-        ">${desc}</p>` : ""}
+        <!-- Nombre y descripcion -->
+        <div>
+          <h2 style="font-family:Georgia,serif;font-size:17px;font-weight:bold;
+                     color:#111827;margin:0 0 6px;line-height:1.25">${p.nombre}</h2>
+          <div style="display:flex;gap:3px;margin-bottom:7px">
+            <div style="height:3px;width:38px;background:${pal.accent};border-radius:2px"></div>
+            <div style="height:3px;flex:1;background:${pal.accent}1a;border-radius:2px"></div>
+          </div>
+          ${desc ? `<p style="font-size:9.5px;color:#374151;line-height:1.7;margin:0;
+                               font-family:Arial">${desc}</p>` : ""}
+        </div>
+        <!-- Uso + Precio -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px">
+          ${uso ? `
+          <div style="background:${hexRgba(pal.accent,.06)};border-left:3px solid ${pal.accent};
+                      padding:6px 9px;border-radius:0 8px 8px 0;flex:1;min-width:0">
+            <div style="font-size:6.5px;font-weight:800;color:${pal.accent};
+                        text-transform:uppercase;letter-spacing:.13em;margin-bottom:2px">Para quien</div>
+            <p style="font-size:8.5px;color:#374151;margin:0;line-height:1.55;font-family:Arial">${uso}</p>
+          </div>` : "<div></div>"}
+          <div style="flex-shrink:0">
+            <div style="background:${pal.grad};color:#fff;padding:10px 15px;border-radius:14px;
+                        text-align:center;box-shadow:0 5px 18px ${hexRgba(pal.accent,.42)};
+                        position:relative;overflow:hidden">
+              <div style="position:absolute;top:-12px;right:-12px;width:44px;height:44px;
+                          border-radius:50%;background:rgba(255,255,255,.14)"></div>
+              <div style="font-size:6.5px;opacity:.8;letter-spacing:.1em;font-family:Arial;
+                          margin-bottom:1px;position:relative">PRECIO ESPECIAL</div>
+              <div style="font-size:20px;font-weight:900;font-family:Georgia,serif;
+                          line-height:1;position:relative">${precio}</div>
+            </div>
+            <div style="margin-top:4px;background:${pal.accent}14;border:1px solid ${pal.accent}38;
+                        padding:3px 10px;border-radius:8px;text-align:center">
+              <span style="font-size:6.5px;font-weight:800;color:${pal.accent};
+                           letter-spacing:.12em;text-transform:uppercase">PEDIR AHORA</span>
+            </div>
+          </div>
+        </div>
       </div>
-      ${uso ? `
-      <div style="
-        background:${hexRgba(color,.07)};
-        border-left:3px solid ${color};
-        border-radius:0 8px 8px 0;
-        padding:8px 12px;
-      ">
-        <div style="font-size:8.5px; font-weight:800; color:${color}; text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px;">✦ Modo de uso</div>
-        <p style="font-size:10.5px; color:#333; margin:0; line-height:1.55; font-family:Arial,sans-serif;">${uso}</p>
-      </div>` : ""}
     </div>
-    <div style="
-      width:220px; min-width:220px; position:relative; overflow:hidden;
-      background:${imgSrc ? '#111' : shiftColor(color,60)};
-    ">
+    <!-- Imagen derecha -->
+    <div style="width:232px;min-width:232px;position:relative;overflow:hidden;flex-shrink:0;
+                background:${imgSrc ? "#0a0a0a" : pal.grad}">
       ${imgSrc
-        ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;opacity:.92"/>`
-        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px">📦</div>`
-      }
-      <div style="
-        position:absolute; top:12px; right:12px;
-        font-family:Georgia,serif; font-size:28px; font-weight:bold;
-        color:rgba(255,255,255,.35); line-height:1;
-      ">${numStr}</div>
-      <div style="
-        position:absolute; bottom:0; left:0; right:0;
-        padding:28px 12px 10px;
-        background:linear-gradient(transparent, rgba(0,0,0,.6));
-      ">
-        <span style="font-size:9px; font-weight:800; letter-spacing:.15em; color:rgba(255,255,255,.9); text-transform:uppercase;">${cat}</span>
+        ? `<img src="${imgSrc}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block"/>`
+        : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:70px;opacity:.5">${pal.bannerIcon}</div>`}
+      <!-- Fusión lateral -->
+      <div style="position:absolute;top:0;left:0;width:52px;height:100%;
+                  background:linear-gradient(to right,${pal.bg},transparent)"></div>
+      <!-- Overlay inferior -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:80px;
+                  background:linear-gradient(to top,rgba(0,0,0,.55),transparent)"></div>
+      <!-- Etiqueta promo -->
+      <div style="position:absolute;top:14px;left:0;background:${promo.bg};
+                  padding:4px 12px 4px 8px;border-radius:0 20px 20px 0;
+                  box-shadow:0 3px 10px rgba(0,0,0,.35)">
+        <span style="font-size:7px;font-weight:900;color:#fff;
+                     letter-spacing:.1em;text-transform:uppercase">${promo.icon} ${promo.txt}</span>
+      </div>
+      <!-- Número fantasma -->
+      <div style="position:absolute;bottom:10px;right:12px;font-family:Georgia,serif;
+                  font-size:50px;font-weight:bold;color:rgba(255,255,255,.11);line-height:1">${numStr}</div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  TARJETA COMPACTA PREMIUM — 195px alto
+// ══════════════════════════════════════════════════════════
+function tarjetaCompacta(p, imgSrc, pal, color, num) {
+  const precio = formatoPrecio(p.valor);
+  const cat    = nombreCategoria(p.categoria_id);
+  const desc   = (p.descripcion   || "").substring(0, 140);
+  const uso    = (p.recomendacion || "").substring(0, 90);
+  const numStr = String(num).padStart(2, "0");
+  const promo  = etiquetaPromo(num);
+
+  return `
+  <div style="display:flex;height:195px;margin-bottom:10px;border-radius:16px;overflow:hidden;
+              box-shadow:0 4px 20px rgba(0,0,0,.13);">
+    <!-- Imagen izquierda -->
+    <div style="width:190px;min-width:190px;position:relative;overflow:hidden;flex-shrink:0;
+                background:${imgSrc ? "#0a0a0a" : pal.grad}">
+      ${imgSrc
+        ? `<img src="${imgSrc}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block"/>`
+        : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:.55">${pal.bannerIcon}</div>`}
+      <!-- Fusión lateral derecha -->
+      <div style="position:absolute;top:0;right:0;width:42px;height:100%;
+                  background:linear-gradient(to left,${pal.bg},transparent)"></div>
+      <!-- Overlay inferior -->
+      <div style="position:absolute;bottom:0;left:0;right:0;height:60px;
+                  background:linear-gradient(to top,rgba(0,0,0,.58),transparent)"></div>
+      <!-- Cat en imagen -->
+      <div style="position:absolute;bottom:9px;left:9px">
+        <span style="font-size:6.5px;font-weight:900;letter-spacing:.14em;
+                     color:rgba(255,255,255,.92);text-transform:uppercase">${cat.toUpperCase()}</span>
+      </div>
+      <!-- Promo -->
+      <div style="position:absolute;top:9px;left:0;background:${promo.bg};
+                  padding:3px 9px 3px 6px;border-radius:0 13px 13px 0;
+                  box-shadow:0 2px 8px rgba(0,0,0,.3)">
+        <span style="font-size:6.5px;font-weight:900;color:#fff;text-transform:uppercase;
+                     letter-spacing:.09em">${promo.icon} ${promo.txt}</span>
+      </div>
+      <!-- Número fantasma -->
+      <div style="position:absolute;top:8px;right:14px;font-family:Georgia,serif;
+                  font-size:26px;font-weight:bold;color:rgba(255,255,255,.13)">${numStr}</div>
+    </div>
+    <!-- Contenido derecha -->
+    <div style="flex:1;display:flex;flex-direction:column;background:${pal.bg};min-width:0">
+      <div style="height:3px;background:${pal.grad};flex-shrink:0"></div>
+      <div style="padding:11px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="display:flex;align-items:center;gap:3px;margin-bottom:4px">
+            ${estrellas(pal.accent)}
+          </div>
+          <h3 style="font-family:Georgia,serif;font-size:14px;font-weight:bold;
+                     color:#111827;margin:0 0 5px;line-height:1.3">${p.nombre}</h3>
+          <div style="display:flex;gap:2px;margin-bottom:5px">
+            <div style="height:2.5px;width:28px;background:${pal.accent};border-radius:2px"></div>
+            <div style="height:2.5px;flex:1;background:${pal.accent}1a;border-radius:2px"></div>
+          </div>
+          ${desc ? `<p style="font-size:9px;color:#374151;line-height:1.65;margin:0;font-family:Arial">${desc}</p>` : ""}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px">
+          ${uso ? `
+          <div style="background:${hexRgba(pal.accent,.06)};border-left:3px solid ${pal.accent};
+                      padding:4px 8px;border-radius:0 7px 7px 0;flex:1;min-width:0;overflow:hidden">
+            <div style="font-size:6.5px;font-weight:800;color:${pal.accent};text-transform:uppercase;
+                        letter-spacing:.1em;margin-bottom:1px">Para quien</div>
+            <p style="font-size:8px;color:#374151;margin:0;line-height:1.5;font-family:Arial">${uso}</p>
+          </div>` : "<div></div>"}
+          <div style="flex-shrink:0">
+            <div style="background:${pal.grad};color:#fff;padding:7px 13px;border-radius:11px;
+                        text-align:center;box-shadow:0 4px 14px ${hexRgba(pal.accent,.38)};
+                        position:relative;overflow:hidden">
+              <div style="position:absolute;top:-8px;right:-8px;width:28px;height:28px;
+                          border-radius:50%;background:rgba(255,255,255,.16)"></div>
+              <div style="font-size:6.5px;opacity:.8;letter-spacing:.08em;font-family:Arial;
+                          margin-bottom:1px;position:relative">PRECIO</div>
+              <div style="font-size:15px;font-weight:900;font-family:Georgia,serif;
+                          line-height:1;position:relative">${precio}</div>
+            </div>
+            <div style="margin-top:3px;background:${pal.accent}12;border:1px solid ${pal.accent}32;
+                        padding:2px 8px;border-radius:7px;text-align:center">
+              <span style="font-size:6px;font-weight:800;color:${pal.accent};
+                           letter-spacing:.1em;text-transform:uppercase">PEDIR AHORA</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
 }
 
-// ── Exportar PDF ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+//  TARJETA MINI PREMIUM — grids 3 o 2 col, 240px total
+// ══════════════════════════════════════════════════════════
+function tarjetaMini(p, imgSrc, pal, color, num) {
+  const precio = formatoPrecio(p.valor);
+  const cat    = nombreCategoria(p.categoria_id);
+  const desc   = (p.descripcion || "").substring(0, 68);
+  const promo  = etiquetaPromo(num + 2);
+
+  return `
+  <div style="border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.14);
+              background:#fff;display:flex;flex-direction:column;">
+    <!-- Imagen -->
+    <div style="position:relative;height:158px;overflow:hidden;flex-shrink:0;
+                background:${imgSrc ? "#0a0a0a" : pal.grad}">
+      ${imgSrc
+        ? `<img src="${imgSrc}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block"/>`
+        : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;opacity:.52">${pal.bannerIcon}</div>`}
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.02) 38%,rgba(0,0,0,.62))"></div>
+      <!-- Precio flotante -->
+      <div style="position:absolute;bottom:9px;right:9px;background:${pal.grad};color:#fff;
+                  padding:4px 11px;border-radius:16px;font-size:13px;font-weight:900;
+                  font-family:Georgia,serif;box-shadow:0 3px 10px ${hexRgba(pal.accent,.55)}">${precio}</div>
+      <!-- Número fantasma -->
+      <div style="position:absolute;top:8px;left:9px;font-family:Georgia,serif;
+                  font-size:24px;font-weight:bold;color:rgba(255,255,255,.13)">${String(num).padStart(2,"0")}</div>
+      <!-- Etiqueta promo -->
+      <div style="position:absolute;top:8px;right:8px;background:${promo.bg};
+                  padding:2px 7px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.3)">
+        <span style="font-size:6.5px;font-weight:900;color:#fff;text-transform:uppercase;
+                     letter-spacing:.07em">${promo.icon} ${promo.txt}</span>
+      </div>
+    </div>
+    <!-- Info -->
+    <div style="padding:9px 10px 10px;background:${pal.bg};flex:1;
+                display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+          <div style="width:3px;height:11px;background:${pal.accent};border-radius:2px;flex-shrink:0"></div>
+          <span style="font-size:6.5px;font-weight:800;letter-spacing:.13em;
+                       color:${pal.tagTxt};text-transform:uppercase">${cat}</span>
+        </div>
+        <div style="font-family:Georgia,serif;font-size:12.5px;font-weight:bold;
+                    color:#111827;line-height:1.3;margin-bottom:3px">${p.nombre}</div>
+        ${desc ? `<p style="font-size:8px;color:#6b7280;line-height:1.55;margin:0;font-family:Arial">${desc}</p>` : ""}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">
+        ${estrellas(pal.accent)}
+        <div style="background:${pal.accent};color:#fff;padding:2px 9px;border-radius:8px;
+                    box-shadow:0 2px 8px ${hexRgba(pal.accent,.38)}">
+          <span style="font-size:6.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase">PEDIR</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MOTOR DE PÁGINAS — SIN PÁGINAS EN BLANCO
+// ══════════════════════════════════════════════════════════
+const A_BANNER = 72;
+const A_HERO   = 262;
+const A_COMP   = 205;
+const A_MINI   = 250;
+const FOOTER_H = 52;
+const A4_UTIL_PG1 = 1123 - 220 - FOOTER_H - 28;
+const A4_UTIL     = 1123 - FOOTER_H - 28;
+
+const PATRON_CAT = ["H", "CC", "MMM", "H", "CC", "MM", "H", "MMM", "CC"];
+
+function generarCuerpo(lista, imagenes, color) {
+  if (!lista.length) return "";
+
+  const grupos = [];
+  const catMap = {};
+  for (const p of lista) {
+    const cat = nombreCategoria(p.categoria_id);
+    if (!catMap[cat]) { catMap[cat] = []; grupos.push(cat); }
+    catMap[cat].push(p);
+  }
+
+  const totalGrupos = grupos.length;
+  const bloques = [];
+
+  grupos.forEach((cat, gi) => {
+    const prods      = catMap[cat];
+    const pal        = getPaleta(cat);
+    const bannerHtml = bannerCategoria(cat, pal, gi + 1, totalGrupos);
+    let pi = 0, patronIdx = 0;
+
+    while (pi < prods.length) {
+      const tipo = PATRON_CAT[patronIdx % PATRON_CAT.length];
+      patronIdx++;
+
+      const p   = o => prods[pi + o];
+      const img = o => imagenes[p(o)?.id] || "";
+      const ok  = o => pi + o < prods.length;
+      const glb = o => lista.indexOf(p(o)) + 1;
+
+      const esPrimero = (pi === 0);
+      const banExtra  = esPrimero ? A_BANNER : 0;
+      const prefijo   = esPrimero ? bannerHtml : "";
+
+      if (tipo === "H" && ok(0)) {
+        bloques.push({ alto: A_HERO + banExtra,
+          html: prefijo + tarjetaHero(p(0), img(0), pal, color, glb(0)) });
+        pi++;
+
+      } else if (tipo === "CC") {
+        if (ok(1)) {
+          bloques.push({ alto: A_COMP * 2 + banExtra,
+            html: prefijo +
+              tarjetaCompacta(p(0), img(0), pal, color, glb(0)) +
+              tarjetaCompacta(p(1), img(1), pal, color, glb(1)) });
+          pi += 2;
+        } else {
+          bloques.push({ alto: A_COMP + banExtra,
+            html: prefijo + tarjetaCompacta(p(0), img(0), pal, color, glb(0)) });
+          pi++;
+        }
+
+      } else if (tipo === "MMM") {
+        if (ok(2)) {
+          bloques.push({ alto: A_MINI + banExtra,
+            html: prefijo + `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:10px;">
+              ${tarjetaMini(p(0),img(0),pal,color,glb(0))}
+              ${tarjetaMini(p(1),img(1),pal,color,glb(1))}
+              ${tarjetaMini(p(2),img(2),pal,color,glb(2))}
+            </div>` });
+          pi += 3;
+        } else if (ok(1)) {
+          bloques.push({ alto: A_MINI + banExtra,
+            html: prefijo + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:10px;">
+              ${tarjetaMini(p(0),img(0),pal,color,glb(0))}
+              ${tarjetaMini(p(1),img(1),pal,color,glb(1))}
+            </div>` });
+          pi += 2;
+        } else {
+          bloques.push({ alto: A_COMP + banExtra,
+            html: prefijo + tarjetaCompacta(p(0), img(0), pal, color, glb(0)) });
+          pi++;
+        }
+
+      } else if (tipo === "MM") {
+        if (ok(1)) {
+          bloques.push({ alto: A_MINI + banExtra,
+            html: prefijo + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:10px;">
+              ${tarjetaMini(p(0),img(0),pal,color,glb(0))}
+              ${tarjetaMini(p(1),img(1),pal,color,glb(1))}
+            </div>` });
+          pi += 2;
+        } else {
+          bloques.push({ alto: A_COMP + banExtra,
+            html: prefijo + tarjetaCompacta(p(0), img(0), pal, color, glb(0)) });
+          pi++;
+        }
+      }
+    }
+  });
+
+  // Ensamblar con control anti-doble-break
+  let html = "", acum = 0, primeraPag = true, ultimoFueBreak = false;
+
+  for (const b of bloques) {
+    const limite = primeraPag ? A4_UTIL_PG1 : A4_UTIL;
+    if (acum > 0 && acum + b.alto > limite) {
+      if (!ultimoFueBreak) {
+        html += `<div style="page-break-before:always;break-before:page;height:0;font-size:0;line-height:0"> </div>`;
+        ultimoFueBreak = true;
+      }
+      acum = 0; primeraPag = false;
+    } else {
+      ultimoFueBreak = false;
+    }
+    html += b.html;
+    acum += b.alto;
+  }
+
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
+//  PORTADA PREMIUM con estadísticas
+// ══════════════════════════════════════════════════════════
+function buildPortada(vendedor, lista, logo, color, colorDark, colorMid, hoy, dominio) {
+  const totalCats = [...new Set(lista.map(p => nombreCategoria(p.categoria_id)))].length;
+  return `
+  <div style="background:linear-gradient(145deg,${color} 0%,${colorMid} 45%,${colorDark} 100%);
+              padding:38px 40px 30px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-100px;top:-100px;width:380px;height:380px;
+                border-radius:50%;background:rgba(255,255,255,.06)"></div>
+    <div style="position:absolute;right:70px;bottom:-140px;width:250px;height:250px;
+                border-radius:50%;background:rgba(255,255,255,.04)"></div>
+    <div style="position:absolute;left:-50px;bottom:0;width:180px;height:180px;
+                border-radius:50%;background:rgba(255,255,255,.03)"></div>
+    <div style="position:relative;display:flex;justify-content:space-between;
+                align-items:flex-start;gap:16px">
+      <div style="flex:1;min-width:0">
+        <img src="${logo}" style="height:42px;margin-bottom:16px;display:block"/>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+          <div style="width:22px;height:1.5px;background:rgba(255,255,255,.5)"></div>
+          <div style="font-size:8px;letter-spacing:.3em;text-transform:uppercase;
+                      color:rgba(255,255,255,.55);font-family:Arial">Catalogo Oficial de Productos</div>
+        </div>
+        <h1 style="font-family:Georgia,serif;font-size:31px;color:#fff;
+                   margin:0 0 8px;font-weight:bold;line-height:1.15;
+                   text-shadow:0 3px 20px rgba(0,0,0,.22)">${vendedor.nombre}</h1>
+        ${vendedor.ciudad
+          ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.14);
+                          border-radius:20px;padding:3px 12px;margin-bottom:8px">
+               <span style="font-size:10.5px;color:rgba(255,255,255,.85);font-family:Arial">Ubicacion: ${vendedor.ciudad}</span>
+             </div>` : ""}
+        <!-- Estadísticas rápidas -->
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          ${[
+            [lista.length, "Productos"],
+            [totalCats,    "Categorias"],
+            ["4.8 ★",      "Valoracion"],
+          ].map(([v,l]) => `
+            <div style="background:rgba(255,255,255,.14);border-radius:10px;padding:7px 14px;text-align:center">
+              <div style="font-family:Georgia,serif;font-size:18px;font-weight:bold;color:#fff">${v}</div>
+              <div style="font-size:7.5px;color:rgba(255,255,255,.6);font-family:Arial;
+                          text-transform:uppercase;letter-spacing:.1em">${l}</div>
+            </div>`).join("")}
+        </div>
+        <p style="font-size:9px;color:rgba(255,255,255,.42);margin:10px 0 0;font-family:Arial">${hoy}</p>
+      </div>
+      <!-- Tarjeta contacto -->
+      <div style="background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.28);
+                  border-radius:16px;padding:18px 22px;text-align:right;min-width:165px;
+                  flex-shrink:0;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+        <div style="font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;
+                    color:rgba(255,255,255,.48);margin-bottom:10px;font-family:Arial">Contacto</div>
+        ${vendedor.whatsapp
+          ? `<div style="font-size:12px;color:#fff;font-weight:700;margin-bottom:7px;
+                          font-family:Arial">Tel: ${vendedor.whatsapp}</div>` : ""}
+        <div style="font-size:10.5px;color:rgba(255,255,255,.78);font-family:Arial">Web: ${dominio}</div>
+        <div style="margin-top:12px;background:rgba(255,255,255,.22);border-radius:10px;
+                    padding:6px 12px;text-align:center">
+          <div style="font-size:7px;font-weight:800;color:#fff;letter-spacing:.14em;
+                      text-transform:uppercase">Escribenos hoy</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,.2);margin-top:22px;position:relative">
+      <div style="position:absolute;left:0;top:-4px;width:88px;height:8px;
+                  border-radius:5px;background:rgba(255,255,255,.55)"></div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  FOOTER PDF
+// ══════════════════════════════════════════════════════════
+function footerHtml(color, colorDark, logo, nombre, ciudad, whatsapp, dominio, cantidad, hoy) {
+  return `
+  <div id="footerCaptura" style="background:linear-gradient(135deg,${color} 0%,${colorDark} 100%);
+       padding:13px 34px;box-sizing:border-box;width:794px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-28px;top:-28px;width:85px;height:85px;
+                border-radius:50%;background:rgba(255,255,255,.07)"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                flex-wrap:wrap;gap:6px;position:relative">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="${logo}" style="height:20px;flex-shrink:0"/>
+        <div>
+          <div style="font-size:10.5px;font-weight:700;color:#fff;font-family:Arial">${nombre}</div>
+          <div style="font-size:8px;color:rgba(255,255,255,.6);font-family:Arial">
+            ${ciudad ? ciudad + "  ·  " : ""}${cantidad} producto${cantidad!==1?"s":""}  ·  ${hoy}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        ${whatsapp ? `<div style="font-size:8.5px;color:rgba(255,255,255,.85);margin-bottom:2px;font-family:Arial">Tel: ${whatsapp}</div>` : ""}
+        <div style="font-size:8.5px;color:rgba(255,255,255,.75);font-family:Arial">Web: ${dominio}</div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,.4);margin-top:1px;font-family:Arial">
+          © ${new Date().getFullYear()} · Todos los derechos reservados
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  EXPORTAR PDF
+// ══════════════════════════════════════════════════════════
 if (el("btnExportar")) {
   el("btnExportar").addEventListener("click", async () => {
     const btn   = el("btnExportar");
     const lista = filtrarOrdenar();
-    if (!lista.length) { alert("No hay productos para exportar."); return; }
+    if (!lista.length) { mostrarAlerta("No hay productos para exportar."); return; }
 
     const mem = await obtenerMembresiaVendedor(vendedor.id);
-    if (!membresiaVigente(mem)) {
-      mostrarAlertaMembresia(mem);
-      return;
-    }
+    if (!membresiaVigente(mem)) { mostrarAlertaMembresia(mem); return; }
 
     btnCargando(btn, true);
 
-    const dominio = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "127.0.0.7")
-      ? "gistore.com"
-      : window.location.hostname;
-
-    const hoy   = new Date().toLocaleDateString("es-CO", { year:"numeric", month:"long", day:"numeric" });
-    const color = vendedor.color || "#1a6b3c";
-    const logo  = logoSVG(color);
-
-    const imagenes = {};
-    for (let i = 0; i < lista.length; i += 6) {
-      await Promise.all(lista.slice(i, i+6).map(async p => {
-        imagenes[p.id] = p.imagen ? await imgABase64(p.imagen) : "";
-      }));
-    }
-
-    const tarjetas = lista.map((p, i) =>
-      i % 2 === 0
-        ? tarjetaPar(p,   imagenes[p.id], color, i+1)
-        : tarjetaImpar(p, imagenes[p.id], color, i+1)
-    ).join("");
-
-    const html = `
-  <div style="font-family:Arial,Helvetica,sans-serif; margin:0; padding:0; background:#f9f7f4;">
-    <div style="
-      background:linear-gradient(150deg, ${color} 0%, ${shiftColor(color,-30)} 100%);
-      padding:36px 40px 28px; position:relative; overflow:hidden;
-    ">
-      <div style="position:absolute; right:-60px; top:-60px; width:280px; height:280px; border-radius:50%; background:rgba(255,255,255,.07);"></div>
-      <div style="position:absolute; right:40px; bottom:-80px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.05);"></div>
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; position:relative;">
-        <div>
-          <img src="${logo}" style="height:36px; margin-bottom:14px; display:block;"/>
-          <div style="font-size:9px; letter-spacing:.25em; text-transform:uppercase; color:rgba(255,255,255,.65); margin-bottom:6px;">Catálogo oficial de productos</div>
-          <h1 style="font-family:Georgia,serif; font-size:28px; color:#fff; margin:0 0 6px; font-weight:bold; line-height:1.15; text-shadow:0 2px 12px rgba(0,0,0,.2);">${vendedor.nombre}</h1>
-          ${vendedor.ciudad ? `<p style="font-size:12px; color:rgba(255,255,255,.75); margin:0 0 4px;">📍 ${vendedor.ciudad}</p>` : ""}
-          <p style="font-size:10px; color:rgba(255,255,255,.55); margin:6px 0 0;">${lista.length} producto${lista.length!==1?"s":""} · ${hoy}</p>
-        </div>
-        <div style="background:rgba(255,255,255,.15); backdrop-filter:blur(4px); border-radius:12px; padding:14px 18px; text-align:right; border:1px solid rgba(255,255,255,.25);">
-          ${vendedor.whatsapp ? `<div style="font-size:11px; color:#fff; margin-bottom:6px; font-weight:600;">📱 ${vendedor.whatsapp}</div>` : ""}
-          <div style="font-size:10px; color:rgba(255,255,255,.8);">🌐 ${dominio}</div>
-        </div>
-      </div>
-      <div style="height:1px; background:rgba(255,255,255,.2); margin-top:22px; position:relative;">
-        <div style="position:absolute; left:0; top:-3px; width:60px; height:7px; border-radius:4px; background:rgba(255,255,255,.5);"></div>
-      </div>
-    </div>
-    <div style="padding:24px 28px 8px;">${tarjetas}</div>
-    <div style="background:linear-gradient(135deg, ${color} 0%, ${shiftColor(color,-25)} 100%); padding:16px 40px; display:flex; justify-content:space-between; align-items:center;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <img src="${logo}" style="height:26px; opacity:.95"/>
-        <div>
-          <div style="font-size:11px; font-weight:700; color:#fff;">${vendedor.nombre}</div>
-          ${vendedor.ciudad ? `<div style="font-size:9.5px; color:rgba(255,255,255,.7);">📍 ${vendedor.ciudad}</div>` : ""}
-        </div>
-      </div>
-      <div style="text-align:right;">
-        ${vendedor.whatsapp ? `<div style="font-size:10px; color:#fff; margin-bottom:3px; font-weight:600;">📱 ${vendedor.whatsapp}</div>` : ""}
-        <div style="font-size:10px; color:rgba(255,255,255,.8);">🌐 ${dominio}</div>
-        <div style="font-size:9px; color:rgba(255,255,255,.5); margin-top:2px;">© ${new Date().getFullYear()} · Todos los derechos reservados</div>
-      </div>
-    </div>
-  </div>`;
-
-    const contenedor = el("contenidoPDF");
-    contenedor.innerHTML = html;
-    contenedor.style.display = "block";
-
-    const opciones = {
-      margin:      [0, 0, 0, 0],
-      filename:    "catalogo-" + vendedor.nombre.replace(/\s+/g,"-").toLowerCase() + ".pdf",
-      image:       { type: "jpeg", quality: 0.96 },
-      html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#f9f7f4" },
-      jsPDF:       { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-
     try {
-      await html2pdf().set(opciones).from(contenedor).save();
+      const dominio   = window.location.hostname;
+      const hoy       = new Date().toLocaleDateString("es-CO",
+        { year:"numeric", month:"long", day:"numeric" });
+      const color     = vendedor.color || "#1a6b3c";
+      const colorDark = shiftColor(color, -40);
+      const colorMid  = shiftColor(color, 18);
+      const logo      = logoSVG(color);
+
+      const imagenes = {};
+      for (let i = 0; i < lista.length; i += 6) {
+        await Promise.all(lista.slice(i, i+6).map(async p => {
+          imagenes[p.id] = p.imagen ? await imgABase64(p.imagen) : "";
+        }));
+      }
+
+      const portada = buildPortada(vendedor, lista, logo, color, colorDark, colorMid, hoy, dominio);
+      const cuerpo  = generarCuerpo(lista, imagenes, color);
+
+      const html = `
+      <div style="font-family:Arial,Helvetica,sans-serif;margin:0;padding:0;background:#f3f1ec">
+        ${portada}
+        <div style="padding:18px 24px 70px">${cuerpo}</div>
+      </div>`;
+
+      const contenedor = el("contenidoPDF");
+      contenedor.innerHTML = html;
+      contenedor.style.display = "block";
+
+      const pie = footerHtml(color, colorDark, logo, vendedor.nombre, vendedor.ciudad,
+        vendedor.whatsapp, dominio, lista.length, hoy);
+      const footerWrap = document.createElement("div");
+      footerWrap.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden";
+      footerWrap.innerHTML = pie;
+      document.body.appendChild(footerWrap);
+
+      const A4_W_MM = 210, A4_H_MM = 297;
+      const nombre  = vendedor.nombre.replace(/\s+/g,"-").toLowerCase();
+
+      const worker = html2pdf().set({
+        margin:      [0,0,0,0],
+        filename:    `catalogo-${nombre}.pdf`,
+        image:       { type:"jpeg", quality:.97 },
+        html2canvas: { scale:2, useCORS:true, allowTaint:true,
+                       backgroundColor:"#f3f1ec", logging:false },
+        jsPDF:       { unit:"mm", format:"a4", orientation:"portrait" },
+        pagebreak:   { mode:["css"] },   // ← solo css evita páginas en blanco
+      }).from(contenedor);
+
+      const pdf       = await worker.toPdf().get("pdf");
+      const totalPags = pdf.internal.getNumberOfPages();
+
+      const footerEl = footerWrap.querySelector("#footerCaptura");
+      let fImg = null, fH_MM = 0;
+      const h2cFn = typeof html2canvas !== "undefined" ? html2canvas : null;
+      if (h2cFn && footerEl) {
+        try {
+          const fc = await h2cFn(footerEl, {
+            scale:2, useCORS:true, allowTaint:true, backgroundColor:null, logging:false });
+          fImg  = fc.toDataURL("image/jpeg",.97);
+          fH_MM = (fc.height / fc.width) * A4_W_MM;
+        } catch(e) { console.warn("footer canvas:", e); }
+      }
+
+      if (fImg && fH_MM > 0) {
+        const yPos = A4_H_MM - fH_MM;
+        for (let pg = 1; pg <= totalPags; pg++) {
+          pdf.setPage(pg); pdf.addImage(fImg, "JPEG", 0, yPos, A4_W_MM, fH_MM);
+        }
+      } else {
+        const rgb = { r:parseInt(color.slice(1,3),16), g:parseInt(color.slice(3,5),16), b:parseInt(color.slice(5,7),16) };
+        for (let pg = 1; pg <= totalPags; pg++) {
+          pdf.setPage(pg);
+          pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+          pdf.rect(0, A4_H_MM-10, A4_W_MM, 10, "F");
+          pdf.setTextColor(255,255,255); pdf.setFontSize(7.5);
+          pdf.text(`${vendedor.nombre}  ·  ${lista.length} productos  ·  ${hoy}`, 10, A4_H_MM-3.5);
+          pdf.text(`© ${new Date().getFullYear()} · Todos los derechos reservados`,
+            A4_W_MM-10, A4_H_MM-3.5, { align:"right" });
+        }
+      }
+
+      pdf.save(`catalogo-${nombre}.pdf`);
+      document.body.removeChild(footerWrap);
+
+    } catch(err) {
+      console.error("Error PDF:", err);
+      mostrarAlerta("No se pudo generar el PDF.\n\nDetalle: " + (err?.message || String(err)));
     } finally {
-      contenedor.style.display = "none";
+      const c = el("contenidoPDF");
+      if (c) c.style.display = "none";
       btnCargando(btn, false);
     }
   });
 }
 
+// ── Alertas ──────────────────────────────────────────────
+function mostrarAlerta(msg) {
+  let modal = el("_modalAlertaCat");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "_modalAlertaCat";
+    modal.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;
+                  align-items:center;justify-content:center;z-index:9999;padding:1rem">
+        <div style="background:#fff;border-radius:16px;padding:2rem;max-width:420px;
+                    width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);
+                    border-top:4px solid var(--error,#e53e3e)">
+          <p id="_alertaMsg" style="font-size:.9rem;color:#333;margin:0 0 1.25rem"></p>
+          <button id="_alertaBtn" style="background:var(--verde,#1a6b3c);color:#fff;border:none;
+            padding:.65rem 1.5rem;border-radius:8px;cursor:pointer;font-weight:600;width:100%">
+            Cerrar
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById("_alertaBtn").addEventListener("click", () => modal.style.display="none");
+  }
+  document.getElementById("_alertaMsg").textContent = msg;
+  modal.style.display = "block";
+}
+
 function mostrarAlertaMembresia(mem) {
   const msg = mem
-    ? "Tu membresía venció el " + mem.fecha_fin + ". Renueva para poder descargar el catálogo."
-    : "No tienes membresía activa. Contacta al administrador para activarla.";
-
+    ? "Tu membresia vencio el " + mem.fecha_fin + ". Renueva para descargar el catalogo."
+    : "No tienes membresia activa. Contacta al administrador.";
   let alerta = el("alertaMembresiaCatalogo");
   if (!alerta) {
     alerta = document.createElement("div");
@@ -396,25 +929,18 @@ function mostrarAlertaMembresia(mem) {
                 display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
       <span style="font-size:1.3rem">⚠️</span>
       <div style="flex:1">
-        <strong style="color:#92400e;font-size:.9rem">Membresía inactiva</strong>
+        <strong style="color:#92400e;font-size:.9rem">Membresia inactiva</strong>
         <p style="color:#78350f;font-size:.82rem;margin:.2rem 0 0">${msg}</p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
-        <a href="membresia.html"
-           style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;
-                  font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:.35rem">
-          <span class="material-symbols-outlined" style="font-size:1rem">id_card</span> Ir a membresía
-        </a>
-        <a href="https://wa.me/573145891108?text=${encodeURIComponent('Hola, necesito ayuda con mi membresía de GI Store.')}"
-           target="_blank"
-           style="font-size:.75rem;color:#92400e;text-decoration:none">
-          💬 ¿Necesitas ayuda?
-        </a>
-      </div>
+      <a href="membresia.html"
+         style="background:#f59e0b;color:#fff;border-radius:8px;padding:.5rem 1rem;
+                font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap">
+        Ir a membresia
+      </a>
     </div>`;
 }
 
-// FIX: inicializar fecha/salir dentro del listener
+// ── Iniciar ───────────────────────────────────────────────
 onAuthStateChanged(auth, (user) => {
   if (!user) return;
   if (el("fechaHoy")) el("fechaHoy").textContent = fechaHoy();

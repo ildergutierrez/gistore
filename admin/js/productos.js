@@ -22,6 +22,8 @@ let vendedores  = [];
 let idEliminar  = "";
 let busqueda    = "";
 
+const POR_PAG_PROD = 30;
+let paginaProd     = 1;
 // ── Cargar ────────────────────────────────────────────────
 async function cargar() {
   try {
@@ -46,10 +48,16 @@ function nombreVendedor(id) {
 // ── Buscador ──────────────────────────────────────────────
 document.getElementById("buscador").addEventListener("input", e => {
   busqueda = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-  renderTabla();
+  paginaProd = 1;
+  renderTablaPag();
 });
 
 function renderTabla() {
+  paginaProd = 1;
+  renderTablaPag();
+}
+
+function renderTablaPag() {
   const filtrados = busqueda
     ? productos.filter(p => {
         const txt = (p.nombre + " " + (p.descripcion || ""))
@@ -58,8 +66,16 @@ function renderTabla() {
       })
     : productos;
 
+  const total     = filtrados.length;
+  const totalPags = Math.max(1, Math.ceil(total / POR_PAG_PROD));
+  if (paginaProd > totalPags) paginaProd = totalPags;
+
+  const desde  = (paginaProd - 1) * POR_PAG_PROD;
+  const pagina = filtrados.slice(desde, desde + POR_PAG_PROD);
+
   document.getElementById("totalProductos").textContent =
-    filtrados.length + " producto" + (filtrados.length !== 1 ? "s" : "");
+    total + " producto" + (total !== 1 ? "s" : "") +
+    (totalPags > 1 ? "  ·  pág. " + paginaProd + " / " + totalPags : "");
 
   const wrap = document.getElementById("tablaWrap");
   if (!filtrados.length) {
@@ -67,55 +83,88 @@ function renderTabla() {
     return;
   }
 
+  const imgCell = p => {
+    if (!p.imagen)
+      return `<div style="width:44px;height:44px;border-radius:8px;background:var(--verde-claro);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>`;
+    const src = p.imagen.startsWith("http") ? p.imagen : "../../" + p.imagen;
+    return `<img src="${src}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1.5px solid var(--borde);display:block">`;
+  };
+
+  const filas = pagina.map(p => `
+    <tr>
+      <td style="padding:8px">${imgCell(p)}</td>
+      <td style="padding:8px;max-width:180px">
+        <strong style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.875rem">${p.nombre}</strong>
+      </td>
+      <td style="padding:8px;white-space:nowrap;font-size:.875rem">${formatoPrecio(p.valor)}</td>
+      <td style="padding:8px;font-size:.85rem">${nombreCategoria(p.categoria_id)}</td>
+      <td style="padding:8px;font-size:.85rem">${nombreVendedor(p.vendedor_id)}</td>
+      <td style="padding:8px"><span class="badge badge-${p.activo ? "activo" : "inactivo"}">${p.activo ? "Activo" : "Inactivo"}</span></td>
+      <td style="padding:8px">
+        <div class="td-acciones">
+          <button class="btn-tabla btn-editar"   data-id="${p.id}">✏ Editar</button>
+          <button class="btn-tabla btn-eliminar" data-id="${p.id}" data-nombre="${p.nombre}">🗑 Eliminar</button>
+        </div>
+      </td>
+    </tr>`).join("");
+
+  const paginador = totalPags > 1 ? buildPaginador(paginaProd, totalPags) : "";
+
+  // Tabla con scroll horizontal en móvil
   wrap.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Imagen</th>
-          <th>Nombre</th>
-          <th>Valor</th>
-          <th>Categoría</th>
-          <th>Vendedor</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtrados.map(p => `
-          <tr>
-            <td>
-              ${p.imagen
-      ? (p.imagen.startsWith("http")
-        ? `<img src="${p.imagen}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1.5px solid var(--borde)">`
-        : `<img src="../../${p.imagen}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1.5px solid var(--borde)">`
-      )
-      : `<div style="width:44px;height:44px;border-radius:8px;background:var(--verde-claro);display:flex;align-items:center;justify-content:center">📦</div>`
-    }
-            </td>
-            <td style="max-width:200px">
-              <strong style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</strong>
-            </td>
-            <td style="white-space:nowrap">${formatoPrecio(p.valor)}</td>
-            <td>${nombreCategoria(p.categoria_id)}</td>
-            <td>${nombreVendedor(p.vendedor_id)}</td>
-            <td><span class="badge badge-${p.activo ? 'activo' : 'inactivo'}">
-              ${p.activo ? 'Activo' : 'Inactivo'}
-            </span></td>
-            <td>
-              <div class="td-acciones">
-                <button class="btn-tabla btn-editar"   data-id="${p.id}">✏ Editar</button>
-                <button class="btn-tabla btn-eliminar" data-id="${p.id}" data-nombre="${p.nombre}">🗑 Eliminar</button>
-              </div>
-            </td>
-          </tr>`).join("")}
-      </tbody>
-    </table>`;
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+      <table style="min-width:620px;width:100%">
+        <thead><tr>
+          <th style="padding:8px;width:60px">Imagen</th>
+          <th style="padding:8px">Nombre</th>
+          <th style="padding:8px">Valor</th>
+          <th style="padding:8px">Categoría</th>
+          <th style="padding:8px">Vendedor</th>
+          <th style="padding:8px">Estado</th>
+          <th style="padding:8px">Acciones</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+    ${paginador}`;
 
   wrap.querySelectorAll(".btn-editar").forEach(btn =>
     btn.addEventListener("click", () => abrirEditar(btn.dataset.id)));
   wrap.querySelectorAll(".btn-eliminar").forEach(btn =>
     btn.addEventListener("click", () => abrirEliminar(btn.dataset.id, btn.dataset.nombre)));
+  wrap.querySelectorAll("[data-pag-prod]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      paginaProd = parseInt(btn.dataset.pagProd);
+      renderTablaPag();
+      wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
 }
+
+// ── Paginador responsive ───────────────────────────────────
+function buildPaginador(actual, total) {
+  if (total <= 1) return "";
+  const MAX = window.innerWidth < 500 ? 3 : 5;
+  let ini = Math.max(1, actual - Math.floor(MAX / 2));
+  let fin = Math.min(total, ini + MAX - 1);
+  if (fin - ini < MAX - 1) ini = Math.max(1, fin - MAX + 1);
+  const TAM = window.innerWidth < 500 ? "44px" : "36px";
+  const FS  = window.innerWidth < 500 ? ".9rem" : ".82rem";
+  const s = on =>
+    `display:inline-flex;align-items:center;justify-content:center;` +
+    `min-width:${TAM};height:${TAM};padding:0 8px;border-radius:8px;` +
+    `font-size:${FS};font-weight:600;cursor:pointer;` +
+    `background:${on ? "var(--verde)" : "var(--fondo-2)"};` +
+    `color:${on ? "#fff" : "var(--texto)"};` +
+    `border:1.5px solid ${on ? "var(--verde)" : "var(--borde)"};` +
+    `transition:background .15s;`;
+  let btns = "";
+  if (actual > 1)   btns += `<button data-pag-prod="${actual - 1}" style="${s(false)}">←</button>`;
+  for (let i = ini; i <= fin; i++) btns += `<button data-pag-prod="${i}" style="${s(i === actual)}">${i}</button>`;
+  if (actual < total) btns += `<button data-pag-prod="${actual + 1}" style="${s(false)}">→</button>`;
+  const info = `<span style="font-size:.8rem;color:var(--texto-suave);white-space:nowrap;">Pág. ${actual} / ${total}</span>`;
+  return `<div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:1.25rem;padding:.75rem 0;flex-wrap:wrap;">${btns}${info}</div>`;
+}
+
 
 // ── Subida de imagen ──────────────────────────────────────
 // ── Cloudinary config ─────────────────────────────────────
@@ -248,7 +297,8 @@ function abrirEditar(id) {
   document.getElementById("fImagen").value = p.imagen || "";
   archivoSeleccionado = null;
   if (p.imagen) {
-    imgPreview.src        = "../../" + p.imagen;
+    let src = p.imagen.startsWith("http") ? p.imagen : "../../" + p.imagen;
+    imgPreview.src        = src;
     imgNombre.textContent = p.imagen.split("/").pop();
     imgEstado.textContent = "Imagen actual";
     imgEstado.style.color = "var(--texto-suave)";
@@ -374,4 +424,4 @@ function mostrarOk(msg) {
   document.getElementById("msgError").classList.remove("visible");
 }
 
-cargar();
+cargar(); 

@@ -731,3 +731,63 @@ tr:hover td { background: var(--verde-claro); }
     white-space: normal;
   }
 }
+/* ============================================================
+   CATÁLOGO — mejoras responsive y tarjetas PDF
+   ============================================================ */
+
+/* Vista previa tabla — scroll horizontal */
+#previaCatalogo {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#previaCatalogo table {
+  min-width: 460px;
+  width: 100%;
+}
+
+/* Opciones exportación — flex responsive */
+.opciones-export-flex {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 1.25rem 1.5rem;
+}
+.opciones-export-flex .campo {
+  margin: 0;
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Paginador global */
+.paginador,
+[style*="paginador"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 1.25rem;
+  padding: .75rem 0;
+  flex-wrap: wrap;
+}
+
+/* Topbar — stack en móvil */
+@media (max-width: 600px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+  .topbar-der { width: 100%; }
+  .topbar-der .btn { width: 100%; justify-content: center; }
+  .opciones-export-flex { flex-direction: column; }
+  .opciones-export-flex .campo { min-width: 100%; }
+}
+
+/* Panel header — wrap en móvil */
+@media (max-width: 500px) {
+  .panel-header {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+}

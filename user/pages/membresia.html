@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mi Membresía — GI Store</title>
     <link rel="stylesheet" href="../css/style.css" />
-    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <link
+      rel="icon"
+      href="../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
     <style>
       /* ── Membresía: layout y tarjetas ── */
       .membresia-grid {
@@ -14,7 +18,9 @@
         gap: 1.5rem;
       }
       @media (max-width: 900px) {
-        .membresia-grid { grid-template-columns: 1fr; }
+        .membresia-grid {
+          grid-template-columns: 1fr;
+        }
       }
 
       /* Tarjeta de estado actual */
@@ -34,15 +40,25 @@
         gap: 1rem;
       }
       .card-estado-icono {
-        width: 52px; height: 52px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         background: var(--verde-claro);
-        display: flex; align-items: center; justify-content: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 1.5rem;
         flex-shrink: 0;
       }
-      .card-estado-titulo { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1.1rem; }
-      .card-estado-sub { font-size: 0.82rem; color: var(--texto-suave); }
+      .card-estado-titulo {
+        font-family: "Nunito", sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+      .card-estado-sub {
+        font-size: 0.82rem;
+        color: var(--texto-suave);
+      }
 
       .estado-fila {
         display: flex;
@@ -53,9 +69,19 @@
         gap: 0.5rem;
         flex-wrap: wrap;
       }
-      .estado-fila:last-child { border-bottom: none; }
-      .estado-fila-label { font-size: 0.83rem; color: var(--texto-suave); }
-      .estado-fila-valor { font-size: 0.88rem; font-weight: 600; color: var(--texto); text-align: right; }
+      .estado-fila:last-child {
+        border-bottom: none;
+      }
+      .estado-fila-label {
+        font-size: 0.83rem;
+        color: var(--texto-suave);
+      }
+      .estado-fila-valor {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--texto);
+        text-align: right;
+      }
 
       /* Badge días restantes */
       .dias-restantes {
@@ -67,26 +93,44 @@
         font-size: 0.82rem;
         font-weight: 700;
       }
-      .dias-restantes.ok    { background: var(--ok-bg);    color: var(--ok);          border: 1px solid var(--ok-borde); }
-      .dias-restantes.warn  { background: var(--adv-bg);   color: var(--advertencia); border: 1px solid var(--adv-borde); }
-      .dias-restantes.venc  { background: var(--error-bg); color: var(--error);       border: 1px solid var(--error-borde); }
+      .dias-restantes.ok {
+        background: var(--ok-bg);
+        color: var(--ok);
+        border: 1px solid var(--ok-borde);
+      }
+      .dias-restantes.warn {
+        background: var(--adv-bg);
+        color: var(--advertencia);
+        border: 1px solid var(--adv-borde);
+      }
+      .dias-restantes.venc {
+        background: var(--error-bg);
+        color: var(--error);
+        border: 1px solid var(--error-borde);
+      }
 
       /* Barra de progreso membresía */
-      .progreso-wrap { margin-top: 0.3rem; }
+      .progreso-wrap {
+        margin-top: 0.3rem;
+      }
       .progreso-label {
-        display: flex; justify-content: space-between;
-        font-size: 0.78rem; color: var(--texto-suave);
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.78rem;
+        color: var(--texto-suave);
         margin-bottom: 0.4rem;
       }
       .progreso-barra {
-        height: 8px; border-radius: 99px;
+        height: 8px;
+        border-radius: 99px;
         background: var(--verde-claro);
         overflow: hidden;
       }
       .progreso-fill {
-        height: 100%; border-radius: 99px;
+        height: 100%;
+        border-radius: 99px;
         background: linear-gradient(90deg, var(--verde-medio), var(--acento));
-        transition: width .6s ease;
+        transition: width 0.6s ease;
       }
 
       /* ── Planes de pago ── */
@@ -100,7 +144,10 @@
         border-radius: var(--radio-lg);
         padding: 1.25rem 1.5rem;
         cursor: pointer;
-        transition: border-color .2s, box-shadow .2s, background .2s;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          background 0.2s;
         position: relative;
         background: var(--fondo-2);
       }
@@ -111,7 +158,7 @@
       .plan-card.seleccionado {
         border-color: var(--verde);
         background: var(--verde-claro);
-        box-shadow: 0 0 0 3px rgba(26,107,60,.12);
+        box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.12);
       }
       .plan-card-top {
         display: flex;
@@ -120,19 +167,32 @@
         gap: 0.75rem;
         flex-wrap: wrap;
       }
-      .plan-nombre { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 1rem; }
+      .plan-nombre {
+        font-family: "Nunito", sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+      }
       .plan-precio {
-        font-family: 'Nunito', sans-serif;
+        font-family: "Nunito", sans-serif;
         font-weight: 800;
         font-size: 1.35rem;
         color: var(--verde);
         white-space: nowrap;
       }
-      .plan-precio span { font-size: 0.78rem; font-weight: 500; color: var(--texto-suave); }
-      .plan-desc { font-size: 0.82rem; color: var(--texto-suave); margin-top: 0.35rem; }
+      .plan-precio span {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--texto-suave);
+      }
+      .plan-desc {
+        font-size: 0.82rem;
+        color: var(--texto-suave);
+        margin-top: 0.35rem;
+      }
       .plan-badge {
         position: absolute;
-        top: -10px; right: 1rem;
+        top: -10px;
+        right: 1rem;
         background: var(--verde);
         color: #fff;
         font-size: 0.72rem;
@@ -141,21 +201,25 @@
         border-radius: 99px;
       }
       .plan-radio {
-        width: 18px; height: 18px;
+        width: 18px;
+        height: 18px;
         border: 2px solid var(--verde-borde);
         border-radius: 50%;
         flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin-top: 2px;
-        transition: border-color .2s;
+        transition: border-color 0.2s;
       }
       .plan-card.seleccionado .plan-radio {
         border-color: var(--verde);
         background: var(--verde);
       }
       .plan-card.seleccionado .plan-radio::after {
-        content: '';
-        width: 7px; height: 7px;
+        content: "";
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
         background: #fff;
       }
@@ -165,7 +229,9 @@
         margin-top: 1.5rem;
         display: none;
       }
-      #wompi-container.visible { display: block; }
+      #wompi-container.visible {
+        display: block;
+      }
 
       .wompi-info {
         background: var(--verde-claro);
@@ -217,25 +283,54 @@
         gap: 0.5rem;
         flex-wrap: wrap;
       }
-      .historial-item:last-child { border-bottom: none; }
-      .historial-fecha { font-size: 0.8rem; color: var(--texto-suave); }
-      .historial-monto { font-size: 0.88rem; font-weight: 600; color: var(--texto); }
-      .historial-estado { font-size: 0.78rem; }
+      .historial-item:last-child {
+        border-bottom: none;
+      }
+      .historial-fecha {
+        font-size: 0.8rem;
+        color: var(--texto-suave);
+      }
+      .historial-monto {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--texto);
+      }
+      .historial-estado {
+        font-size: 0.78rem;
+      }
 
       /* Loading skeleton */
       .skeleton {
-        background: linear-gradient(90deg, var(--verde-claro) 25%, var(--verde-hover) 50%, var(--verde-claro) 75%);
+        background: linear-gradient(
+          90deg,
+          var(--verde-claro) 25%,
+          var(--verde-hover) 50%,
+          var(--verde-claro) 75%
+        );
         background-size: 200% 100%;
         animation: shimmer 1.4s infinite;
         border-radius: var(--radio-sm);
         height: 1rem;
       }
-      @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
 
       @media (max-width: 480px) {
-        .card-estado { padding: 1.25rem; }
-        .plan-card   { padding: 1rem; }
-        .plan-precio { font-size: 1.1rem; }
+        .card-estado {
+          padding: 1.25rem;
+        }
+        .plan-card {
+          padding: 1rem;
+        }
+        .plan-precio {
+          font-size: 1.1rem;
+        }
       }
     </style>
   </head>
@@ -246,9 +341,18 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <aside class="sidebar">
-      <a href="../../index.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none">
+      <a
+        href="../index.html"
+        class="sidebar-logo"
+        title="Ir al inicio 🏠"
+        style="text-decoration: none"
+      >
         <div class="sidebar-logo-icono">
-          <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain" />
+          <img
+            src="../../img/favicon/gi-icono-blanco.svg"
+            alt="GI Store"
+            style="width: 22px; height: 22px; object-fit: contain"
+          />
         </div>
         <div class="sidebar-logo-txt">
           <strong>GI Store</strong>
@@ -257,16 +361,50 @@
       </a>
       <nav class="nav">
         <div class="nav-titulo">Mi cuenta</div>
-        <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bento</span></span>Dashboard</a>
-        <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">package_2</span></span>Mis productos</a>
-        <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">photo_library</span></span>Exportar catálogo</a>
+        <a href="dashboard.html">
+          <span class="icono"
+            ><span class="material-symbols-outlined">bento</span></span
+          >
+          Dashboard
+        </a>
+        <a href="productos.html">
+          <span class="icono"
+            ><span class="material-symbols-outlined">package_2</span></span
+          >
+          Mis productos
+        </a>
+        <a href="catalogo.html">
+          <span class="icono"
+            ><span class="material-symbols-outlined">photo_library</span></span
+          >
+          Exportar catálogo
+        </a>
+        <a href="#" class="activo">
+          <span class="icono"
+            ><span class="material-symbols-outlined"
+              >workspace_premium</span
+            ></span
+          >
+          Mi membresía
+        </a>
         <div class="nav-titulo">Sitio</div>
-        <a href="perfil.html"><span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span>Mi perfil</a>
-        <a href="membresia.html" class="activo"><span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>Mi membresía</a>
-        <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">article_person</span></span>Ver catálogo</a>
+        <a href="perfil.html">
+          <span class="icono"
+            ><span class="material-symbols-outlined">assignment_ind</span></span
+          >
+          Mi perfil
+        </a>
+        <a href="../../index.html" target="_blank">
+          <span class="icono"
+            ><span class="material-symbols-outlined">article_person</span></span
+          >
+          Ver catálogo
+        </a>
       </nav>
       <div class="sidebar-pie">
-        <button class="btn-salir" id="btnSalir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
+        <button class="btn-salir" id="btnSalir">
+          <span class="material-symbols-outlined">logout</span> Cerrar sesión
+        </button>
       </div>
     </aside>
 
@@ -279,10 +417,9 @@
       </div>
 
       <!-- Alerta dinámica -->
-      <div id="alertaMembresia" style="display:none"></div>
+      <div id="alertaMembresia" style="display: none"></div>
 
       <div class="membresia-grid">
-
         <!-- ── Columna izq: estado actual ── -->
         <div class="card-estado">
           <div class="card-estado-header">
@@ -295,9 +432,15 @@
 
           <div id="estadoContenido">
             <!-- Skeleton mientras carga -->
-            <div class="skeleton" style="width:60%;margin-bottom:.5rem"></div>
-            <div class="skeleton" style="width:80%;margin-bottom:.5rem"></div>
-            <div class="skeleton" style="width:50%"></div>
+            <div
+              class="skeleton"
+              style="width: 60%; margin-bottom: 0.5rem"
+            ></div>
+            <div
+              class="skeleton"
+              style="width: 80%; margin-bottom: 0.5rem"
+            ></div>
+            <div class="skeleton" style="width: 50%"></div>
           </div>
         </div>
 
@@ -312,16 +455,27 @@
           </div>
 
           <div class="planes-wrap">
-
             <!-- Plan Fundador -->
-            <div class="plan-card" id="planFundador" style="display:none" data-monto="15000" data-meses="1" data-label="Plan Fundador · 1 mes">
+            <div
+              class="plan-card"
+              id="planFundador"
+              style="display: none"
+              data-monto="15000"
+              data-meses="1"
+              data-label="Plan Fundador · 1 mes"
+            >
               <div class="plan-badge">🌱 Fundador</div>
               <div class="plan-card-top">
                 <div>
                   <div class="plan-nombre">Plan Fundador</div>
-                  <div class="plan-desc">Para los primeros 10 vendedores. Precio especial garantizado.</div>
+                  <div class="plan-desc">
+                    Para los primeros 10 vendedores. Precio especial
+                    garantizado.
+                  </div>
                 </div>
-                <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div
+                  style="display: flex; align-items: flex-start; gap: 0.75rem"
+                >
                   <div>
                     <div class="plan-precio">$15.000 <span>/mes</span></div>
                   </div>
@@ -331,13 +485,24 @@
             </div>
 
             <!-- Plan Estándar -->
-            <div class="plan-card seleccionado" id="planEstandar" data-monto="25000" data-meses="1" data-label="Plan Estándar · 1 mes">
+            <div
+              class="plan-card seleccionado"
+              id="planEstandar"
+              data-monto="25000"
+              data-meses="1"
+              data-label="Plan Estándar · 1 mes"
+            >
               <div class="plan-card-top">
                 <div>
                   <div class="plan-nombre">Plan Estándar</div>
-                  <div class="plan-desc">Acceso completo: catálogo, exportación PDF y gestión de productos.</div>
+                  <div class="plan-desc">
+                    Acceso completo: catálogo, exportación PDF y gestión de
+                    productos.
+                  </div>
                 </div>
-                <div style="display:flex;align-items:flex-start;gap:.75rem">
+                <div
+                  style="display: flex; align-items: flex-start; gap: 0.75rem"
+                >
                   <div>
                     <div class="plan-precio">$25.000 <span>/mes</span></div>
                   </div>
@@ -345,20 +510,45 @@
                 </div>
               </div>
             </div>
-
           </div>
 
           <!-- Info antes de pagar -->
           <div id="wompi-container" class="visible">
             <div class="wompi-info">
               <span>🔒</span>
-              <span>Pago seguro procesado por <strong>Wompi</strong> (Bancolombia). Acepta PSE, Nequi y tarjetas.</span>
+              <span
+                >Pago seguro procesado por <strong>Wompi</strong> (Bancolombia).
+                Acepta PSE, Nequi y tarjetas.</span
+              >
             </div>
 
             <!-- Resumen del plan seleccionado -->
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding:.75rem 1rem;background:var(--fondo);border-radius:var(--radio);border:1px solid var(--borde)">
-              <span style="font-size:.85rem;color:var(--texto-medio)" id="resumenLabel">Plan Estándar · 1 mes</span>
-              <span style="font-weight:700;color:var(--verde);font-family:'Nunito',sans-serif" id="resumenMonto">$25.000</span>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding: 0.75rem 1rem;
+                background: var(--fondo);
+                border-radius: var(--radio);
+                border: 1px solid var(--borde);
+              "
+            >
+              <span
+                style="font-size: 0.85rem; color: var(--texto-medio)"
+                id="resumenLabel"
+                >Plan Estándar · 1 mes</span
+              >
+              <span
+                style="
+                  font-weight: 700;
+                  color: var(--verde);
+                  font-family: &quot;Nunito&quot;, sans-serif;
+                "
+                id="resumenMonto"
+                >$25.000</span
+              >
             </div>
 
             <!-- El botón Wompi lo inyecta membresia.js con los datos reales del vendedor -->
@@ -367,7 +557,7 @@
         </div>
 
         <!-- ── Historial de pagos (ancho completo) ── -->
-        <div class="card-estado" style="grid-column:1/-1">
+        <div class="card-estado" style="grid-column: 1/-1">
           <div class="card-estado-header">
             <div class="card-estado-icono">📋</div>
             <div>
@@ -376,12 +566,15 @@
             </div>
           </div>
           <div id="historialContenido">
-            <div class="skeleton" style="width:100%;margin-bottom:.5rem"></div>
-            <div class="skeleton" style="width:80%"></div>
+            <div
+              class="skeleton"
+              style="width: 100%; margin-bottom: 0.5rem"
+            ></div>
+            <div class="skeleton" style="width: 80%"></div>
           </div>
         </div>
-
-      </div><!-- /membresia-grid -->
+      </div>
+      <!-- /membresia-grid -->
     </main>
 
     <script type="module" src="../js/membresia.js"></script>
@@ -392,12 +585,24 @@
         var sidebar = document.querySelector(".sidebar");
         var overlay = document.getElementById("sidebarOverlay");
         if (!btnH || !sidebar || !overlay) return;
-        function abrir() { sidebar.classList.add("abierto"); overlay.classList.add("visible"); btnH.classList.add("abierto"); }
-        function cerrar() { sidebar.classList.remove("abierto"); overlay.classList.remove("visible"); btnH.classList.remove("abierto"); }
-        btnH.addEventListener("click", function () { sidebar.classList.contains("abierto") ? cerrar() : abrir(); });
+        function abrir() {
+          sidebar.classList.add("abierto");
+          overlay.classList.add("visible");
+          btnH.classList.add("abierto");
+        }
+        function cerrar() {
+          sidebar.classList.remove("abierto");
+          overlay.classList.remove("visible");
+          btnH.classList.remove("abierto");
+        }
+        btnH.addEventListener("click", function () {
+          sidebar.classList.contains("abierto") ? cerrar() : abrir();
+        });
         overlay.addEventListener("click", cerrar);
         document.querySelectorAll(".nav a").forEach(function (a) {
-          a.addEventListener("click", function () { if (window.innerWidth <= 700) cerrar(); });
+          a.addEventListener("click", function () {
+            if (window.innerWidth <= 700) cerrar();
+          });
         });
       });
     </script>
