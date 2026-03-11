@@ -15,7 +15,8 @@ import { esFundadorVigente } from "./db.js";
 const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
 
 // ── Llave pública Wompi (sandbox) ──────────────────────────
-const WOMPI_LLAVE_PUBLICA = "pub_test_TtJTkVzWXZARy6JSxSkd7JiOvzEvkDPG";
+const WOMPI_LLAVE_PUBLICA    = "pub_test_TtJTkVzWXZARy6JSxSkd7JiOvzEvkDPG";
+const WOMPI_LLAVE_INTEGRIDAD = "test_integrity_seEkormdzxlxOIBDJUPktF5qDRNggeWT";
 
 // ── Utilidades de fecha ─────────────────────────────────────
 function formatFecha(ts) {
@@ -126,6 +127,19 @@ function renderHistorial(pagos) {
         </span>
       </div>
     </div>`).join("");
+}
+
+// ── Calcular firma de integridad (SHA-256) ──────────────────
+// Formato Wompi: SHA256(referencia + montoEnCentavos + moneda + llaveIntegridad)
+async function calcularFirma(referencia, montoEnCentavos) {
+  const cadena = `${referencia}${montoEnCentavos}COP${WOMPI_LLAVE_INTEGRIDAD}`;
+  const buffer = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(cadena)
+  );
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // ── Inyectar botón Wompi ────────────────────────────────────
