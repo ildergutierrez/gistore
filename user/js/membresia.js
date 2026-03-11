@@ -1,6 +1,7 @@
 // ============================================================
 //  membresia.js — Portal Vendedor GI Store
 //  Muestra estado membresía + inyecta botón Wompi
+//  v20260311-1351
 // ============================================================
 import { db, auth } from "./firebase.js";
 import {
@@ -152,18 +153,10 @@ async function inyectarBotonWompi(vendedorId, monto, referencia, label) {
   // Calcular firma SHA-256 requerida por Wompi (sandbox y producción)
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
-  // Solo enviar redirect-url si el dominio está autorizado en Wompi.
-  // En local (127.x, localhost) Wompi lanza error de "URL inválida".
-  // En producción registra tu dominio en: Wompi → Desarrolladores → Configuración.
-  const esLocal = ["localhost","127.0.0.1","127.0.0.7"].includes(location.hostname)
-    || location.hostname.startsWith("192.168.");
-  const DOMINIO_PRODUCCION = "https://ildergutierrez.github.io";
-  const redirectUrl = esLocal
-    ? null
-    : `${DOMINIO_PRODUCCION}/gistore/user/pages/pago-resultado.html?ref=${referencia}`;
-
   // Wompi solo renderiza el botón cuando el <script> se inserta en el DOM.
   // Por eso hay que limpiar e insertar uno nuevo cada vez que cambia el plan.
+  // NOTA: data-redirect-url omitida — registra ildergutierrez.github.io en
+  // Wompi → Desarrolladores → Configuración para reactivarla.
   wrap.innerHTML = "";
 
   const script = document.createElement("script");
@@ -174,8 +167,6 @@ async function inyectarBotonWompi(vendedorId, monto, referencia, label) {
   script.setAttribute("data-amount-in-cents",         String(montoEnCentavos));
   script.setAttribute("data-reference",               referencia);
   script.setAttribute("data-signature:integrity",     firma);
-  if (redirectUrl)
-    script.setAttribute("data-redirect-url",          redirectUrl);
   script.setAttribute("data-customer-data:email",     auth.currentUser?.email || "");
   script.setAttribute("data-customer-data:full-name", auth.currentUser?.displayName || "");
 
