@@ -29,9 +29,16 @@ function encId(id)   { return btoa(String(id)).replace(/=/g,""); }
 function decId(s)    { const p = s.length%4 ? "=".repeat(4-s.length%4) : ""; try { return atob(s+p); } catch { return null; } }
 function resolveImg(url) {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("data:")) return url;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
+
+  // Limpiar la ruta
   url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
-  return window.location.origin + "/" + url;
+
+  // Base path: vacío en local, /gistore en GitHub Pages
+  const isGitHubPages = window.location.hostname.includes("github.io");
+  const basePath = isGitHubPages ? "/gistore" : "";
+
+  return window.location.origin + basePath + "/" + url;
 }
 
 // ── Estado ─────────────────────────────────────────────────

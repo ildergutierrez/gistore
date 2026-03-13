@@ -54,8 +54,11 @@ function resolverImg(url) {
   // Limpiar la ruta
   url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
 
-  // Siempre desde la raíz del sitio, sin importar en qué página estés
-  return window.location.origin + "/" + url;
+  // Base path: vacío en local, /gistore en GitHub Pages
+  const isGitHubPages = window.location.hostname.includes("github.io");
+  const basePath = isGitHubPages ? "/gistore" : "";
+
+  return window.location.origin + basePath + "/" + url;
 }
 
 // ── Estado global ──────────────────────────────────────────
