@@ -1,5 +1,7 @@
 // ============================================================
 //  vendedores.js — Gestión de vendedores + creación en Auth
+//  Usa segunda instancia Firebase para crear usuarios
+//  sin afectar la sesión del administrador
 // ============================================================
 import { cerrarSesion, protegerPagina } from "./auth.js";
 import {
@@ -8,7 +10,9 @@ import {
 } from "./db.js";
 import { fechaHoy, btnCargando, abrirModal, cerrarModal } from "./ui.js";
 import { auth } from "./firebase.js";
-import { createUserWithEmailAndPassword }
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
 protegerPagina("../index.html");
@@ -17,6 +21,27 @@ document.getElementById("fechaHoy").textContent = fechaHoy();
 document.getElementById("btnSalir").addEventListener("click", async () => {
   await cerrarSesion(); window.location.href = "../index.html";
 });
+
+// ── Segunda instancia Firebase (solo para crear usuarios) ──
+//  Esta instancia es independiente — nunca toca la sesión del admin
+const firebaseConfig = {
+  apiKey:            "AIzaSyBviMH3re9aHjiLb5p-5hSjXd4gAchTvgI",
+  authDomain:        "gi-store-5a5eb.firebaseapp.com",
+  projectId:         "gi-store-5a5eb",
+  storageBucket:     "gi-store-5a5eb.firebasestorage.app",
+  messagingSenderId: "157652441199",
+  appId:             "1:157652441199:web:c42285a80f117f79cc159a"
+};
+const appSecundaria  = initializeApp(firebaseConfig, "vendedores-helper");
+const authSecundaria = getAuth(appSecundaria);
+
+// ── Crear usuario SIN afectar sesión del admin ────────────
+async function crearUsuarioAuth(correo, password) {
+  const cred = await createUserWithEmailAndPassword(authSecundaria, correo, password);
+  // Cerrar sesión en la instancia secundaria inmediatamente
+  await authSecundaria.signOut();
+  return cred.user.uid;
+}
 
 // ── Paleta de colores ─────────────────────────────────────
 const COLORES = [
@@ -50,31 +75,26 @@ function renderColorFila(colorActual) {
   fila.querySelectorAll(".color-op").forEach(el => {
     el.addEventListener("click", () => {
       fila.querySelectorAll(".color-op").forEach(e => {
-        e.style.borderColor = "transparent";
-        e.style.transform = "scale(1)";
+        e.style.borderColor = "transparent"; e.style.transform = "scale(1)";
       });
-      el.style.borderColor = "#fff";
-      el.style.transform = "scale(1.2)";
+      el.style.borderColor = "#fff"; el.style.transform = "scale(1.2)";
       actualizarPreview(el.dataset.color);
     });
     if (el.dataset.color.toLowerCase() === colorActual.toLowerCase()) {
-      el.style.borderColor = "#fff";
-      el.style.transform = "scale(1.2)";
+      el.style.borderColor = "#fff"; el.style.transform = "scale(1.2)";
     }
   });
 
   actualizarPreview(colorActual);
-
   document.getElementById("colorPicker").oninput = (e) => {
     fila.querySelectorAll(".color-op").forEach(el => {
-      el.style.borderColor = "transparent";
-      el.style.transform = "scale(1)";
+      el.style.borderColor = "transparent"; el.style.transform = "scale(1)";
     });
     actualizarPreview(e.target.value);
   };
 }
 
-// ── Ver/ocultar contraseña (modal crear) ──────────────────
+// ── Ver/ocultar contraseña ────────────────────────────────
 document.getElementById("btnVerPass").addEventListener("click", () => {
   const input = document.getElementById("fPassword");
   const btn   = document.getElementById("btnVerPass");
@@ -130,7 +150,12 @@ function renderTabla() {
             <td>
               <div class="td-acciones">
                 <button class="btn-tabla btn-editar"   data-id="${v.id}">✏ Editar</button>
-                ${!v.uid_auth ? `<button class="btn-tabla btn-vincular" data-id="${v.id}" data-correo="${v.correo}" style="background:var(--adv-bg);color:var(--advertencia);border:1.5px solid var(--adv-borde)">🔑 Vincular</button>` : ""}
+                ${!v.uid_auth
+                  ? `<button class="btn-tabla btn-vincular" data-id="${v.id}" data-correo="${v.correo}"
+                             style="background:var(--adv-bg);color:var(--advertencia);border:1.5px solid var(--adv-borde)">
+                       🔑 Vincular
+                     </button>`
+                  : ""}
                 <button class="btn-tabla btn-eliminar" data-id="${v.id}" data-nombre="${v.nombre}">🗑 Eliminar</button>
               </div>
             </td>
@@ -197,22 +222,28 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
   ocultarMensajes();
 
   try {
-    let uid_auth = "";
     if (!id) {
+      // ── Crear nuevo vendedor ──────────────────────────
       mostrarOk("Creando acceso...");
-      const cred = await createUserWithEmailAndPassword(auth, correo, password);
-      uid_auth = cred.user.uid;
-    }
+      let uid_auth = "";
+      try {
+        uid_auth = await crearUsuarioAuth(correo, password);
+      } catch (authErr) {
+        if (authErr.code === "auth/email-already-in-use") {
+          mostrarError("Este correo ya tiene una cuenta registrada. Si el vendedor ya existe en Firebase Auth, usa el botón '🔑 Vincular' en la tabla.");
+          btnCargando(btn, false);
+          return;
+        }
+        throw authErr;
+      }
 
-    const datos = { nombre, ciudad, correo, whatsapp, color, estado };
-    if (uid_auth) datos.uid_auth = uid_auth;
-
-    if (id) {
-      await actualizarVendedor(id, datos);
-      mostrarOk("Vendedor actualizado correctamente.");
-    } else {
-      await crearVendedor({ ...datos, uid_auth });
+      await crearVendedor({ nombre, ciudad, correo, whatsapp, color, estado, uid_auth });
       mostrarOk("✓ Vendedor creado con acceso al portal.");
+
+    } else {
+      // ── Editar vendedor existente ─────────────────────
+      await actualizarVendedor(id, { nombre, ciudad, correo, whatsapp, color, estado });
+      mostrarOk("✓ Vendedor actualizado correctamente.");
     }
 
     await cargar();
@@ -221,12 +252,11 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
   } catch (e) {
     console.error(e);
     const errores = {
-      "auth/email-already-in-use":   "Este correo ya tiene una cuenta registrada.",
       "auth/invalid-email":          "El formato del correo no es válido.",
       "auth/weak-password":          "Contraseña débil. Usa al menos 6 caracteres.",
       "auth/network-request-failed": "Sin conexión. Verifica tu internet.",
     };
-    mostrarError(errores[e.code] || "Error: " + e.message);
+    mostrarError(errores[e.code] || "Hubo un problema al guardar. Intenta de nuevo.");
   } finally {
     btnCargando(btn, false);
   }
@@ -270,21 +300,34 @@ document.getElementById("btnConfirmarVincular").addEventListener("click", async 
   document.getElementById("msgOkV").classList.remove("visible");
 
   try {
-    const cred     = await createUserWithEmailAndPassword(auth, correo, password);
-    const uid_auth = cred.user.uid;
+    let uid_auth = "";
+    try {
+      uid_auth = await crearUsuarioAuth(correo, password);
+    } catch (authErr) {
+      if (authErr.code === "auth/email-already-in-use") {
+        document.getElementById("textoErrorV").textContent =
+          "Este correo ya tiene una cuenta. Ve a Firebase Auth, copia el UID y actualízalo manualmente en Firestore.";
+        document.getElementById("msgErrorV").classList.add("visible");
+        btnCargando(btn, false);
+        return;
+      }
+      throw authErr;
+    }
+
     await actualizarVendedor(idVincular, { uid_auth, correo });
     document.getElementById("textoOkV").textContent = "✓ Acceso vinculado correctamente.";
     document.getElementById("msgOkV").classList.add("visible");
     await cargar();
     setTimeout(() => cerrarModal("modalVincular"), 1500);
+
   } catch (e) {
     const errores = {
-      "auth/email-already-in-use":   "Este correo ya tiene cuenta. Ve a Firebase Auth, copia el UID y actualízalo en Firestore.",
       "auth/invalid-email":          "El formato del correo no es válido.",
       "auth/weak-password":          "Contraseña débil. Usa al menos 6 caracteres.",
       "auth/network-request-failed": "Sin conexión. Verifica tu internet.",
     };
-    document.getElementById("textoErrorV").textContent = errores[e.code] || "Error: " + e.message;
+    document.getElementById("textoErrorV").textContent =
+      errores[e.code] || "Hubo un problema al vincular. Intenta de nuevo.";
     document.getElementById("msgErrorV").classList.add("visible");
     console.error(e);
   } finally {

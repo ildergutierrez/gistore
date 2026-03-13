@@ -22,14 +22,17 @@ async function obtenerVendedor(id) {
 }
 async function crearVendedor(datos) {
   const ref = await addDoc(collection(db, "vendedores"), {
-    nombre:    datos.nombre    || "",
-    ciudad:    datos.ciudad    || "",
-    correo:    datos.correo    || "",
-    whatsapp:  datos.whatsapp  || "",
-    color:     datos.color     || "#1a6b3c",
-    estado:    datos.estado    || "inactivo",
-    uid_auth:  datos.uid_auth  || "",
-    creado_en: new Date().toISOString(),
+    nombre:         datos.nombre      || "",
+    ciudad:         datos.ciudad      || "",
+    correo:         datos.correo      || "",
+    whatsapp:       datos.whatsapp    || "",
+    perfil:         datos.perfil      || "",   // URL de la imagen de perfil
+    foto_perfil:    datos.descripcion || "",   // Descripción de la tienda
+    color:          datos.color       || "#1a6b3c",
+    estado:         datos.estado      || "inactivo",
+    uid_auth:       datos.uid_auth    || "",
+    creado_en:      new Date().toISOString(),
+    actualizado_en: new Date().toISOString(),
   });
   return ref.id;
 }
