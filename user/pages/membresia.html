@@ -500,20 +500,8 @@
               >
             </div>
 
-            <!-- Botón Wompi estático — JS actualiza atributos data- cuando cambia el plan -->
-            <form id="wompi-btn-wrap">
-              <script
-                id="wompiScript"
-                src="https://checkout.wompi.co/widget.js"
-                data-render="button"
-                data-public-key="pub_prod_tbXbehx4yN4oEHj50A4mmWhR2am0ldc2"
-                data-currency="COP"
-                data-amount-in-cents="100"
-                data-reference="GIS-inicio"
-                data-signature:integrity="pendiente"
-                data-redirect-url="https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html">
-              </script>
-            </form>
+            <!-- Botón Wompi — se inserta por JS cuando monto y firma están listos -->
+            <div id="wompi-btn-wrap"></div>
           </div>
         </div>
 

@@ -180,11 +180,15 @@ async function inyectarBotonWompi(monto, referencia) {
   const montoEnCentavos = Math.round(monto) * 100;
   if (!montoEnCentavos || montoEnCentavos <= 0) return;
 
+  // 1. Pedir firma al servidor (el secreto nunca sale de Cloud Functions)
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
+  // 2. Buscar el contenedor actual
   const wrapActual = document.getElementById("wompi-btn-wrap");
   if (!wrapActual) return;
 
+  // 3. Crear form + script nuevos con los datos correctos del plan
+  //    Wompi requiere <script> dentro de <form> y que sea una insercion nueva
   const nuevoForm = document.createElement("form");
   nuevoForm.id = "wompi-btn-wrap";
 
@@ -203,6 +207,8 @@ async function inyectarBotonWompi(monto, referencia) {
     auth.currentUser?.displayName || "");
 
   nuevoForm.appendChild(script);
+
+  // 4. Reemplazar el contenedor — replaceWith mantiene el flujo del DOM
   wrapActual.replaceWith(nuevoForm);
 }
 
