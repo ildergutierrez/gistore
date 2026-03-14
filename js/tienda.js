@@ -1,13 +1,11 @@
 // ============================================================
 //  tienda.html — JS módulo inline
-//  Lee ?v=BASE64_VENDEDOR_ID, carga datos del vendedor y sus
-//  productos con la misma lógica paginada que app.js
 // ============================================================
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
   getFirestore, collection, getDocs, getDoc, doc,
-  getCountFromServer, query, where, orderBy, limit, startAfter
+  query, where
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const _app = initializeApp({
@@ -30,14 +28,9 @@ function decId(s)    { const p = s.length%4 ? "=".repeat(4-s.length%4) : ""; try
 function resolveImg(url) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
-
-  // Limpiar la ruta
   url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
-
-  // Base path: vacío en local, /gistore en GitHub Pages
   const isGitHubPages = window.location.hostname.includes("github.io");
   const basePath = isGitHubPages ? "/gistore" : "";
-
   return window.location.origin + basePath + "/" + url;
 }
 
@@ -49,38 +42,42 @@ let categoriaActiva = "";
 let busquedaActiva  = "";
 let paginaActual    = 1;
 let totalProductos  = 0;
-let cursores        = [null];
 let cachePaginas    = {};
 let seleccionados   = new Map();
 let productoModal   = null;
 let carritoAbierto  = false;
 
+// ── Caché maestro (igual que app.js) ──────────────────────
+//   Una sola query: activo == true AND vendedor_id == ID
+//   Todo lo demás se filtra en cliente → cero índices compuestos
+let _cacheTodos = null;
+
+async function _getTodosActivos() {
+  if (_cacheTodos) return _cacheTodos;
+  const snap = await getDocs(
+    query(collection(_db, "productos"),
+      where("activo",     "==", true),
+      where("vendedor_id","==", VENDEDOR_ID))
+  );
+  let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  docs.sort((a, b) => nor(a.nombre).localeCompare(nor(b.nombre)));
+  _cacheTodos = docs;
+  return docs;
+}
+
 // ── Leer ?v= ──────────────────────────────────────────────
-const params    = new URLSearchParams(window.location.search);
-const vEncoded  = params.get("v");
-VENDEDOR_ID     = vEncoded ? decId(vEncoded) : null;
+const params   = new URLSearchParams(window.location.search);
+const vEncoded = params.get("v");
+VENDEDOR_ID    = vEncoded ? decId(vEncoded) : null;
 
 // ── Helpers locales ────────────────────────────────────────
-function color()  { return VENDEDOR?.color || "#1a6b3c"; }
-function waNum()  { return VENDEDOR?.whatsapp || ""; }
+function color()    { return VENDEDOR?.color || "#1a6b3c"; }
+function waNum()    { return VENDEDOR?.whatsapp || ""; }
 function nomCat(id) { return CATEGORIAS_MAP[id] || ""; }
 
-function resetCursores() { cursores = [null]; cachePaginas = {}; }
-
-// ── Contar productos de este vendedor ──────────────────────
-async function contarTotal() {
-  try {
-    let q = query(collection(_db,"productos"),
-      where("activo","==",true),
-      where("vendedor_id","==",VENDEDOR_ID));
-    if (categoriaActiva)
-      q = query(collection(_db,"productos"),
-        where("activo","==",true),
-        where("vendedor_id","==",VENDEDOR_ID),
-        where("categoria_id","==",categoriaActiva));
-    const snap = await getCountFromServer(q);
-    return snap.data().count;
-  } catch { return 0; }
+function resetCursores() {
+  cachePaginas = {};
+  // _cacheTodos NO se borra: es el universo completo del vendedor
 }
 
 // ── Fetch paginado ─────────────────────────────────────────
@@ -89,30 +86,27 @@ async function fetchPagina(pag) {
   if (cachePaginas[clave]) return cachePaginas[clave];
 
   try {
-    const filtros = [
-      where("activo","==",true),
-      where("vendedor_id","==",VENDEDOR_ID)
-    ];
-    if (categoriaActiva) filtros.push(where("categoria_id","==",categoriaActiva));
-    filtros.push(orderBy("nombre"));
-    filtros.push(limit(POR_PAGINA));
-    const cursor = cursores[pag-1] || null;
-    if (cursor) filtros.push(startAfter(cursor));
+    let todos = await _getTodosActivos();
 
-    const snap = await getDocs(query(collection(_db,"productos"), ...filtros));
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Filtro de categoría en cliente
+    if (categoriaActiva)
+      todos = todos.filter(p => p.categoria_id === categoriaActiva);
 
-    if (snap.docs.length === POR_PAGINA)
-      cursores[pag] = snap.docs[snap.docs.length - 1];
+    // Filtro de texto en cliente
+    if (busquedaActiva.trim()) {
+      const termN = nor(busquedaActiva);
+      todos = todos.filter(p =>
+        nor(p.nombre).includes(termN) ||
+        nor(p.descripcion||"").includes(termN)
+      );
+    }
 
-    const res = busquedaActiva.trim()
-      ? docs.filter(p =>
-          nor(p.nombre).includes(nor(busquedaActiva)) ||
-          nor(p.descripcion||"").includes(nor(busquedaActiva)))
-      : docs;
+    totalProductos = todos.length;
 
-    cachePaginas[clave] = res;
-    return res;
+    const inicio    = (pag - 1) * POR_PAGINA;
+    const resultado = todos.slice(inicio, inicio + POR_PAGINA);
+    cachePaginas[clave] = resultado;
+    return resultado;
   } catch(e) { console.error(e); return []; }
 }
 
@@ -182,7 +176,6 @@ function renderFiltros(cats) {
     b.addEventListener("click", async () => {
       if (categoriaActiva === id) return;
       categoriaActiva = id; paginaActual = 1; resetCursores();
-      totalProductos = await contarTotal();
       renderFiltros(cats); await renderCatalogo();
     });
     cont.appendChild(b);
@@ -198,23 +191,33 @@ async function renderCatalogo() {
   grilla.innerHTML = ""; setCargando(true);
 
   const pagina    = await fetchPagina(paginaActual);
-  const totalPags = Math.max(1, Math.ceil(totalProductos / POR_PAGINA));
-  const desde     = (paginaActual - 1) * POR_PAGINA + 1;
-  const hasta     = Math.min(paginaActual * POR_PAGINA, totalProductos);
-
   setCargando(false);
 
-  infoEl.textContent = totalProductos > 0
-    ? `${totalProductos.toLocaleString("es-CO")} productos · mostrando ${desde}–${hasta} · página ${paginaActual} de ${totalPags}`
-    : (pagina.length ? `Página ${paginaActual}` : "Sin resultados");
+  const total     = totalProductos;
+  const totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
+  const desde     = pagina.length ? (paginaActual - 1) * POR_PAGINA + 1 : 0;
+  const hasta     = Math.min(paginaActual * POR_PAGINA, total);
+
+  if (busquedaActiva.trim()) {
+    infoEl.textContent = total > 0
+      ? `${total} resultado${total !== 1 ? "s" : ""} para "${busquedaActiva}"`
+      : `Sin resultados para "${busquedaActiva}"`;
+  } else if (total > 0) {
+    infoEl.textContent = `${total.toLocaleString("es-CO")} productos · mostrando ${desde}–${hasta} · página ${paginaActual} de ${totalPags}`;
+  } else {
+    infoEl.textContent = "Sin resultados";
+  }
 
   if (!pagina.length) {
     grilla.innerHTML = `<div class="sin-resultados"><div class="icono">🔍</div>
-      <p>No hay productos${categoriaActiva ? " en esta categoría" : ""}.</p></div>`;
+      <p>${busquedaActiva.trim()
+        ? "No encontramos ese producto. Intenta con otro término."
+        : "No hay productos" + (categoriaActiva ? " en esta categoría" : "") + "."
+      }</p></div>`;
   } else {
     pagina.forEach(p => grilla.appendChild(crearTarjeta(p)));
   }
-  renderPaginado(totalProductos || pagina.length * totalPags);
+  renderPaginado(total);
 }
 
 // ── Tarjeta ────────────────────────────────────────────────
@@ -435,22 +438,71 @@ function enviarWaCarrito() {
   ), "_blank");
 }
 
-// ── Compartir ──────────────────────────────────────────────
+// ── Compartir (mismo patrón que app.js) ───────────────────
 function compartir(prod) {
-  const url    = new URL(window.location.href);
-  url.searchParams.set("p", encId(prod.id));
-  const enlace = url.toString();
-  const texto  = `🌿 ¡Mira esto!\n*${prod.nombre}*\n💵 ${fmt(prod.valor)}\n👇 ${enlace}`;
+  const u = new URL(window.location.href);
+  u.searchParams.set("p", encId(prod.id));
+  const enlace = u.toString();
+  const texto  = `🌿 ¡Mira este producto!\n*${prod.nombre}*\n💵 ${fmt(prod.valor)}`;
+
   if (navigator.share) {
     navigator.share({ title: prod.nombre, text: texto, url: enlace }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(texto).then(() => {
-      const btn = document.getElementById("btn-compartir-modal");
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✓ ¡Copiado!"; btn.style.background = "#1a6b3c"; btn.style.color = "#fff";
-      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ""; btn.style.color = ""; }, 2000);
-    });
+    return;
   }
+  _mostrarMenuCompartir(enlace, texto);
+}
+
+function _mostrarMenuCompartir(enlace, texto) {
+  document.getElementById("gi-share-menu")?.remove();
+  const waTexto = encodeURIComponent(`${texto}\n👇 ${enlace}`);
+  const tgUrl   = encodeURIComponent(enlace);
+  const tgTxt   = encodeURIComponent(texto);
+
+  const menu = document.createElement("div");
+  menu.id    = "gi-share-menu";
+  menu.innerHTML = `
+    <div class="gsm-backdrop"></div>
+    <div class="gsm-box">
+      <p class="gsm-titulo">Compartir producto</p>
+      <a class="gsm-opcion gsm-wa"
+         href="https://web.whatsapp.com/send?text=${waTexto}"
+         target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z"/>
+        </svg>
+        WhatsApp Web
+      </a>
+      <a class="gsm-opcion gsm-tg"
+         href="https://t.me/share/url?url=${tgUrl}&text=${tgTxt}"
+         target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.26 14.4l-2.95-.924c-.64-.203-.654-.64.136-.948l11.527-4.443c.537-.194 1.006.131.59.163z"/>
+        </svg>
+        Telegram
+      </a>
+      <button class="gsm-opcion gsm-copy" id="gsm-copy-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        Copiar enlace
+      </button>
+    </div>`;
+
+  document.body.appendChild(menu);
+  menu.querySelector(".gsm-backdrop").addEventListener("click", () => menu.remove());
+  menu.querySelector("#gsm-copy-btn").addEventListener("click", () => {
+    navigator.clipboard.writeText(enlace).then(() => {
+      const btn = menu.querySelector("#gsm-copy-btn");
+      btn.innerHTML        = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ¡Enlace copiado!`;
+      btn.style.background = "#1a6b3c";
+      btn.style.color      = "#fff";
+      setTimeout(() => menu.remove(), 1500);
+    }).catch(() => { prompt("Copia este enlace:", enlace); });
+  });
+  const onKey = e => { if (e.key === "Escape") { menu.remove(); document.removeEventListener("keydown", onKey); } };
+  document.addEventListener("keydown", onKey);
 }
 
 // ── Inicio ─────────────────────────────────────────────────
@@ -471,24 +523,19 @@ async function iniciar() {
     }
     VENDEDOR = { id: vSnap.id, ...vSnap.data() };
 
-    // Cargar categorías
-    try {
-      const cSnap = await getDocs(query(collection(_db,"categorias"), orderBy("orden")));
-      cSnap.docs.forEach(d => { CATEGORIAS_MAP[d.id] = d.data().nombre; });
-    } catch {
-      const cSnap = await getDocs(collection(_db,"categorias"));
-      cSnap.docs.forEach(d => { CATEGORIAS_MAP[d.id] = d.data().nombre; });
-    }
+    // Cargar categorías (query simple, sin orderBy compuesto)
+    const cSnap = await getDocs(collection(_db, "categorias"));
+    cSnap.docs.forEach(d => { CATEGORIAS_MAP[d.id] = d.data().nombre; });
 
-    // Contar productos de esta tienda
-    totalProductos = await contarTotal();
+    // Primera carga — fetchPagina actualiza totalProductos
+    const firstPage = await fetchPagina(1);
 
-    // Hero
+    // Hero con total real
     renderHero(totalProductos);
 
-    // Obtener categorías que sí tiene esta tienda
-    const firstPage = await fetchPagina(1);
-    const catsEnTienda = [...new Set(firstPage.map(p => p.categoria_id))]
+    // Categorías presentes en los productos de esta tienda
+    const todosProds  = await _getTodosActivos();
+    const catsEnTienda = [...new Set(todosProds.map(p => p.categoria_id))]
       .filter(id => id && CATEGORIAS_MAP[id])
       .map(id => [id, CATEGORIAS_MAP[id]]);
     renderFiltros(catsEnTienda);
@@ -499,7 +546,7 @@ async function iniciar() {
     const enc = new URLSearchParams(window.location.search).get("p");
     if (enc) {
       const id   = decId(enc);
-      const prod = firstPage.find(p => p.id === id);
+      const prod = todosProds.find(p => p.id === id);
       if (prod) setTimeout(() => abrirModal(prod), 350);
     }
   } catch (e) {

@@ -15,8 +15,8 @@
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
-  getFirestore, collection, getDocs, getCountFromServer,
-  query, where, orderBy, limit, startAfter
+  getFirestore, collection, getDocs,
+  query, where
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // ── Firebase ───────────────────────────────────────────────
@@ -105,89 +105,62 @@ async function obtenerVendedores() {
   return s.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// ── Conteo total (sin descargar productos) ─────────────────
-async function contarTotal() {
-  try {
-    // Solo contamos productos de vendedores activos
-    // Firestore "in" acepta hasta 30 valores en la versión actual
-    if (!idsActivos.length) return 0;
-    const chunks = [];
-    for (let i = 0; i < idsActivos.length; i += 30)
-      chunks.push(idsActivos.slice(i, i + 30));
+// ── Conteo total ───────────────────────────────────────────
+//   totalProductos lo actualiza fetchPagina() en cada render.
+//   Esta función ya solo devuelve 0 como valor inicial;
+//   el número real llega tras el primer fetchPagina().
+async function contarTotal() { return 0; }
 
-    let total = 0;
-    for (const chunk of chunks) {
-      const q = query(
-        collection(_db, "productos"),
-        where("activo",      "==", true),
-        where("vendedor_id", "in", chunk)
-      );
-      const snap = await getCountFromServer(q);
-      total += snap.data().count;
-    }
-    if (categoriaActiva) {
-      // Re-contar con filtro de categoría
-      let t2 = 0;
-      for (const chunk of chunks) {
-        const q = query(
-          collection(_db, "productos"),
-          where("activo",       "==", true),
-          where("vendedor_id",  "in", chunk),
-          where("categoria_id", "==", categoriaActiva)
-        );
-        const snap = await getCountFromServer(q);
-        t2 += snap.data().count;
-      }
-      return t2;
-    }
-    return total;
-  } catch (e) {
-    console.warn("getCountFromServer no disponible, estimando…", e);
-    return 0;
-  }
+// ── Caché maestro de productos ────────────────────────────
+//   UNA sola query a Firestore: solo "activo == true".
+//   Todo lo demás (categoría, vendedor, búsqueda, orden)
+//   se resuelve en cliente → cero índices compuestos.
+let _cacheTodos = null; // docs[] o null
+
+async function _getTodosActivos() {
+  if (_cacheTodos) return _cacheTodos;
+
+  const snap = await getDocs(
+    query(collection(_db, "productos"), where("activo", "==", true))
+  );
+  let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  // Filtrar vendedores activos en cliente
+  if (idsActivos.length)
+    docs = docs.filter(p => idsActivos.includes(p.vendedor_id));
+
+  // Ordenar por nombre en cliente
+  docs.sort((a, b) => normalizar(a.nombre).localeCompare(normalizar(b.nombre)));
+
+  _cacheTodos = docs;
+  return docs;
 }
 
-// ── Fetch de UNA página desde Firestore ───────────────────
-//   Solo descarga los POR_PAGINA productos necesarios.
-//   La búsqueda de texto se aplica en cliente (Firestore no
-//   tiene full-text) sobre el lote recibido.
+// ── Fetch de UNA página ────────────────────────────────────
 async function fetchPagina(pag) {
   const claveCache = `${pag}|${categoriaActiva}|${normalizar(busquedaActiva)}`;
   if (cachePaginas[claveCache]) return cachePaginas[claveCache];
 
   try {
-    const filtros = [where("activo", "==", true)];
+    let todos = await _getTodosActivos();
 
-    if (idsActivos.length) {
-      // Firestore permite máx 30 en "in", usamos los primeros 30.
-      // En producción con > 30 vendedores conviene un índice + campo extra.
-      filtros.push(where("vendedor_id", "in", idsActivos.slice(0, 30)));
-    }
-    if (categoriaActiva) {
-      filtros.push(where("categoria_id", "==", categoriaActiva));
-    }
-
-    filtros.push(orderBy("nombre"));
-    filtros.push(limit(POR_PAGINA));
-
-    const cursor = cursores[pag - 1] || null;
-    if (cursor) filtros.push(startAfter(cursor));
-
-    const snap = await getDocs(query(collection(_db, "productos"), ...filtros));
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // Guardamos cursor para la página siguiente
-    if (snap.docs.length === POR_PAGINA) {
-      cursores[pag] = snap.docs[snap.docs.length - 1];
-    }
+    // Filtro de categoría en cliente
+    if (categoriaActiva)
+      todos = todos.filter(p => p.categoria_id === categoriaActiva);
 
     // Filtro de texto en cliente
-    const resultado = busquedaActiva.trim()
-      ? docs.filter(p =>
-          normalizar(p.nombre).includes(normalizar(busquedaActiva)) ||
-          normalizar(p.descripcion || "").includes(normalizar(busquedaActiva)))
-      : docs;
+    if (busquedaActiva.trim()) {
+      const termN = normalizar(busquedaActiva);
+      todos = todos.filter(p =>
+        normalizar(p.nombre).includes(termN) ||
+        normalizar(p.descripcion || "").includes(termN)
+      );
+    }
 
+    totalProductos = todos.length;
+
+    const inicio    = (pag - 1) * POR_PAGINA;
+    const resultado = todos.slice(inicio, inicio + POR_PAGINA);
     cachePaginas[claveCache] = resultado;
     return resultado;
   } catch (e) {
@@ -199,6 +172,7 @@ async function fetchPagina(pag) {
 function resetCursores() {
   cursores     = [null];
   cachePaginas = {};
+  // _cacheTodos NO se borra: es el universo completo, válido siempre
 }
 
 // ── Spinner de carga ───────────────────────────────────────
@@ -276,30 +250,39 @@ async function renderCatalogo() {
   grilla.innerHTML = "";
   mostrarCargando(true);
 
-  const pagina    = await fetchPagina(paginaActual);
-  const totalPags = Math.max(1, Math.ceil(totalProductos / POR_PAGINA));
-  const desde     = (paginaActual - 1) * POR_PAGINA + 1;
-  const hasta     = Math.min(paginaActual * POR_PAGINA, totalProductos);
-
+  // fetchPagina puede actualizar totalProductos (cuando hay búsqueda activa)
+  const pagina = await fetchPagina(paginaActual);
   mostrarCargando(false);
 
-  if (totalProductos > 0) {
+  const total     = totalProductos;
+  const totalPags = Math.max(1, Math.ceil(total / POR_PAGINA));
+  const desde     = pagina.length ? (paginaActual - 1) * POR_PAGINA + 1 : 0;
+  const hasta     = Math.min(paginaActual * POR_PAGINA, total);
+
+  if (busquedaActiva.trim()) {
+    infoEl.textContent = total > 0
+      ? `${total} resultado${total !== 1 ? "s" : ""} para "${busquedaActiva}"`
+      : `Sin resultados para "${busquedaActiva}"`;
+  } else if (total > 0) {
     infoEl.textContent =
-      `${totalProductos.toLocaleString("es-CO")} productos · ` +
+      `${total.toLocaleString("es-CO")} productos · ` +
       `mostrando ${desde}–${hasta} · página ${paginaActual} de ${totalPags}`;
   } else {
-    infoEl.textContent = pagina.length ? `Página ${paginaActual}` : "Sin resultados";
+    infoEl.textContent = "Sin resultados";
   }
 
   if (!pagina.length) {
     grilla.innerHTML =
       `<div class="sin-resultados"><div class="icono">🔍</div>
-       <p>No hay productos${categoriaActiva ? " en esta categoría" : ""}.</p></div>`;
+       <p>${busquedaActiva.trim()
+         ? "No encontramos ese producto. Intenta con otro término."
+         : "No hay productos" + (categoriaActiva ? " en esta categoría" : "") + "."
+       }</p></div>`;
   } else {
     pagina.forEach(p => grilla.appendChild(crearTarjeta(p)));
   }
 
-  renderPaginado(totalProductos || pagina.length * totalPags);
+  renderPaginado(total);
 }
 
 // ── Tarjeta ────────────────────────────────────────────────
@@ -638,22 +621,76 @@ function enviarWhatsappCarrito() {
 
 // ── Compartir ──────────────────────────────────────────────
 function compartirProducto(prod) {
-  const url    = new URL(window.location.href);
-  url.searchParams.set("p", encodeId(prod.id));
-  const enlace = url.toString();
-  const texto  = `🌿 ¡Mira esto!\n*${prod.nombre}*\n💵 ${formatoPrecio(prod.valor)}\n👇 ${enlace}`;
+  const u = new URL(window.location.href);
+  u.searchParams.set("p", encodeId(prod.id));
+  const enlace = u.toString();
+  const texto  = `🌿 ¡Mira este producto!\n*${prod.nombre}*\n💵 ${formatoPrecio(prod.valor)}`;
+
+  // Móvil / navegador con soporte nativo → menú del SO
   if (navigator.share) {
     navigator.share({ title: prod.nombre, text: texto, url: enlace }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(texto).then(() => {
-      const btn  = document.getElementById("btn-compartir-modal");
-      const orig = btn.innerHTML;
-      btn.innerHTML        = "✓ ¡Copiado!";
+    return;
+  }
+
+  // PC → mini menú elegante
+  _mostrarMenuCompartir(enlace, texto);
+}
+
+function _mostrarMenuCompartir(enlace, texto) {
+  document.getElementById("gi-share-menu")?.remove();
+
+  const waTexto = encodeURIComponent(`${texto}\n👇 ${enlace}`);
+  const tgUrl   = encodeURIComponent(enlace);
+  const tgTxt   = encodeURIComponent(texto);
+
+  const menu = document.createElement("div");
+  menu.id    = "gi-share-menu";
+  menu.innerHTML = `
+    <div class="gsm-backdrop"></div>
+    <div class="gsm-box">
+      <p class="gsm-titulo">Compartir producto</p>
+      <a class="gsm-opcion gsm-wa"
+         href="https://web.whatsapp.com/send?text=${waTexto}"
+         target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z"/>
+        </svg>
+        WhatsApp Web
+      </a>
+      <a class="gsm-opcion gsm-tg"
+         href="https://t.me/share/url?url=${tgUrl}&text=${tgTxt}"
+         target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.26 14.4l-2.95-.924c-.64-.203-.654-.64.136-.948l11.527-4.443c.537-.194 1.006.131.59.163z"/>
+        </svg>
+        Telegram
+      </a>
+      <button class="gsm-opcion gsm-copy" id="gsm-copy-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+        </svg>
+        Copiar enlace
+      </button>
+    </div>`;
+
+  document.body.appendChild(menu);
+
+  menu.querySelector(".gsm-backdrop").addEventListener("click", () => menu.remove());
+
+  menu.querySelector("#gsm-copy-btn").addEventListener("click", () => {
+    navigator.clipboard.writeText(enlace).then(() => {
+      const btn = menu.querySelector("#gsm-copy-btn");
+      btn.innerHTML        = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ¡Enlace copiado!`;
       btn.style.background = "#1a6b3c";
       btn.style.color      = "#fff";
-      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ""; btn.style.color = ""; }, 2000);
-    });
-  }
+      setTimeout(() => menu.remove(), 1500);
+    }).catch(() => { prompt("Copia este enlace:", enlace); });
+  });
+
+  const onKey = e => { if (e.key === "Escape") { menu.remove(); document.removeEventListener("keydown", onKey); } };
+  document.addEventListener("keydown", onKey);
 }
 
 // ── DOMContentLoaded ───────────────────────────────────────

@@ -79,6 +79,66 @@
     .btn-login-admin:hover {
       background: rgba(0, 0, 0, 0.35) !important;
     }
+    /* ── Mini menú compartir (PC fallback) ───────────────────── */
+    #gi-share-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gsm-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .gsm-box {
+      position: relative;
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem 1.25rem;
+      width: min(320px, 90vw);
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      animation: gsm-in .18s ease;
+    }
+    @keyframes gsm-in {
+      from { opacity: 0; transform: scale(.94) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)   translateY(0);   }
+    }
+    .gsm-titulo {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #888;
+      margin: 0 0 .25rem;
+    }
+    .gsm-opcion {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .92rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: filter .15s, transform .1s;
+      text-align: left;
+    }
+    .gsm-opcion:hover  { filter: brightness(.92); transform: translateY(-1px); }
+    .gsm-opcion:active { transform: translateY(0); }
+    .gsm-wa   { background: #25d366; color: #fff; }
+    .gsm-tg   { background: #229ed9; color: #fff; }
+    .gsm-copy { background: #f0f0f0; color: #333; }
   </style>
 </head>
 
