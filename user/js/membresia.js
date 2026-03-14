@@ -177,34 +177,33 @@ async function calcularFirma(referencia, montoEnCentavos) {
 // ════════════════════════════════════════════════════════════
 
 async function inyectarBotonWompi(monto, referencia) {
-  const wrap = document.getElementById("wompi-btn-wrap");
-  if (!wrap) return;
-
   const montoEnCentavos = Math.round(monto) * 100;
   if (!montoEnCentavos || montoEnCentavos <= 0) return;
 
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
-  wrap.innerHTML = "";
+  const wrapActual = document.getElementById("wompi-btn-wrap");
+  if (!wrapActual) return;
 
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = `https://checkout.wompi.co/widget.js?t=${Date.now()}`;
-    script.setAttribute("data-render",              "button");
-    script.setAttribute("data-public-key",          WOMPI_PUB_KEY);
-    script.setAttribute("data-currency",            "COP");
-    script.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
-    script.setAttribute("data-reference",           referencia);
-    script.setAttribute("data-signature:integrity", firma);
-    script.setAttribute("data-redirect-url",        REDIRECT_URL);
-    script.setAttribute("data-customer-data:email",
-      auth.currentUser?.email || "");
-    script.setAttribute("data-customer-data:full-name",
-      auth.currentUser?.displayName || "");
-    script.onload  = () => resolve();
-    script.onerror = () => resolve();
-    wrap.appendChild(script);
-  });
+  const nuevoForm = document.createElement("form");
+  nuevoForm.id = "wompi-btn-wrap";
+
+  const script = document.createElement("script");
+  script.src = "https://checkout.wompi.co/widget.js";
+  script.setAttribute("data-render",              "button");
+  script.setAttribute("data-public-key",          WOMPI_PUB_KEY);
+  script.setAttribute("data-currency",            "COP");
+  script.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
+  script.setAttribute("data-reference",           referencia);
+  script.setAttribute("data-signature:integrity", firma);
+  script.setAttribute("data-redirect-url",        REDIRECT_URL);
+  script.setAttribute("data-customer-data:email",
+    auth.currentUser?.email || "");
+  script.setAttribute("data-customer-data:full-name",
+    auth.currentUser?.displayName || "");
+
+  nuevoForm.appendChild(script);
+  wrapActual.replaceWith(nuevoForm);
 }
 
 function generarReferencia(vendedorId, monto) {
