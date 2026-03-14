@@ -180,36 +180,58 @@ async function inyectarBotonWompi(monto, referencia) {
   const montoEnCentavos = Math.round(monto) * 100;
   if (!montoEnCentavos || montoEnCentavos <= 0) return;
 
-  // 1. Pedir firma al servidor (el secreto nunca sale de Cloud Functions)
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
-  // 2. Buscar el contenedor actual
-  const wrapActual = document.getElementById("wompi-btn-wrap");
-  if (!wrapActual) return;
+  const wrap = document.getElementById("wompi-btn-wrap");
+  if (!wrap) return;
 
-  // 3. Crear form + script nuevos con los datos correctos del plan
-  //    Wompi requiere <script> dentro de <form> y que sea una insercion nueva
-  const nuevoForm = document.createElement("form");
-  nuevoForm.id = "wompi-btn-wrap";
+  // Wompi requiere que su script esté en el HTML desde el inicio.
+  // La única forma de re-renderizarlo dinámicamente es via iframe
+  // con el HTML completo del widget adentro.
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin:0; padding:0; background:transparent; }
+    .waybox-button { width:100% !important; }
+  </style>
+</head>
+<body>
+  <form>
+    <script
+      src="https://checkout.wompi.co/widget.js"
+      data-render="button"
+      data-public-key="${WOMPI_PUB_KEY}"
+      data-currency="COP"
+      data-amount-in-cents="${montoEnCentavos}"
+      data-reference="${referencia}"
+      data-signature:integrity="${firma}"
+      data-redirect-url="${REDIRECT_URL}"
+      data-customer-data:email="${auth.currentUser?.email || ""}"
+      data-customer-data:full-name="${auth.currentUser?.displayName || ""}">
+    </scr` + `ipt>
+  </form>
+</body>
+</html>`;
 
-  const script = document.createElement("script");
-  script.src = "https://checkout.wompi.co/widget.js";
-  script.setAttribute("data-render",              "button");
-  script.setAttribute("data-public-key",          WOMPI_PUB_KEY);
-  script.setAttribute("data-currency",            "COP");
-  script.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
-  script.setAttribute("data-reference",           referencia);
-  script.setAttribute("data-signature:integrity", firma);
-  script.setAttribute("data-redirect-url",        REDIRECT_URL);
-  script.setAttribute("data-customer-data:email",
-    auth.currentUser?.email || "");
-  script.setAttribute("data-customer-data:full-name",
-    auth.currentUser?.displayName || "");
+  wrap.innerHTML = "";
 
-  nuevoForm.appendChild(script);
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "width:100%;border:none;min-height:60px;overflow:hidden;";
+  iframe.scrolling = "no";
+  wrap.appendChild(iframe);
 
-  // 4. Reemplazar el contenedor — replaceWith mantiene el flujo del DOM
-  wrapActual.replaceWith(nuevoForm);
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  // Ajustar altura del iframe cuando el botón cargue
+  iframe.onload = () => {
+    try {
+      iframe.style.height = (iframe.contentWindow.document.body.scrollHeight + 10) + "px";
+    } catch(e) {}
+  };
 }
 
 function generarReferencia(vendedorId, monto) {
