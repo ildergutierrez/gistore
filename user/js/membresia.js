@@ -185,6 +185,13 @@ async function inyectarBotonWompi(monto, referencia) {
 
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
+  console.log("WOMPI →", {
+    key:   WOMPI_PUB_KEY,
+    monto: montoEnCentavos,
+    ref:   referencia,
+    firma,
+  });
+
   wrap.innerHTML = "";
 
   const script = document.createElement("script");
