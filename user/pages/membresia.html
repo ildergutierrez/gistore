@@ -454,62 +454,11 @@
             </div>
           </div>
 
-          <div class="planes-wrap">
-            <!-- Plan Fundador -->
-            <div
-              class="plan-card"
-              id="planFundador"
-              style="display: none"
-              data-monto="15000"
-              data-meses="1"
-              data-label="Plan Fundador · 1 mes"
-            >
-              <div class="plan-badge">🌱 Fundador</div>
-              <div class="plan-card-top">
-                <div>
-                  <div class="plan-nombre">Plan Fundador</div>
-                  <div class="plan-desc">
-                    Para los primeros 10 vendedores. Precio especial
-                    garantizado.
-                  </div>
-                </div>
-                <div
-                  style="display: flex; align-items: flex-start; gap: 0.75rem"
-                >
-                  <div>
-                    <div class="plan-precio">$15.000 <span>/mes</span></div>
-                  </div>
-                  <div class="plan-radio"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Plan Estándar -->
-            <div
-              class="plan-card seleccionado"
-              id="planEstandar"
-              data-monto="25000"
-              data-meses="1"
-              data-label="Plan Estándar · 1 mes"
-            >
-              <div class="plan-card-top">
-                <div>
-                  <div class="plan-nombre">Plan Estándar</div>
-                  <div class="plan-desc">
-                    Acceso completo: catálogo, exportación PDF y gestión de
-                    productos.
-                  </div>
-                </div>
-                <div
-                  style="display: flex; align-items: flex-start; gap: 0.75rem"
-                >
-                  <div>
-                    <div class="plan-precio">$25.000 <span>/mes</span></div>
-                  </div>
-                  <div class="plan-radio"></div>
-                </div>
-              </div>
-            </div>
+          <!-- Los planes se renderizan dinámicamente desde Firestore -->
+          <div class="planes-wrap" id="planesWrap">
+            <!-- skeleton mientras carga -->
+            <div class="skeleton" style="height:80px;border-radius:12px"></div>
+            <div class="skeleton" style="height:80px;border-radius:12px;margin-top:.75rem"></div>
           </div>
 
           <!-- Info antes de pagar -->
@@ -552,7 +501,7 @@
             </div>
 
             <!-- El botón Wompi lo inyecta membresia.js con los datos reales del vendedor -->
-            <div id="wompi-btn-wrap"></div>
+            <form id="wompi-btn-wrap"></form>
           </div>
         </div>
 

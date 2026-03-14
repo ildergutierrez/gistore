@@ -142,6 +142,21 @@ async function reactivarProductosVendedor(vendedor_id) {
   return snap.docs.length;
 }
 
+// ── Planes de membresía (lectura pública) ─────────────────
+async function obtenerPlanes() {
+  try {
+    const q    = query(collection(db, "planes_membresia"), orderBy("orden"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    // Fallback sin índice
+    const snap = await getDocs(collection(db, "planes_membresia"));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
+    return docs;
+  }
+}
+
 // ── Membresía vigente ─────────────────────────────────────
 function membresiaVigente(m) {
   if (!m || m.estado !== "activa") return false;
@@ -161,4 +176,5 @@ export {
   actualizarProducto,
   eliminarProducto,
   membresiaVigente,
+  obtenerPlanes,
 };

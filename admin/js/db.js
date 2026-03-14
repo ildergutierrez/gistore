@@ -251,6 +251,51 @@ function membresiaVigente(m) {
   return m.fecha_fin >= new Date().toISOString().split("T")[0];
 }
 
+// ══════════════════════════════════════════════════════════
+//  PLANES DE MEMBRESÍA
+//  Colección: "planes_membresia"
+//  Campos: nombre, descripcion, precio (COP), duracion_dias,
+//          activo, orden, creado_en, actualizado_en
+// ══════════════════════════════════════════════════════════
+async function obtenerPlanes() {
+  try {
+    const q    = query(collection(db, "planes_membresia"), orderBy("orden"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    // Fallback sin índice compuesto
+    const snap = await getDocs(collection(db, "planes_membresia"));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
+    return docs;
+  }
+}
+
+async function crearPlan(datos) {
+  const ref = await addDoc(collection(db, "planes_membresia"), {
+    nombre:        datos.nombre              || "",
+    descripcion:   datos.descripcion         || "",
+    precio:        Number(datos.precio)      || 0,
+    duracion_dias: Number(datos.duracion_dias) || 0,
+    activo:        datos.activo              ?? true,
+    orden:         Number(datos.orden)       || 0,
+    creado_en:     new Date().toISOString(),
+    actualizado_en: new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+async function actualizarPlan(id, datos) {
+  await updateDoc(doc(db, "planes_membresia", id), {
+    ...datos,
+    actualizado_en: new Date().toISOString(),
+  });
+}
+
+async function eliminarPlan(id) {
+  await deleteDoc(doc(db, "planes_membresia", id));
+}
+
 export {
   obtenerVendedores, obtenerVendedor,
   crearVendedor, actualizarVendedor, eliminarVendedor,
@@ -264,4 +309,5 @@ export {
   obtenerProductosPorVendedor, obtenerProducto,
   crearProducto, actualizarProducto, eliminarProducto,
   membresiaVigente,
+  obtenerPlanes, crearPlan, actualizarPlan, eliminarPlan,
 };

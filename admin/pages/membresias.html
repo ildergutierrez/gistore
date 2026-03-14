@@ -52,22 +52,43 @@
     </div>
   </div>
 
-  <!-- Panel membresías -->
+  <!-- ══ 1. Panel membresías ══ -->
   <div class="panel" style="margin-bottom:1.5rem">
     <div class="panel-header">
       <h2>🎫 Lista de membresías</h2>
       <span id="totalMembresias" style="font-size:.8rem;color:var(--texto-suave)"></span>
     </div>
     <div id="tablaWrap"><p class="cargando-txt">Cargando...</p></div>
+    <!-- Paginado: visible solo cuando hay más de 30 registros -->
+    <div id="paginadoWrap" style="padding:.75rem 1.5rem;display:flex;align-items:center;
+         justify-content:center;gap:.4rem;flex-wrap:wrap"></div>
   </div>
 
-  <!-- Panel fundadores -->
+  <!-- ══ 2. Panel planes de membresía (sección completamente independiente) ══ -->
+  <div class="panel" id="panelPlanes" style="margin-bottom:1.5rem">
+    <div class="panel-header">
+      <h2>📋 Planes de membresía</h2>
+      <button class="btn btn-primary" id="btnNuevoPlan"
+              style="font-size:.82rem;padding:.45rem .95rem">+ Nuevo plan</button>
+    </div>
+    <div style="padding:.5rem 1.5rem .25rem">
+      <p style="font-size:.83rem;color:var(--texto-medio)">
+        Define los planes disponibles con su precio y duración. El sistema usa estos planes para
+        identificar qué compró el vendedor y calcular automáticamente la fecha de vencimiento.
+      </p>
+    </div>
+    <div id="tablaPlanes"><p class="cargando-txt" style="padding:1rem 1.5rem">Cargando planes...</p></div>
+  </div>
+
+  <!-- ══ 3. Panel fundadores ══ -->
   <div class="panel" id="panelFundadores">
     <p class="cargando-txt">Cargando fundadores...</p>
   </div>
 </main>
 
-<!-- ── Modal Crear / Editar membresía ── -->
+<!-- ════════════════════════════════════════════════════════
+     Modal Crear / Editar membresía  (sin cambios)
+     ════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-titulo" id="modalTitulo">Nueva membresía</div>
@@ -113,7 +134,9 @@
   </div>
 </div>
 
-<!-- ── Modal Confirmar Revocar membresía ── -->
+<!-- ════════════════════════════════════════════════════════
+     Modal Confirmar Revocar membresía  (sin cambios)
+     ════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalEliminar">
   <div class="modal" style="max-width:420px">
     <div class="modal-titulo">⚠ Revocar membresía</div>
@@ -135,7 +158,9 @@
   </div>
 </div>
 
-<!-- ── Modal Registrar fundador ── -->
+<!-- ════════════════════════════════════════════════════════
+     Modal Registrar fundador  (sin cambios)
+     ════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalFundadorOverlay">
   <div class="modal" style="max-width:420px">
     <div class="modal-titulo">⭐ Registrar vendedor fundador</div>
@@ -158,6 +183,83 @@
   </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════
+     Modal Crear / Editar plan de membresía  (NUEVO)
+     ════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalPlanOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-titulo" id="modalPlanTitulo">Nuevo plan</div>
+    <div class="msg-error" id="msgErrorPlan"><span>⚠&nbsp;</span><span id="textoErrorPlan"></span></div>
+    <div class="msg-ok"    id="msgOkPlan"   ><span>✓&nbsp;</span><span id="textoOkPlan"></span></div>
+    <input type="hidden" id="planId"/>
+
+    <div class="campo">
+      <label>Nombre del plan <span style="color:var(--error)">*</span></label>
+      <input type="text" id="pNombre" placeholder="Ej: Plan Anual, Plan 6 meses…" maxlength="60"/>
+    </div>
+    <div class="campo">
+      <label>Descripción (opcional)</label>
+      <textarea id="pDescripcion"
+                placeholder="Breve descripción visible para el vendedor…"
+                style="min-height:68px"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem">
+      <div class="campo">
+        <label>Precio (COP) <span style="color:var(--error)">*</span></label>
+        <input type="number" id="pPrecio" min="0" step="100" placeholder="Ej: 150000"/>
+      </div>
+      <div class="campo">
+        <label>Duración (días) <span style="color:var(--error)">*</span></label>
+        <input type="number" id="pDuracionDias" min="1" placeholder="Ej: 365"/>
+        <small id="hintDuracion"
+               style="color:var(--texto-suave);font-size:.74rem;margin-top:.25rem;display:block"></small>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;align-items:end">
+      <div class="campo">
+        <label>Orden de aparición</label>
+        <input type="number" id="pOrden" min="0" placeholder="Ej: 1"/>
+      </div>
+      <div class="campo" style="padding-bottom:.7rem">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none">
+          <input type="checkbox" id="pActivo" checked
+                 style="width:15px;height:15px;accent-color:var(--verde);flex-shrink:0"/>
+          Plan activo (disponible)
+        </label>
+      </div>
+    </div>
+    <div class="modal-acciones">
+      <button class="btn btn-secundario" id="btnCancelarPlan">Cancelar</button>
+      <button class="btn btn-primary"    id="btnGuardarPlan">
+        <span class="btn-texto">Guardar plan</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     Modal Confirmar eliminar plan  (NUEVO)
+     ════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalEliminarPlan">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-titulo">⚠ Eliminar plan</div>
+    <p style="color:var(--texto-medio);font-size:.9rem;margin-bottom:.5rem">
+      ¿Eliminar el plan <strong id="nombreEliminarPlan" style="color:var(--error)"></strong>?
+    </p>
+    <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:1.25rem">
+      Las membresías ya creadas con este plan no se verán afectadas.
+    </p>
+    <div class="modal-acciones">
+      <button class="btn btn-secundario" id="btnCancelarEliminarPlan">Cancelar</button>
+      <button class="btn btn-peligro"    id="btnConfirmarEliminarPlan">
+        <span class="btn-texto">Sí, eliminar</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="../js/membresias.js"></script>
 
 <script>
@@ -166,7 +268,7 @@
     var sidebar = document.querySelector('.sidebar');
     var overlay = document.getElementById('sidebarOverlay');
     if (!btnH || !sidebar || !overlay) return;
-    function abrir() { sidebar.classList.add('abierto'); overlay.classList.add('visible'); btnH.classList.add('abierto'); }
+    function abrir()  { sidebar.classList.add('abierto');    overlay.classList.add('visible');    btnH.classList.add('abierto'); }
     function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
     btnH.addEventListener('click', function() { sidebar.classList.contains('abierto') ? cerrar() : abrir(); });
     overlay.addEventListener('click', cerrar);

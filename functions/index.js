@@ -36,18 +36,64 @@ function verificarFirmaEvento(body, checksum, secretoEventos) {
 }
 
 // ── Calcular nueva fecha fin de membresía ───────────────────
-function calcularFechaFin(meses = 1) {
-  const ahora = new Date();
-  ahora.setMonth(ahora.getMonth() + meses);
-  return admin.firestore.Timestamp.fromDate(ahora);
+// Recibe días (no meses) para coincidir con duracion_dias del plan
+function calcularFechaFin(dias = 30, desde = new Date()) {
+  const fecha = new Date(desde);
+  fecha.setDate(fecha.getDate() + dias);
+  return admin.firestore.Timestamp.fromDate(fecha);
 }
 
-// ── Determinar plan por monto ───────────────────────────────
-function determinarPlan(montoEnCentavos) {
+// ── Determinar plan por monto consultando Firestore ─────────
+// Busca en la colección "planes_membresia" el plan activo cuyo
+// precio coincida exactamente con el monto pagado (en COP).
+// Si no encuentra coincidencia exacta, toma el plan cuyo precio
+// sea el más cercano por debajo (tolerancia ±1% para redondeos).
+// Fallback: plan de 30 días si no hay planes configurados.
+async function determinarPlan(montoEnCentavos) {
   const monto = montoEnCentavos / 100;
-  if (monto <= 10000) return { nombre: "Plan Fundador", meses: 1 };
-  if (monto <= 25000) return { nombre: "Plan Estándar", meses: 1 };
-  return { nombre: "Plan Estándar", meses: 1 };
+  try {
+    const snap = await db.collection("planes_membresia")
+      .where("activo", "==", true)
+      .get();
+
+    if (snap.empty) {
+      console.warn("No hay planes configurados — usando fallback 30 días");
+      return { nombre: "Plan Estándar", dias: 30 };
+    }
+
+    const planes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // 1. Coincidencia exacta (tolerancia ±1% para redondeos de pasarela)
+    const exacto = planes.find(p =>
+      Math.abs(p.precio - monto) / monto <= 0.01
+    );
+    if (exacto) {
+      return {
+        nombre: exacto.nombre,
+        dias:   Number(exacto.duracion_dias) || 30,
+        planId: exacto.id,
+      };
+    }
+
+    // 2. Plan más cercano por debajo (el vendedor pagó más de lo esperado)
+    const porDebajo = planes
+      .filter(p => p.precio <= monto)
+      .sort((a, b) => b.precio - a.precio);
+
+    if (porDebajo.length) {
+      const p = porDebajo[0];
+      return { nombre: p.nombre, dias: Number(p.duracion_dias) || 30, planId: p.id };
+    }
+
+    // 3. Fallback: plan más barato disponible
+    planes.sort((a, b) => a.precio - b.precio);
+    const p = planes[0];
+    return { nombre: p.nombre, dias: Number(p.duracion_dias) || 30, planId: p.id };
+
+  } catch (e) {
+    console.error("Error consultando planes:", e.message);
+    return { nombre: "Plan Estándar", dias: 30 };
+  }
 }
 
 // ── Extraer fragmento de UID desde la referencia ────────────
@@ -67,6 +113,34 @@ async function buscarVendedorPorEmail(email) {
     .get();
   return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
 }
+
+// ── Endpoint: calcular firma de integridad para el cliente ──
+// El cliente manda { referencia, montoEnCentavos }
+// La función devuelve { firma } sin exponer el secreto
+exports.firmaWompi = onRequest(
+  {
+    region:  "us-central1",
+    cors:    ["https://ildergutierrez.github.io", "http://localhost", "http://127.0.0.1"],
+    secrets: [SECRET_INTEGRIDAD],
+  },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      return res.status(405).send("Método no permitido");
+    }
+
+    const { referencia, montoEnCentavos } = req.body;
+
+    if (!referencia || !montoEnCentavos || montoEnCentavos <= 0) {
+      return res.status(400).json({ error: "Parámetros inválidos" });
+    }
+
+    const secreto = SECRET_INTEGRIDAD.value();
+    const cadena  = `${referencia}${montoEnCentavos}COP${secreto}`;
+    const firma   = crypto.createHash("sha256").update(cadena).digest("hex");
+
+    return res.status(200).json({ firma });
+  }
+);
 
 // ── Webhook principal ───────────────────────────────────────
 exports.webhookWompi = onRequest(
@@ -156,7 +230,7 @@ exports.webhookWompi = onRequest(
     }
 
     const vendedorId = vendedor.id;
-    const plan       = determinarPlan(monto);
+    const plan       = await determinarPlan(monto);
 
     // ── 5. Buscar membresía activa existente ────────────────
     const memQ = await db.collection("membresias")
@@ -171,11 +245,9 @@ exports.webhookWompi = onRequest(
     if (!memQ.empty) {
       const finActual = memQ.docs[0].data().fecha_fin.toDate();
       const base      = finActual > new Date() ? finActual : new Date();
-      const extendida = new Date(base);
-      extendida.setMonth(extendida.getMonth() + plan.meses);
-      nuevaFechaFin = admin.firestore.Timestamp.fromDate(extendida);
+      nuevaFechaFin   = calcularFechaFin(plan.dias, base);
     } else {
-      nuevaFechaFin = calcularFechaFin(plan.meses);
+      nuevaFechaFin = calcularFechaFin(plan.dias);
     }
 
     const ahora = admin.firestore.FieldValue.serverTimestamp();
@@ -194,7 +266,8 @@ exports.webhookWompi = onRequest(
       t.set(db.collection("membresias").doc(), {
         vendedor_id:  vendedorId,
         plan:         plan.nombre,
-        meses:        plan.meses,
+        plan_id:      plan.planId || null,
+        dias:         plan.dias,
         monto:        monto / 100,
         estado:       "activa",
         fecha_inicio: admin.firestore.Timestamp.now(),
@@ -226,7 +299,7 @@ exports.webhookWompi = onRequest(
 
     console.log(
       `✅ Membresía activada: vendedor=${vendedorId}`,
-      `plan=${plan.nombre}`,
+      `plan=${plan.nombre} (${plan.dias} días)`,
       `hasta=${nuevaFechaFin.toDate().toISOString()}`
     );
     return res.status(200).send("OK");
