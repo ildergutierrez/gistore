@@ -185,30 +185,26 @@ async function inyectarBotonWompi(monto, referencia) {
 
   const firma = await calcularFirma(referencia, montoEnCentavos);
 
-  console.log("WOMPI →", {
-    key:   WOMPI_PUB_KEY,
-    monto: montoEnCentavos,
-    ref:   referencia,
-    firma,
-  });
-
   wrap.innerHTML = "";
 
-  const script = document.createElement("script");
-  script.src = `https://checkout.wompi.co/widget.js?t=${Date.now()}`;
-  script.setAttribute("data-render",              "button");
-  script.setAttribute("data-public-key",          WOMPI_PUB_KEY);
-  script.setAttribute("data-currency",            "COP");
-  script.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
-  script.setAttribute("data-reference",           referencia);
-  script.setAttribute("data-signature:integrity", firma);
-  script.setAttribute("data-redirect-url",        REDIRECT_URL);
-  script.setAttribute("data-customer-data:email",
-    auth.currentUser?.email || "");
-  script.setAttribute("data-customer-data:full-name",
-    auth.currentUser?.displayName || "");
-
-  wrap.appendChild(script);
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = `https://checkout.wompi.co/widget.js?t=${Date.now()}`;
+    script.setAttribute("data-render",              "button");
+    script.setAttribute("data-public-key",          WOMPI_PUB_KEY);
+    script.setAttribute("data-currency",            "COP");
+    script.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
+    script.setAttribute("data-reference",           referencia);
+    script.setAttribute("data-signature:integrity", firma);
+    script.setAttribute("data-redirect-url",        REDIRECT_URL);
+    script.setAttribute("data-customer-data:email",
+      auth.currentUser?.email || "");
+    script.setAttribute("data-customer-data:full-name",
+      auth.currentUser?.displayName || "");
+    script.onload  = () => resolve();
+    script.onerror = () => resolve();
+    wrap.appendChild(script);
+  });
 }
 
 function generarReferencia(vendedorId, monto) {
