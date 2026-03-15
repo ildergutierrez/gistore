@@ -21,7 +21,7 @@ const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
 // En sandbox: prefijo pub_test_   |   En producción: prefijo pub_live_
 // Se lee desde el objeto global window.__ENV inyectado por firebase.js
 // o se toma del fallback de sandbox para desarrollo local.
-const WOMPI_PUB_KEY = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2am0ldc2";
+const WOMPI_PUB_KEY = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2amOldc2";
 
 const FIRMA_URL   = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
 const REDIRECT_URL = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
