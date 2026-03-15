@@ -1,14 +1,33 @@
 // ============================================================
-//  db.js — Operaciones Firestore para el portal de vendedores
+//  user/js/db.js — Operaciones Firestore del portal vendedor
+//  Versión: 2026-03-14
+//
+//  Colecciones que consume:
+//    · vendedores       — perfil y datos del vendedor
+//    · membresias       — historial de membresías
+//    · planes_membresia — catálogo de planes con precios dinámicos
+//    · fundadores       — vendedores con beneficio de precio especial
+//    · categorias       — categorías de productos
+//    · productos        — productos del vendedor
 // ============================================================
+
 import { db } from "./firebase.js";
 import {
   collection, doc,
   getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit
+  query, where, orderBy, limit,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// ── Obtener vendedor por uid_auth ─────────────────────────
+// ════════════════════════════════════════════════════════════
+//  VENDEDORES
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene el perfil del vendedor cuyo campo uid_auth coincide con el UID
+ * de Firebase Auth. El ID del documento NO es el uid de Auth.
+ * @param {string} uid — UID de Firebase Authentication
+ * @returns {Promise<object|null>}
+ */
 async function obtenerVendedorPorUid(uid) {
   const q    = query(collection(db, "vendedores"), where("uid_auth", "==", uid));
   const snap = await getDocs(q);
@@ -17,7 +36,11 @@ async function obtenerVendedorPorUid(uid) {
   return { id: d.id, ...d.data() };
 }
 
-// ── Actualizar vendedor (perfil) ──────────────────────────
+/**
+ * Actualiza los datos del perfil del vendedor.
+ * @param {string} id     — ID del documento en "vendedores"
+ * @param {object} datos  — campos a actualizar
+ */
 async function actualizarVendedor(id, datos) {
   await updateDoc(doc(db, "vendedores", id), {
     ...datos,
@@ -25,7 +48,15 @@ async function actualizarVendedor(id, datos) {
   });
 }
 
-// ── Membresía del vendedor ────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  MEMBRESÍAS
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene la membresía más reciente del vendedor (activa o no).
+ * @param {string} vendedor_id — ID del documento del vendedor
+ * @returns {Promise<object|null>}
+ */
 async function obtenerMembresiaVendedor(vendedor_id) {
   try {
     const q = query(
@@ -39,7 +70,7 @@ async function obtenerMembresiaVendedor(vendedor_id) {
     const d = snap.docs[0];
     return { id: d.id, ...d.data() };
   } catch {
-    // Fallback sin índice compuesto
+    // Fallback si el índice compuesto aún no existe en Firestore
     const q2   = query(collection(db, "membresias"), where("vendedor_id", "==", vendedor_id));
     const snap = await getDocs(q2);
     if (snap.empty) return null;
@@ -49,29 +80,91 @@ async function obtenerMembresiaVendedor(vendedor_id) {
   }
 }
 
-// ── ¿Es fundador vigente? ─────────────────────────────────
-// Devuelve { esFundador: bool, fechaVence: string|null }
+/**
+ * Evalúa si la membresía está vigente hoy.
+ * @param {object|null} m — documento de membresía
+ * @returns {boolean}
+ */
+function membresiaVigente(m) {
+  if (!m || m.estado !== "activa") return false;
+  return m.fecha_fin >= new Date().toISOString().split("T")[0];
+}
+
+// ════════════════════════════════════════════════════════════
+//  PLANES DE MEMBRESÍA (DINÁMICOS DESDE FIRESTORE)
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene los planes de pago disponibles desde la colección "planes_membresia".
+ *
+ * Estructura esperada de cada documento:
+ *   nombre:        string  — ej: "Plan Estándar"
+ *   descripcion:   string  — descripción breve del plan
+ *   precio:        number  — en COP (no en centavos), ej: 25000
+ *   duracion_dias: number  — ej: 30
+ *   activo:        boolean — solo se muestran los que tengan activo: true
+ *   orden:         number  — posición en la lista (1 = primero)
+ *
+ * Para cambiar un precio basta con editar el campo "precio" en Firestore.
+ * @returns {Promise<Array>}
+ */
+async function obtenerPlanes() {
+  try {
+    const q    = query(collection(db, "planes_membresia"), orderBy("orden"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    // Fallback sin índice del campo "orden"
+    const snap = await getDocs(collection(db, "planes_membresia"));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
+    return docs;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  FUNDADORES
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Determina si un vendedor tiene el beneficio de "Fundador" vigente.
+ * El beneficio dura 1 año desde la fecha de registro en la colección "fundadores".
+ *
+ * @param {string} vendedor_id
+ * @returns {Promise<{esFundador: boolean, fechaVence: string|null, fechaRegistro: string|null}>}
+ */
 async function esFundadorVigente(vendedor_id) {
   try {
     const q    = query(collection(db, "fundadores"), where("vendedor_id", "==", vendedor_id));
     const snap = await getDocs(q);
+
     if (snap.empty) return { esFundador: false, fechaVence: null };
-    const f = snap.docs[0].data();
-    if (!f.fecha_registro) return { esFundador: false, fechaVence: null };
-    const fechaVence = new Date(f.fecha_registro);
+
+    const datos = snap.docs[0].data();
+    if (!datos.fecha_registro) return { esFundador: false, fechaVence: null };
+
+    const fechaVence = new Date(datos.fecha_registro);
     fechaVence.setFullYear(fechaVence.getFullYear() + 1);
     const vigente = new Date() < fechaVence;
+
     return {
-      esFundador: vigente,
-      fechaVence: fechaVence.toISOString().split("T")[0],
-      fechaRegistro: f.fecha_registro,
+      esFundador:    vigente,
+      fechaVence:    fechaVence.toISOString().split("T")[0],
+      fechaRegistro: datos.fecha_registro,
     };
   } catch {
     return { esFundador: false, fechaVence: null };
   }
 }
 
-// ── Categorías ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  CATEGORÍAS
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene todas las categorías ordenadas por el campo "orden".
+ * @returns {Promise<Array>}
+ */
 async function obtenerCategorias() {
   try {
     const q    = query(collection(db, "categorias"), orderBy("orden"));
@@ -83,14 +176,22 @@ async function obtenerCategorias() {
   }
 }
 
-// ── Productos del vendedor ────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  PRODUCTOS
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Obtiene todos los productos del vendedor (activos e inactivos).
+ * @param {string} vendedor_id
+ * @returns {Promise<Array>}
+ */
 async function obtenerMisProductos(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// ── CRUD productos ────────────────────────────────────────
+/** Crea un nuevo producto en Firestore. */
 async function crearProducto(datos) {
   const ref = await addDoc(collection(db, "productos"), {
     nombre:        datos.nombre        || "",
@@ -106,75 +207,74 @@ async function crearProducto(datos) {
   });
   return ref.id;
 }
+
+/** Actualiza los campos de un producto existente. */
 async function actualizarProducto(id, datos) {
   await updateDoc(doc(db, "productos", id), {
     ...datos,
     actualizado_en: new Date().toISOString(),
   });
 }
+
+/** Elimina permanentemente un producto. */
 async function eliminarProducto(id) {
   await deleteDoc(doc(db, "productos", id));
 }
 
-// ── Desactivar todos los productos de un vendedor ─────────
+/**
+ * Desactiva todos los productos de un vendedor (ej: al vencer la membresía).
+ * @returns {Promise<number>} — cantidad de productos afectados
+ */
 async function desactivarProductosVendedor(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
   await Promise.all(snap.docs.map(d =>
     updateDoc(doc(db, "productos", d.id), {
-      activo: false,
+      activo:         false,
       actualizado_en: new Date().toISOString(),
     })
   ));
   return snap.docs.length;
 }
 
-// ── Reactivar todos los productos de un vendedor ──────────
+/**
+ * Reactiva todos los productos de un vendedor (ej: al renovar la membresía).
+ * @returns {Promise<number>} — cantidad de productos afectados
+ */
 async function reactivarProductosVendedor(vendedor_id) {
   const q    = query(collection(db, "productos"), where("vendedor_id", "==", vendedor_id));
   const snap = await getDocs(q);
   await Promise.all(snap.docs.map(d =>
     updateDoc(doc(db, "productos", d.id), {
-      activo: true,
+      activo:         true,
       actualizado_en: new Date().toISOString(),
     })
   ));
   return snap.docs.length;
 }
 
-// ── Planes de membresía (lectura pública) ─────────────────
-async function obtenerPlanes() {
-  try {
-    const q    = query(collection(db, "planes_membresia"), orderBy("orden"));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch {
-    // Fallback sin índice
-    const snap = await getDocs(collection(db, "planes_membresia"));
-    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    docs.sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99));
-    return docs;
-  }
-}
-
-// ── Membresía vigente ─────────────────────────────────────
-function membresiaVigente(m) {
-  if (!m || m.estado !== "activa") return false;
-  return m.fecha_fin >= new Date().toISOString().split("T")[0];
-}
+// ════════════════════════════════════════════════════════════
+//  EXPORTACIONES
+// ════════════════════════════════════════════════════════════
 
 export {
+  // Vendedor
   obtenerVendedorPorUid,
   actualizarVendedor,
-  esFundadorVigente,
-  desactivarProductosVendedor,
-  reactivarProductosVendedor,
+  // Membresía
   obtenerMembresiaVendedor,
+  membresiaVigente,
+  // Planes de pago (dinámicos desde Firestore)
+  obtenerPlanes,
+  // Fundadores
+  esFundadorVigente,
+  // Categorías
   obtenerCategorias,
+  // Productos
   obtenerMisProductos,
   crearProducto,
   actualizarProducto,
   eliminarProducto,
-  membresiaVigente,
-  obtenerPlanes,
+  desactivarProductosVendedor,
+  reactivarProductosVendedor,
 };
