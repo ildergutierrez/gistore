@@ -255,7 +255,9 @@ async function obtenerFirma(referencia, montoEnCentavos) {
  * @param {string} referencia — referencia única GIS-xxxxxxxx-monto-timestamp
  */
 async function inyectarBotonWompi(monto, referencia) {
-  const montoEnCentavos = Math.round(monto) * 100;
+  // Number() convierte el string del dataset a número antes de operar.
+  // Math.round("25000") devuelve NaN; Number("25000") devuelve 25000.
+  const montoEnCentavos = Math.round(Number(monto)) * 100;
   if (!montoEnCentavos || montoEnCentavos <= 0) return;
 
   const wrap = document.getElementById("wompi-btn-wrap");
@@ -439,7 +441,7 @@ function inicializarSeleccion(vendedorId) {
     tarjetas.forEach(t => t.classList.remove("seleccionado"));
     tarjeta.classList.add("seleccionado");
 
-    const monto      = parseInt(tarjeta.dataset.monto);
+    const monto      = Number(tarjeta.dataset.monto);
     const etiqueta   = tarjeta.dataset.label;
     const referencia = generarReferencia(vendedorId, monto);
 
