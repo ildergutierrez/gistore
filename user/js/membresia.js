@@ -8,7 +8,7 @@
 //    · Leer los planes disponibles desde Firestore
 //    · Mostrar solo el plan "Fundador" si el vendedor tiene ese beneficio
 //    · Calcular la firma SHA-256 a través de la Cloud Function (seguro)
-//    · Inyectar el botón de pago de Wompi dentro de un iframe
+//    · Inyectar el botón de pago de Wompi en el DOM principal
 //    · Listar el historial de pagos del vendedor
 // ============================================================
 
@@ -25,10 +25,10 @@ import { esFundadorVigente, obtenerPlanes } from "./db.js";
 //  CONFIGURACIÓN
 // ════════════════════════════════════════════════════════════
 
-const ADMIN_EMAIL        = "aplicativosawebs@gmail.com";
+const ADMIN_EMAIL         = "aplicativosawebs@gmail.com";
 const WOMPI_LLAVE_PUBLICA = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2am0ldc2";
-const FIRMA_URL          = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
-const REDIRECT_URL       = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
+const FIRMA_URL           = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
+const REDIRECT_URL        = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
 
 // ════════════════════════════════════════════════════════════
 //  UTILIDADES DE FORMATO
@@ -237,41 +237,35 @@ async function inyectarBotonWompi(monto, referencia) {
     return;
   }
 
-  // ── Estrategia de inyección del widget ──────────────────────────────────
-  // El problema con srcdoc es que el parser HTML rompe los atributos que
-  // contienen ":" en su nombre (data-signature:integrity queda vacío),
-  // lo que provoca "Cannot read properties of undefined (reading 'invalid')".
-  //
-  // Solución: montar el iframe vacío y usar setAttribute() directamente,
-  // que respeta el nombre exacto del atributo sin re-parsear HTML.
+  // ── Limpiar todo rastro de una carga anterior de Wompi ──────────────────
+  // El widget de Wompi solo se inicializa al insertarse por primera vez.
+  // Al cambiar de plan hay que eliminar el script y los elementos del modal
+  // anteriores para que Wompi arranque completamente limpio.
 
+  // 1. Vaciar el contenedor del botón
   wrap.innerHTML = "";
 
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = "width:100%;border:none;min-height:60px;overflow:hidden;display:block;";
-  iframe.scrolling     = "no";
-  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation");
-  wrap.appendChild(iframe);
+  // 2. Eliminar scripts previos de Wompi del <body>
+  document
+    .querySelectorAll('script[src*="checkout.wompi.co"]')
+    .forEach(s => s.remove());
 
-  // Esperar a que el documento del iframe esté disponible
-  await new Promise(resolve => {
-    if (iframe.contentDocument && iframe.contentDocument.readyState !== "uninitialized") {
-      resolve();
-    } else {
-      iframe.addEventListener("load", resolve, { once: true });
-      iframe.src = "about:blank";
-    }
-  });
+  // 3. Eliminar el backdrop/modal que Wompi pudo haber dejado
+  document
+    .querySelectorAll(".waybox-backdrop, .waybox-modal")
+    .forEach(el => el.remove());
 
-  const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+  // ── Crear el <form> + <script> directamente en el DOM principal ─────────
+  // De esta forma el modal de Wompi se monta en document.body con
+  // position:fixed y puede ocupar toda la pantalla sin restricciones.
+  // Usar setAttribute() respeta el ":" en los nombres de atributo,
+  // evitando el error "Cannot read properties of undefined (reading 'invalid')".
 
-  // Escribir la estructura base
-  iDoc.open();
-  iDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:0;background:transparent}.waybox-button{width:100%!important;min-width:unset!important}</style></head><body><form id="f"></form></body></html>');
-  iDoc.close();
+  const form = document.createElement("form");
+  form.style.cssText = "margin:0;padding:0;";
+  wrap.appendChild(form);
 
-  // Crear el <script> del widget vía DOM — evita el re-parseo de atributos con ":"
-  const scriptEl = iDoc.createElement("script");
+  const scriptEl = document.createElement("script");
   scriptEl.src = "https://checkout.wompi.co/widget.js";
 
   scriptEl.setAttribute("data-render",             "button");
@@ -285,18 +279,13 @@ async function inyectarBotonWompi(monto, referencia) {
   if (emailCliente)  scriptEl.setAttribute("data-customer-data:email",     emailCliente);
   if (nombreCliente) scriptEl.setAttribute("data-customer-data:full-name", nombreCliente);
 
-  iDoc.getElementById("f").appendChild(scriptEl);
-
-  // Ajustar altura tras renderizado del widget
-  setTimeout(() => {
-    try {
-      const altura = iDoc.body.scrollHeight;
-      if (altura > 10) iframe.style.height = (altura + 10) + "px";
-    } catch (_) { /* cross-origin en producción — min-height es suficiente */ }
-  }, 1500);
+  form.appendChild(scriptEl);
 }
 
-/** Genera una referencia única por transacción. Formato: GIS-{uid8}-{monto}-{timestamp} */
+// ════════════════════════════════════════════════════════════
+//  REFERENCIA ÚNICA POR TRANSACCIÓN
+// ════════════════════════════════════════════════════════════
+
 function generarReferencia(vendedorId, monto) {
   return `GIS-${vendedorId.slice(0, 8)}-${monto}-${Date.now()}`;
 }
@@ -455,7 +444,7 @@ onAuthStateChanged(auth, async (user) => {
     if (nomEl) nomEl.textContent = vendedor.nombre || "Vendedor";
 
     // ── 2. Cargar membresía activa, planes y estado fundador en paralelo ──
-    const colMembresias = collection(db, "membresias");
+    const colMembresias     = collection(db, "membresias");
     const consultaMembresia = query(
       colMembresias,
       where("vendedor_id", "==", vendedorId),
