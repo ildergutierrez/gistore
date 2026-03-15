@@ -25,28 +25,15 @@ import { esFundadorVigente, obtenerPlanes } from "./db.js";
 //  CONFIGURACIÓN
 // ════════════════════════════════════════════════════════════
 
-// Correo del administrador — se bloquea su acceso al portal vendedor
-const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
-
-// Llave pública de Wompi (producción).
-// Esta llave es PÚBLICA: es seguro incluirla en el código del cliente.
+const ADMIN_EMAIL        = "aplicativosawebs@gmail.com";
 const WOMPI_LLAVE_PUBLICA = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2am0ldc2";
-
-// Endpoint de la Cloud Function que calcula la firma SHA-256.
-// La llave de integridad (privada) vive únicamente en el servidor.
-const FIRMA_URL = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
-
-// URL de redirección tras completar el pago en Wompi
-const REDIRECT_URL = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
+const FIRMA_URL          = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
+const REDIRECT_URL       = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
 
 // ════════════════════════════════════════════════════════════
 //  UTILIDADES DE FORMATO
 // ════════════════════════════════════════════════════════════
 
-/**
- * Convierte un Timestamp de Firestore o una cadena ISO a una
- * fecha legible en español colombiano.
- */
 function formatFecha(ts) {
   if (!ts) return "—";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -55,25 +42,16 @@ function formatFecha(ts) {
   });
 }
 
-/**
- * Calcula los días que faltan hasta una fecha (Timestamp o string).
- * Devuelve un número negativo si ya venció.
- */
 function diasRestantes(ts) {
   if (!ts) return -1;
   const fin = ts.toDate ? ts.toDate() : new Date(ts);
-  return Math.ceil((fin - new Date()) / 864e5); // 864e5 = ms en un día
+  return Math.ceil((fin - new Date()) / 864e5);
 }
 
-/** Formatea un número como precio en pesos colombianos: $25.000 */
 function formatCOP(n) {
   return "$" + Number(n).toLocaleString("es-CO");
 }
 
-/**
- * Convierte una duración en días a una etiqueta legible:
- * 30 → "1 mes", 365 → "1 año", 14 → "2 semanas", etc.
- */
 function diasAEtiqueta(dias) {
   if (!dias || dias <= 0) return "";
   const d = Number(dias);
@@ -87,18 +65,12 @@ function diasAEtiqueta(dias) {
 //  COMPONENTES DE UI
 // ════════════════════════════════════════════════════════════
 
-/** Genera el badge de días restantes según urgencia. */
 function badgeDias(dias) {
   if (dias < 0)  return `<span class="dias-restantes venc">❌ Vencida</span>`;
   if (dias <= 7) return `<span class="dias-restantes warn">⚠️ ${dias} días restantes</span>`;
   return `<span class="dias-restantes ok">✅ ${dias} días restantes</span>`;
 }
 
-/**
- * Muestra la alerta superior de estado de membresía.
- * @param {"ok"|"warn"|"error"} tipo
- * @param {string} mensaje
- */
 function mostrarAlerta(tipo, mensaje) {
   const el = document.getElementById("alertaMembresia");
   if (!el) return;
@@ -114,11 +86,6 @@ function mostrarAlerta(tipo, mensaje) {
 //  RENDER: ESTADO DE LA MEMBRESÍA
 // ════════════════════════════════════════════════════════════
 
-/**
- * Renderiza las filas de estado (plan activo, fechas, barra de progreso).
- * Si no hay membresía activa, muestra un mensaje informativo.
- * @param {object|null} membresia — documento de Firestore o null
- */
 function renderEstado(membresia) {
   const el = document.getElementById("estadoContenido");
   if (!el) return;
@@ -169,7 +136,6 @@ function renderEstado(membresia) {
       </div>
     </div>`;
 
-  // Alerta según urgencia
   if (dias < 0)       mostrarAlerta("error", "Tu membresía ha vencido. Renueva ahora para recuperar el acceso.");
   else if (dias <= 7) mostrarAlerta("warn",  `Tu membresía vence en ${dias} día${dias !== 1 ? "s" : ""}. Renueva para no perder el acceso.`);
   else                mostrarAlerta("ok",    `¡Tu membresía está activa! Tienes ${dias} días disponibles.`);
@@ -179,10 +145,6 @@ function renderEstado(membresia) {
 //  RENDER: HISTORIAL DE PAGOS
 // ════════════════════════════════════════════════════════════
 
-/**
- * Renderiza la lista de pagos aprobados del vendedor.
- * @param {Array} pagos — array de documentos de la colección "pagos"
- */
 function renderHistorial(pagos) {
   const el = document.getElementById("historialContenido");
   if (!el) return;
@@ -215,14 +177,6 @@ function renderHistorial(pagos) {
 //  WOMPI — FIRMA DE INTEGRIDAD (SERVIDOR)
 // ════════════════════════════════════════════════════════════
 
-/**
- * Solicita la firma SHA-256 a la Cloud Function "firmaWompi".
- * La llave de integridad NUNCA sale del servidor.
- *
- * @param {string} referencia      — referencia única de la transacción
- * @param {number} montoEnCentavos — monto en centavos (ej: 2500000)
- * @returns {Promise<string>}      — hash SHA-256 como cadena hexadecimal
- */
 async function obtenerFirma(referencia, montoEnCentavos) {
   const respuesta = await fetch(FIRMA_URL, {
     method:  "POST",
@@ -242,26 +196,10 @@ async function obtenerFirma(referencia, montoEnCentavos) {
 //  WOMPI — INYECCIÓN DEL BOTÓN DE PAGO
 // ════════════════════════════════════════════════════════════
 
-/**
- * Inyecta el widget de pago de Wompi dentro de un iframe.
- *
- * Por qué un iframe:
- *   El widget de Wompi solo se inicializa correctamente cuando su <script>
- *   se inserta en el DOM por primera vez. Si se reemplaza dinámicamente
- *   (al cambiar de plan), el widget queda en un estado inconsistente.
- *   El iframe garantiza un contexto limpio en cada render.
- *
- * @param {number} monto      — precio en COP (ej: 25000)
- * @param {string} referencia — referencia única GIS-xxxxxxxx-monto-timestamp
- */
 async function inyectarBotonWompi(monto, referencia) {
-  // Conversión blindada: parseFloat elimina separadores de miles ("15.000" → 15),
-  // por eso usamos parseInt en base 10 sobre el string limpio de no-dígitos.
-  // Wompi valida con /^[1-9][0-9]*$/ — debe ser entero positivo sin decimales.
   const montoCOP        = parseInt(String(monto).replace(/[^0-9]/g, ""), 10);
   const montoEnCentavos = montoCOP * 100;
 
-  // Verificar que el resultado sea un entero positivo válido
   if (!Number.isInteger(montoEnCentavos) || montoEnCentavos <= 0) {
     console.error("Monto inválido para Wompi:", monto, "→", montoEnCentavos);
     return;
@@ -270,7 +208,6 @@ async function inyectarBotonWompi(monto, referencia) {
   const wrap = document.getElementById("wompi-btn-wrap");
   if (!wrap) return;
 
-  // Indicador de carga mientras se obtiene la firma del servidor
   wrap.innerHTML = `
     <div style="text-align:center;padding:.75rem;font-size:.8rem;color:var(--texto-suave)">
       Preparando botón de pago…
@@ -291,9 +228,6 @@ async function inyectarBotonWompi(monto, referencia) {
   const emailCliente  = auth.currentUser?.email       || "";
   const nombreCliente = auth.currentUser?.displayName || "";
 
-  // Validar que la firma llegó correctamente antes de inyectarla.
-  // Una firma vacía o undefined hace que el widget lance el error
-  // "Cannot read properties of undefined (reading 'invalid')".
   if (!firma || typeof firma !== "string" || firma.length < 10) {
     console.error("Firma inválida recibida del servidor:", firma);
     wrap.innerHTML = `
@@ -303,48 +237,63 @@ async function inyectarBotonWompi(monto, referencia) {
     return;
   }
 
-  // Usamos srcdoc en lugar de iDoc.write() porque:
-  //  · iDoc.write() puede fallar silenciosamente en HTTPS/móvil (about:blank)
-  //  · srcdoc es soportado por todos los navegadores modernos
-  //  · srcdoc garantiza que las variables ya resueltas se inyecten correctamente
-  // IMPORTANTE: los atributos de srcdoc deben escapar las comillas dobles con &quot;
-  const srcdoc = [
-    "<!DOCTYPE html><html><head><meta charset='UTF-8'/>",
-    "<style>body{margin:0;padding:0;background:transparent;}",
-    ".waybox-button{width:100%!important;min-width:unset!important;}</style>",
-    "</head><body><form>",
-    "<script src='https://checkout.wompi.co/widget.js'",
-    " data-render='button'",
-    ` data-public-key='${WOMPI_LLAVE_PUBLICA}'`,
-    " data-currency='COP'",
-    ` data-amount-in-cents='${montoEnCentavos}'`,
-    ` data-reference='${referencia}'`,
-    ` data-signature:integrity='${firma}'`,
-    ` data-redirect-url='${REDIRECT_URL}'`,
-    ` data-customer-data:email='${emailCliente}'`,
-    ` data-customer-data:full-name='${nombreCliente}'`,
-    "></scr" + "ipt>",
-    "</form></body></html>",
-  ].join("");
+  // ── Estrategia de inyección del widget ──────────────────────────────────
+  // El problema con srcdoc es que el parser HTML rompe los atributos que
+  // contienen ":" en su nombre (data-signature:integrity queda vacío),
+  // lo que provoca "Cannot read properties of undefined (reading 'invalid')".
+  //
+  // Solución: montar el iframe vacío y usar setAttribute() directamente,
+  // que respeta el nombre exacto del atributo sin re-parsear HTML.
 
-  // Limpiar e insertar el iframe con srcdoc
   wrap.innerHTML = "";
 
   const iframe = document.createElement("iframe");
-  iframe.style.cssText = "width:100%;border:none;min-height:56px;overflow:hidden;display:block;";
+  iframe.style.cssText = "width:100%;border:none;min-height:60px;overflow:hidden;display:block;";
   iframe.scrolling     = "no";
-  iframe.srcdoc        = srcdoc;
+  iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation");
   wrap.appendChild(iframe);
 
-  // Ajustar altura cuando el widget cargue
-  iframe.onload = () => {
-    try {
-      const altura = iframe.contentWindow.document.body.scrollHeight;
-      if (altura > 10) iframe.style.height = (altura + 8) + "px";
-    } catch (_) {
-      // iframe cross-origin en producción — la altura fija de min-height es suficiente
+  // Esperar a que el documento del iframe esté disponible
+  await new Promise(resolve => {
+    if (iframe.contentDocument && iframe.contentDocument.readyState !== "uninitialized") {
+      resolve();
+    } else {
+      iframe.addEventListener("load", resolve, { once: true });
+      iframe.src = "about:blank";
     }
-  };
+  });
+
+  const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+  // Escribir la estructura base
+  iDoc.open();
+  iDoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:0;background:transparent}.waybox-button{width:100%!important;min-width:unset!important}</style></head><body><form id="f"></form></body></html>');
+  iDoc.close();
+
+  // Crear el <script> del widget vía DOM — evita el re-parseo de atributos con ":"
+  const scriptEl = iDoc.createElement("script");
+  scriptEl.src = "https://checkout.wompi.co/widget.js";
+
+  scriptEl.setAttribute("data-render",             "button");
+  scriptEl.setAttribute("data-public-key",          WOMPI_LLAVE_PUBLICA);
+  scriptEl.setAttribute("data-currency",            "COP");
+  scriptEl.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
+  scriptEl.setAttribute("data-reference",           referencia);
+  scriptEl.setAttribute("data-signature:integrity", firma);
+  scriptEl.setAttribute("data-redirect-url",        REDIRECT_URL);
+
+  if (emailCliente)  scriptEl.setAttribute("data-customer-data:email",     emailCliente);
+  if (nombreCliente) scriptEl.setAttribute("data-customer-data:full-name", nombreCliente);
+
+  iDoc.getElementById("f").appendChild(scriptEl);
+
+  // Ajustar altura tras renderizado del widget
+  setTimeout(() => {
+    try {
+      const altura = iDoc.body.scrollHeight;
+      if (altura > 10) iframe.style.height = (altura + 10) + "px";
+    } catch (_) { /* cross-origin en producción — min-height es suficiente */ }
+  }, 1500);
 }
 
 /** Genera una referencia única por transacción. Formato: GIS-{uid8}-{monto}-{timestamp} */
@@ -356,30 +305,16 @@ function generarReferencia(vendedorId, monto) {
 //  RENDER: PLANES DE PAGO (DINÁMICOS DESDE FIRESTORE)
 // ════════════════════════════════════════════════════════════
 
-/**
- * Renderiza las tarjetas de plan dentro de #planesWrap.
- *
- * Reglas de visibilidad:
- *  - Fundador vigente  → ve SOLO el plan "fundador" (nombre incluye "fundador").
- *                        Si no existe ese plan en Firestore, ve todos los activos.
- *  - No es fundador    → ve todos los planes activos EXCEPTO el plan "fundador".
- *
- * @param {Array}   planes      — documentos de "planes_membresia" en Firestore
- * @param {boolean} esFundador  — si el vendedor tiene el beneficio fundador vigente
- * @param {string}  vendedorId  — ID del documento del vendedor en Firestore
- */
 function renderPlanes(planes, esFundador, vendedorId) {
   const wrap = document.getElementById("planesWrap");
   if (!wrap) return;
 
-  // Filtrar planes según la condición de fundador
   let planesToShow;
 
   if (esFundador) {
     const soloFundador = planes.filter(
       p => p.activo && p.nombre.toLowerCase().includes("fundador")
     );
-    // Fallback: si el admin no configuró un plan "fundador", mostrar todos
     planesToShow = soloFundador.length > 0
       ? soloFundador
       : planes.filter(p => p.activo);
@@ -400,9 +335,7 @@ function renderPlanes(planes, esFundador, vendedorId) {
   wrap.innerHTML = planesToShow.map((plan, indice) => {
     const esPlanFundador   = plan.nombre.toLowerCase().includes("fundador");
     const etiquetaDuracion = diasAEtiqueta(plan.duracion_dias);
-    // Precio como entero puro: strip de cualquier separador visual que pudiera
-    // venir de Firestore ("15.000" → 15000). Wompi valida /^[1-9][0-9]*$/.
-    const precioEntero = parseInt(String(plan.precio).replace(/[^0-9]/g, ""), 10) || 0;
+    const precioEntero     = parseInt(String(plan.precio).replace(/[^0-9]/g, ""), 10) || 0;
 
     return `
       <div class="plan-card${indice === 0 ? " seleccionado" : ""}"
@@ -429,7 +362,6 @@ function renderPlanes(planes, esFundador, vendedorId) {
       </div>`;
   }).join("");
 
-  // Registrar los eventos de selección sobre las tarjetas recién creadas
   inicializarSeleccion(vendedorId);
 }
 
@@ -437,11 +369,6 @@ function renderPlanes(planes, esFundador, vendedorId) {
 //  SELECCIÓN DE PLAN → ACTUALIZA RESUMEN Y BOTÓN WOMPI
 // ════════════════════════════════════════════════════════════
 
-/**
- * Registra los eventos de clic en las tarjetas de plan y selecciona
- * la primera por defecto, disparando la generación del botón Wompi.
- * @param {string} vendedorId
- */
 function inicializarSeleccion(vendedorId) {
   const tarjetas     = document.querySelectorAll("#planesWrap .plan-card");
   const resumenLabel = document.getElementById("resumenLabel");
@@ -463,7 +390,6 @@ function inicializarSeleccion(vendedorId) {
 
   tarjetas.forEach(t => t.addEventListener("click", () => seleccionar(t)));
 
-  // Seleccionar la primera tarjeta disponible al cargar
   const porDefecto = document.querySelector("#planesWrap .plan-card.seleccionado")
                   || tarjetas[0];
   if (porDefecto) seleccionar(porDefecto);
@@ -485,24 +411,20 @@ function mostrarFechaHoy() {
 // ════════════════════════════════════════════════════════════
 
 onAuthStateChanged(auth, async (user) => {
-  // Sin sesión activa → redirigir al login
   if (!user) {
     location.href = "../index.html";
     return;
   }
 
-  // El administrador no tiene acceso al portal vendedor
   if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
     await signOut(auth);
     location.href = "../index.html";
     return;
   }
 
-  // Revelar la página y configurar la fecha
   document.body.style.visibility = "visible";
   mostrarFechaHoy();
 
-  // Botón de cerrar sesión
   const btnSalir = document.getElementById("btnSalir");
   if (btnSalir) {
     btnSalir.addEventListener("click", () =>
@@ -512,8 +434,6 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     // ── 1. Buscar el perfil del vendedor por uid_auth ───────────────
-    // El ID del documento en "vendedores" NO es el uid de Firebase Auth;
-    // hay que buscarlo por el campo "uid_auth".
     const vendSnap = await getDocs(query(
       collection(db, "vendedores"),
       where("uid_auth", "==", user.uid)
@@ -546,7 +466,6 @@ onAuthStateChanged(auth, async (user) => {
 
     const [resultadoMembresia, resultadoPlanes, resultadoFundador] =
       await Promise.allSettled([
-        // Membresía con fallback por si el índice compuesto no existe
         getDocs(consultaMembresia).catch(async () =>
           getDocs(query(colMembresias, where("vendedor_id", "==", vendedorId)))
         ),
@@ -561,7 +480,6 @@ onAuthStateChanged(auth, async (user) => {
       const docs    = resultadoMembresia.value.docs.map(d => d.data());
       const activas = docs.filter(d => d.estado === "activa");
 
-      // Ordenar descendente por fecha_fin para tomar la más reciente
       activas.sort((a, b) => {
         const fa = a.fecha_fin?.toDate ? a.fecha_fin.toDate() : new Date(a.fecha_fin || 0);
         const fb = b.fecha_fin?.toDate ? b.fecha_fin.toDate() : new Date(b.fecha_fin || 0);
@@ -574,8 +492,8 @@ onAuthStateChanged(auth, async (user) => {
     renderEstado(membresia);
 
     // ── 4. Renderizar planes con la condición de fundador ───────────
-    const planes     = resultadoPlanes.status     === "fulfilled" ? resultadoPlanes.value              : [];
-    const esFundador = resultadoFundador.status   === "fulfilled" ? (resultadoFundador.value?.esFundador ?? false) : false;
+    const planes     = resultadoPlanes.status   === "fulfilled" ? resultadoPlanes.value                          : [];
+    const esFundador = resultadoFundador.status === "fulfilled" ? (resultadoFundador.value?.esFundador ?? false) : false;
 
     renderPlanes(planes, esFundador, vendedorId);
 
