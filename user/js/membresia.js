@@ -255,10 +255,17 @@ async function obtenerFirma(referencia, montoEnCentavos) {
  * @param {string} referencia — referencia única GIS-xxxxxxxx-monto-timestamp
  */
 async function inyectarBotonWompi(monto, referencia) {
-  // Number() convierte el string del dataset a número antes de operar.
-  // Math.round("25000") devuelve NaN; Number("25000") devuelve 25000.
-  const montoEnCentavos = Math.round(Number(monto)) * 100;
-  if (!montoEnCentavos || montoEnCentavos <= 0) return;
+  // Conversión blindada: parseFloat elimina separadores de miles ("15.000" → 15),
+  // por eso usamos parseInt en base 10 sobre el string limpio de no-dígitos.
+  // Wompi valida con /^[1-9][0-9]*$/ — debe ser entero positivo sin decimales.
+  const montoCOP        = parseInt(String(monto).replace(/[^0-9]/g, ""), 10);
+  const montoEnCentavos = montoCOP * 100;
+
+  // Verificar que el resultado sea un entero positivo válido
+  if (!Number.isInteger(montoEnCentavos) || montoEnCentavos <= 0) {
+    console.error("Monto inválido para Wompi:", monto, "→", montoEnCentavos);
+    return;
+  }
 
   const wrap = document.getElementById("wompi-btn-wrap");
   if (!wrap) return;
@@ -391,13 +398,16 @@ function renderPlanes(planes, esFundador, vendedorId) {
   }
 
   wrap.innerHTML = planesToShow.map((plan, indice) => {
-    const esPlanFundador = plan.nombre.toLowerCase().includes("fundador");
+    const esPlanFundador   = plan.nombre.toLowerCase().includes("fundador");
     const etiquetaDuracion = diasAEtiqueta(plan.duracion_dias);
+    // Precio como entero puro: strip de cualquier separador visual que pudiera
+    // venir de Firestore ("15.000" → 15000). Wompi valida /^[1-9][0-9]*$/.
+    const precioEntero = parseInt(String(plan.precio).replace(/[^0-9]/g, ""), 10) || 0;
 
     return `
       <div class="plan-card${indice === 0 ? " seleccionado" : ""}"
            data-plan-id="${plan.id}"
-           data-monto="${plan.precio}"
+           data-monto="${precioEntero}"
            data-label="${plan.nombre}${etiquetaDuracion ? " · " + etiquetaDuracion : ""}"
            data-duracion="${plan.duracion_dias || 30}">
         ${esPlanFundador ? `<div class="plan-badge">🌱 Fundador</div>` : ""}
@@ -410,7 +420,7 @@ function renderPlanes(planes, esFundador, vendedorId) {
           </div>
           <div style="display:flex;align-items:flex-start;gap:.65rem;flex-shrink:0">
             <div class="plan-precio">
-              ${formatCOP(plan.precio)}
+              ${formatCOP(precioEntero)}
               ${etiquetaDuracion ? `<span>/ ${etiquetaDuracion}</span>` : ""}
             </div>
             <div class="plan-radio"></div>
