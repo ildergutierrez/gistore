@@ -165,40 +165,6 @@ function renderHistorial(pagos) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  WOMPI — CARGA DEL SDK (UNA SOLA VEZ, SIN data-render)
-// ════════════════════════════════════════════════════════════
-
-let _wompiSdkPromesa = null;
-
-function cargarSdkWompi() {
-  if (_wompiSdkPromesa) return _wompiSdkPromesa;
-
-  _wompiSdkPromesa = new Promise((resolve, reject) => {
-    // Ya estaba cargado
-    if (window.WidgetCheckout) { resolve(); return; }
-
-    const script  = document.createElement("script");
-    // SIN data-render: el script solo expone WidgetCheckout globalmente
-    // sin intentar renderizar ningún botón ni leer atributos del DOM.
-    script.src    = "https://checkout.wompi.co/widget.js";
-    script.async  = true;
-    script.onload = () => {
-      // Pequeña espera para que el script termine su inicialización interna
-      const esperar = (intentos = 0) => {
-        if (window.WidgetCheckout) { resolve(); return; }
-        if (intentos > 20) { reject(new Error("WidgetCheckout no disponible")); return; }
-        setTimeout(() => esperar(intentos + 1), 100);
-      };
-      esperar();
-    };
-    script.onerror = () => reject(new Error("No se pudo cargar el SDK de Wompi"));
-    document.head.appendChild(script);
-  });
-
-  return _wompiSdkPromesa;
-}
-
-// ════════════════════════════════════════════════════════════
 //  WOMPI — FIRMA DE INTEGRIDAD (SERVIDOR)
 // ════════════════════════════════════════════════════════════
 
@@ -218,7 +184,7 @@ async function obtenerFirma(referencia, montoEnCentavos) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  WOMPI — BOTÓN DE PAGO
+//  WOMPI — BOTÓN DE PAGO (API JS OFICIAL)
 // ════════════════════════════════════════════════════════════
 
 async function inyectarBotonWompi(monto, referencia) {
@@ -238,14 +204,12 @@ async function inyectarBotonWompi(monto, referencia) {
       Preparando botón de pago…
     </div>`;
 
+  // Obtener firma del servidor
   let firma;
   try {
-    [firma] = await Promise.all([
-      obtenerFirma(referencia, montoEnCentavos),
-      cargarSdkWompi(),
-    ]);
+    firma = await obtenerFirma(referencia, montoEnCentavos);
   } catch (error) {
-    console.error("Error preparando Wompi:", error);
+    console.error("Error obteniendo firma Wompi:", error);
     wrap.innerHTML = `
       <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
         No se pudo preparar el botón de pago. Recarga la página e intenta de nuevo.
@@ -262,57 +226,49 @@ async function inyectarBotonWompi(monto, referencia) {
     return;
   }
 
+  // Verificar que el SDK ya está disponible (fue cargado en el <head> del HTML)
+  if (typeof window.WidgetCheckout !== "function") {
+    console.error("WidgetCheckout no está disponible. Verifica que el script esté en el <head>.");
+    wrap.innerHTML = `
+      <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
+        Error al cargar el sistema de pago. Recarga la página.
+      </p>`;
+    return;
+  }
+
   const emailCliente  = auth.currentUser?.email       || "";
   const nombreCliente = auth.currentUser?.displayName || "";
 
-  // Construir configuración para WidgetCheckout
+  // ── Configuración según documentación oficial de Wompi ──────────────────
+  // Fuente: https://docs.wompi.co/en/docs/colombia/widget-checkout-web/
+  // En el modo JS API (new WidgetCheckout), la firma NO va en el objeto config.
+  // La integridad se valida server-side vía webhook. El objeto solo necesita
+  // los 4 campos obligatorios: currency, amountInCents, reference, publicKey.
   const config = {
     currency:      "COP",
     amountInCents: montoEnCentavos,
     reference:     referencia,
     publicKey:     WOMPI_LLAVE_PUBLICA,
-    redirectUrl:   REDIRECT_URL,
-    signature:     { integrity: firma },
+    redirectUrl:   REDIRECT_URL,       // opcional pero recomendado
   };
 
-  // Agregar datos del cliente solo si están disponibles
+  // Agregar datos del cliente si están disponibles (opcionales)
   if (emailCliente || nombreCliente) {
     config.customerData = {};
     if (emailCliente)  config.customerData.email    = emailCliente;
     if (nombreCliente) config.customerData.fullName = nombreCliente;
   }
 
-  // Crear instancia del widget — NO lanza el modal todavía
-  let checkout;
-  try {
-    checkout = new window.WidgetCheckout(config);
-  } catch (err) {
-    console.error("Error creando WidgetCheckout:", err);
-    wrap.innerHTML = `
-      <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
-        Error al inicializar el pago. Recarga la página.
-      </p>`;
-    return;
-  }
+  // Instanciar el widget — NO abre el modal aún
+  const checkout = new window.WidgetCheckout(config);
 
-  // Reemplazar indicador de carga por el botón
+  // Reemplazar el indicador de carga por el botón estilizado
   wrap.innerHTML = "";
 
   const btn = document.createElement("button");
   btn.type      = "button";
   btn.className = "waybox-button";
-  btn.style.cssText = [
-    "width:100%",
-    "display:flex",
-    "align-items:center",
-    "justify-content:center",
-    "gap:.5rem",
-    "font-size:1rem",
-    "padding:.75rem 1rem",
-    "cursor:pointer",
-    "border-radius:8px",
-  ].join(";");
-
+  btn.style.cssText = "width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:1rem;padding:.75rem 1rem;cursor:pointer;border-radius:8px;";
   btn.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
          viewBox="0 0 229.5 229.5" style="flex-shrink:0">
@@ -328,7 +284,7 @@ async function inyectarBotonWompi(monto, referencia) {
     </svg>
     Paga con <strong style="margin-left:.25rem">Wompi</strong>`;
 
-  // Al hacer clic abrir el modal de Wompi
+  // Abrir el modal al hacer clic
   btn.addEventListener("click", () => {
     checkout.open(result => {
       const tx = result?.transaction;
