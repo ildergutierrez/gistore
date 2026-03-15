@@ -1,15 +1,6 @@
 // ============================================================
 //  membresia.js — Portal Vendedor GI Store
-//  Versión: 2026-03-14 (producción)
-//
-//  Responsabilidades:
-//    · Verificar sesión y bloquear acceso al admin
-//    · Mostrar el estado de la membresía activa del vendedor
-//    · Leer los planes disponibles desde Firestore
-//    · Mostrar solo el plan "Fundador" si el vendedor tiene ese beneficio
-//    · Calcular la firma SHA-256 a través de la Cloud Function (seguro)
-//    · Inyectar el botón de pago de Wompi en el DOM principal
-//    · Listar el historial de pagos del vendedor
+//  Versión: 2026-03-15
 // ============================================================
 
 import { db, auth } from "./firebase.js";
@@ -174,6 +165,34 @@ function renderHistorial(pagos) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  WOMPI — CARGA DEL SDK (UNA SOLA VEZ)
+// ════════════════════════════════════════════════════════════
+
+// Promesa que resuelve cuando window.WidgetCheckout está disponible.
+// El script se carga una única vez aunque se llame varias veces.
+let _wompiSdkPromesa = null;
+
+function cargarSdkWompi() {
+  if (_wompiSdkPromesa) return _wompiSdkPromesa;
+
+  _wompiSdkPromesa = new Promise((resolve, reject) => {
+    // Si ya estaba cargado (ej: recarga en caliente) resolver inmediatamente
+    if (window.WidgetCheckout) { resolve(); return; }
+
+    const script  = document.createElement("script");
+    script.src    = "https://checkout.wompi.co/widget.js";
+    // El script necesita data-render="button" para inicializarse,
+    // pero en modo JS-API lo que importa es que WidgetCheckout quede disponible.
+    script.setAttribute("data-render", "button");
+    script.onload  = () => resolve();
+    script.onerror = () => reject(new Error("No se pudo cargar el SDK de Wompi"));
+    document.head.appendChild(script);
+  });
+
+  return _wompiSdkPromesa;
+}
+
+// ════════════════════════════════════════════════════════════
 //  WOMPI — FIRMA DE INTEGRIDAD (SERVIDOR)
 // ════════════════════════════════════════════════════════════
 
@@ -193,7 +212,7 @@ async function obtenerFirma(referencia, montoEnCentavos) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  WOMPI — INYECCIÓN DEL BOTÓN DE PAGO
+//  WOMPI — BOTÓN DE PAGO (API JS)
 // ════════════════════════════════════════════════════════════
 
 async function inyectarBotonWompi(monto, referencia) {
@@ -208,25 +227,27 @@ async function inyectarBotonWompi(monto, referencia) {
   const wrap = document.getElementById("wompi-btn-wrap");
   if (!wrap) return;
 
+  // Mostrar estado de carga
   wrap.innerHTML = `
     <div style="text-align:center;padding:.75rem;font-size:.8rem;color:var(--texto-suave)">
       Preparando botón de pago…
     </div>`;
 
+  // Obtener firma e inicializar SDK en paralelo
   let firma;
   try {
-    firma = await obtenerFirma(referencia, montoEnCentavos);
+    [firma] = await Promise.all([
+      obtenerFirma(referencia, montoEnCentavos),
+      cargarSdkWompi(),
+    ]);
   } catch (error) {
-    console.error("Error obteniendo firma Wompi:", error);
+    console.error("Error preparando Wompi:", error);
     wrap.innerHTML = `
       <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
         No se pudo preparar el botón de pago. Recarga la página e intenta de nuevo.
       </p>`;
     return;
   }
-
-  const emailCliente  = auth.currentUser?.email       || "";
-  const nombreCliente = auth.currentUser?.displayName || "";
 
   if (!firma || typeof firma !== "string" || firma.length < 10) {
     console.error("Firma inválida recibida del servidor:", firma);
@@ -237,49 +258,50 @@ async function inyectarBotonWompi(monto, referencia) {
     return;
   }
 
-  // ── Limpiar todo rastro de una carga anterior de Wompi ──────────────────
-  // El widget de Wompi solo se inicializa al insertarse por primera vez.
-  // Al cambiar de plan hay que eliminar el script y los elementos del modal
-  // anteriores para que Wompi arranque completamente limpio.
+  const emailCliente  = auth.currentUser?.email       || "";
+  const nombreCliente = auth.currentUser?.displayName || "";
 
-  // 1. Vaciar el contenedor del botón
+  // ── Crear instancia del widget con la API JS de Wompi ───────────────────
+  // new WidgetCheckout(config) NO depende de document.currentScript,
+  // por lo que funciona correctamente cuando el SDK se cargó dinámicamente.
+  // .open(callback) abre el modal de pago a pantalla completa.
+
+  const checkout = new window.WidgetCheckout({
+    currency:         "COP",
+    amountInCents:    montoEnCentavos,
+    reference:        referencia,
+    publicKey:        WOMPI_LLAVE_PUBLICA,
+    redirectUrl:      REDIRECT_URL,
+    signature:        { integrity: firma },
+    ...(emailCliente  && { customerData: { email: emailCliente,    ...(nombreCliente && { fullName: nombreCliente }) } }),
+  });
+
+  // ── Reemplazar el mensaje de carga por el botón real ────────────────────
   wrap.innerHTML = "";
 
-  // 2. Eliminar scripts previos de Wompi del <body>
-  document
-    .querySelectorAll('script[src*="checkout.wompi.co"]')
-    .forEach(s => s.remove());
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "waybox-button";
+  btn.style.cssText = "width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:1rem;padding:.75rem 1rem;cursor:pointer;";
+  btn.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 229.5 229.5" style="flex-shrink:0">
+      <path fill="#fff" d="M214.419 32.12A7.502 7.502 0 0 0 209 25.927L116.76.275a7.496 7.496 0 0 0-4.02 0L20.5 25.927a7.5 7.5 0 0 0-5.419 6.193c-.535 3.847-12.74 94.743 18.565 139.961 31.268 45.164 77.395 56.738 79.343 57.209a7.484 7.484 0 0 0 3.522 0c1.949-.471 48.076-12.045 79.343-57.209 31.305-45.217 19.1-136.113 18.565-139.961zm-40.186 53.066l-62.917 62.917c-1.464 1.464-3.384 2.197-5.303 2.197s-3.839-.732-5.303-2.197l-38.901-38.901a7.497 7.497 0 0 1 0-10.606l7.724-7.724a7.5 7.5 0 0 1 10.606 0l25.874 25.874 49.89-49.891a7.497 7.497 0 0 1 10.606 0l7.724 7.724a7.5 7.5 0 0 1 0 10.607z"/>
+    </svg>
+    Paga con <strong style="margin-left:.25rem">Wompi</strong>`;
 
-  // 3. Eliminar el backdrop/modal que Wompi pudo haber dejado
-  document
-    .querySelectorAll(".waybox-backdrop, .waybox-modal")
-    .forEach(el => el.remove());
+  btn.addEventListener("click", () => {
+    checkout.open(result => {
+      // result.transaction contiene el estado del pago
+      const tx = result?.transaction;
+      if (tx?.status === "APPROVED") {
+        mostrarAlerta("ok", "¡Pago aprobado! Tu membresía se activará en unos segundos.");
+      } else if (tx) {
+        mostrarAlerta("warn", `Transacción ${tx.status || "pendiente"}. Revisa tu historial.`);
+      }
+    });
+  });
 
-  // ── Crear el <form> + <script> directamente en el DOM principal ─────────
-  // De esta forma el modal de Wompi se monta en document.body con
-  // position:fixed y puede ocupar toda la pantalla sin restricciones.
-  // Usar setAttribute() respeta el ":" en los nombres de atributo,
-  // evitando el error "Cannot read properties of undefined (reading 'invalid')".
-
-  const form = document.createElement("form");
-  form.style.cssText = "margin:0;padding:0;";
-  wrap.appendChild(form);
-
-  const scriptEl = document.createElement("script");
-  scriptEl.src = "https://checkout.wompi.co/widget.js";
-
-  scriptEl.setAttribute("data-render",             "button");
-  scriptEl.setAttribute("data-public-key",          WOMPI_LLAVE_PUBLICA);
-  scriptEl.setAttribute("data-currency",            "COP");
-  scriptEl.setAttribute("data-amount-in-cents",     String(montoEnCentavos));
-  scriptEl.setAttribute("data-reference",           referencia);
-  scriptEl.setAttribute("data-signature:integrity", firma);
-  scriptEl.setAttribute("data-redirect-url",        REDIRECT_URL);
-
-  if (emailCliente)  scriptEl.setAttribute("data-customer-data:email",     emailCliente);
-  if (nombreCliente) scriptEl.setAttribute("data-customer-data:full-name", nombreCliente);
-
-  form.appendChild(scriptEl);
+  wrap.appendChild(btn);
 }
 
 // ════════════════════════════════════════════════════════════
