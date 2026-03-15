@@ -291,58 +291,58 @@ async function inyectarBotonWompi(monto, referencia) {
   const emailCliente  = auth.currentUser?.email       || "";
   const nombreCliente = auth.currentUser?.displayName || "";
 
-  // HTML completo del widget dentro del iframe.
-  // El cierre del tag <script> se escapa para evitar que el parser HTML
-  // del documento padre lo interprete antes de escribirlo en el iframe.
-  const htmlIframe = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8"/>
-  <style>
-    body { margin:0; padding:0; background:transparent; }
-    .waybox-button { width:100% !important; min-width:unset !important; }
-  </style>
-</head>
-<body>
-  <form>
-    <script
-      src="https://checkout.wompi.co/widget.js"
-      data-render="button"
-      data-public-key="${WOMPI_LLAVE_PUBLICA}"
-      data-currency="COP"
-      data-amount-in-cents="${montoEnCentavos}"
-      data-reference="${referencia}"
-      data-signature:integrity="${firma}"
-      data-redirect-url="${REDIRECT_URL}"
-      data-customer-data:email="${emailCliente}"
-      data-customer-data:full-name="${nombreCliente}">
-    <\/script>
-  </form>
-</body>
-</html>`;
+  // Validar que la firma llegó correctamente antes de inyectarla.
+  // Una firma vacía o undefined hace que el widget lance el error
+  // "Cannot read properties of undefined (reading 'invalid')".
+  if (!firma || typeof firma !== "string" || firma.length < 10) {
+    console.error("Firma inválida recibida del servidor:", firma);
+    wrap.innerHTML = `
+      <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
+        Error de seguridad al preparar el pago. Recarga la página.
+      </p>`;
+    return;
+  }
 
-  // Limpiar e insertar el iframe
+  // Usamos srcdoc en lugar de iDoc.write() porque:
+  //  · iDoc.write() puede fallar silenciosamente en HTTPS/móvil (about:blank)
+  //  · srcdoc es soportado por todos los navegadores modernos
+  //  · srcdoc garantiza que las variables ya resueltas se inyecten correctamente
+  // IMPORTANTE: los atributos de srcdoc deben escapar las comillas dobles con &quot;
+  const srcdoc = [
+    "<!DOCTYPE html><html><head><meta charset='UTF-8'/>",
+    "<style>body{margin:0;padding:0;background:transparent;}",
+    ".waybox-button{width:100%!important;min-width:unset!important;}</style>",
+    "</head><body><form>",
+    "<script src='https://checkout.wompi.co/widget.js'",
+    " data-render='button'",
+    ` data-public-key='${WOMPI_LLAVE_PUBLICA}'`,
+    " data-currency='COP'",
+    ` data-amount-in-cents='${montoEnCentavos}'`,
+    ` data-reference='${referencia}'`,
+    ` data-signature:integrity='${firma}'`,
+    ` data-redirect-url='${REDIRECT_URL}'`,
+    ` data-customer-data:email='${emailCliente}'`,
+    ` data-customer-data:full-name='${nombreCliente}'`,
+    "></scr" + "ipt>",
+    "</form></body></html>",
+  ].join("");
+
+  // Limpiar e insertar el iframe con srcdoc
   wrap.innerHTML = "";
 
   const iframe = document.createElement("iframe");
   iframe.style.cssText = "width:100%;border:none;min-height:56px;overflow:hidden;display:block;";
-  iframe.scrolling = "no";
+  iframe.scrolling     = "no";
+  iframe.srcdoc        = srcdoc;
   wrap.appendChild(iframe);
 
-  // Escribir el HTML directamente en el documento del iframe
-  const iDoc = iframe.contentDocument || iframe.contentWindow.document;
-  iDoc.open();
-  iDoc.write(htmlIframe);
-  iDoc.close();
-
-  // Ajustar la altura del iframe una vez que el widget termine de cargar
+  // Ajustar altura cuando el widget cargue
   iframe.onload = () => {
     try {
       const altura = iframe.contentWindow.document.body.scrollHeight;
       if (altura > 10) iframe.style.height = (altura + 8) + "px";
     } catch (_) {
-      // En producción con HTTPS el iframe puede ser cross-origin;
-      // la altura fija de min-height es suficiente en ese caso.
+      // iframe cross-origin en producción — la altura fija de min-height es suficiente
     }
   };
 }
