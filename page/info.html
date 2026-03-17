@@ -21,25 +21,21 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; color: var(--texto); background: #f9fdf9; line-height: 1.7; }
 
-    /* Header — hereda responsive de style.css */
     header { background: var(--verde-oscuro); }
     .header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; }
 
-    /* Hero */
     .info-hero { background: linear-gradient(135deg, #0f3d24 0%, var(--verde-oscuro) 60%, #2d9e5f 100%); color: #fff; padding: 4rem 1.5rem 3.5rem; text-align: center; position: relative; overflow: hidden; }
     .info-hero::before { content: ""; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
     .info-hero-badge { display: inline-block; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: .3rem 1rem; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1rem; }
     .info-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: .7rem; line-height: 1.2; }
     .info-hero p { font-size: 1.05rem; opacity: .85; max-width: 520px; margin: 0 auto; }
 
-    /* Secciones */
     .seccion { max-width: 1100px; margin: 0 auto; padding: 4rem 1.5rem; }
     .seccion-tag { display: inline-block; background: var(--verde-suave); color: var(--verde-oscuro); font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .3rem .8rem; border-radius: 999px; margin-bottom: .9rem; }
     .seccion h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; color: var(--texto); margin-bottom: .6rem; letter-spacing: -.02em; line-height: 1.2; }
     .seccion-lead { font-size: 1rem; color: var(--gris-500); max-width: 600px; margin-bottom: 2.5rem; }
     .divisor { border: none; border-top: 1.5px solid var(--verde-medio); margin: 0 1.5rem; }
 
-    /* Avisos */
     .avisos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
     .aviso { border-radius: 14px; padding: 1.4rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; }
     .aviso-info    { background: #eff6ff; border-left: 4px solid #3b82f6; }
@@ -50,7 +46,6 @@
     .aviso h4 { font-size: .95rem; font-weight: 700; margin-bottom: .3rem; color: var(--texto); }
     .aviso p  { font-size: .88rem; color: var(--gris-700); line-height: 1.6; }
 
-    /* Membresía */
     .membresia-bg { background: linear-gradient(135deg, #0f3d24 0%, var(--verde-oscuro) 100%); }
     .membresia-bg .seccion-tag { background: rgba(255,255,255,.12); color: #fff; }
     .membresia-bg h2 { color: #fff; }
@@ -62,15 +57,153 @@
     .membresia-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
     .membresia-card p { font-size: .88rem; opacity: .8; line-height: 1.6; }
     .membresia-cta { margin-top: 2.5rem; text-align: center; }
-    .membresia-cta a { display: inline-flex; align-items: center; gap: .5rem; background: #fff; color: var(--verde-oscuro); font-weight: 700; font-size: .95rem; padding: .85rem 2rem; border-radius: 999px; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,.2); transition: transform .15s; }
-    .membresia-cta a:hover { transform: translateY(-2px); }
+    .membresia-cta button {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: #fff; color: var(--verde-oscuro);
+      font-weight: 700; font-size: .95rem;
+      padding: .85rem 2rem; border-radius: 999px;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,.2);
+      transition: transform .15s;
+      font-family: inherit;
+    }
+    .membresia-cta button:hover { transform: translateY(-2px); }
     .membresia-cta p { color: rgba(255,255,255,.6); font-size: .82rem; margin-top: .8rem; }
 
-    /* Footer */
     footer { background: var(--verde-oscuro); color: rgba(255,255,255,.7); text-align: center; padding: 1.8rem 1rem; font-size: .88rem; line-height: 1.8; }
     footer span { color: #fff; font-weight: 600; }
     footer a { color: rgba(255,255,255,.75); text-decoration: none; }
     footer a:hover { color: #fff; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10, 30, 18, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.abierto { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2.2rem 2rem;
+      width: 100%; max-width: 460px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.22);
+      position: relative;
+      animation: modalIn .25s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(24px) scale(.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-cerrar {
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--verde-suave); border: none; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--verde-oscuro); font-size: 1rem;
+      transition: background .15s;
+    }
+    .modal-cerrar:hover { background: var(--verde-medio); }
+
+    .modal-icono {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: var(--verde-suave);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 1rem;
+    }
+    .modal h2 { font-size: 1.25rem; font-weight: 800; color: var(--texto); margin-bottom: .3rem; letter-spacing: -.02em; }
+    .modal-subtitulo { font-size: .88rem; color: var(--gris-500); margin-bottom: 1.6rem; }
+
+    .campo { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1.1rem; }
+    .campo label { font-size: .82rem; font-weight: 700; color: var(--gris-700); letter-spacing: .04em; text-transform: uppercase; }
+    .campo input {
+      border: 1.5px solid #d1d5db; border-radius: 10px;
+      padding: .7rem .95rem; font-size: .95rem;
+      font-family: inherit; color: var(--texto);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+      background: #fafafa;
+    }
+    .campo input:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(45,158,95,.15);
+      background: #fff;
+    }
+    .campo input::placeholder { color: #b0b8c1; }
+
+    .campo-telefono { position: relative; }
+    .campo-telefono span {
+      position: absolute; left: .95rem; top: 50%; transform: translateY(-50%);
+      font-size: .95rem; color: var(--gris-500); pointer-events: none;
+      font-weight: 600;
+    }
+    .campo-telefono input { padding-left: 2.8rem; }
+
+    .modal-enviar {
+      width: 100%; margin-top: .5rem;
+      background: var(--verde-oscuro); color: #fff;
+      border: none; border-radius: 10px;
+      padding: .85rem; font-size: .97rem; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      transition: background .15s, transform .1s;
+    }
+    .modal-enviar:hover { background: var(--verde-claro); transform: translateY(-1px); }
+    .modal-enviar:active { transform: translateY(0); }
+    .modal-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Estado de éxito */
+    .modal-exito {
+      display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 1rem 0 .5rem;
+      gap: .6rem;
+    }
+    .modal-exito .exito-check {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--verde-suave);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin-bottom: .4rem;
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .modal-exito h3 { font-size: 1.15rem; font-weight: 800; color: var(--texto); }
+    .modal-exito p { font-size: .88rem; color: var(--gris-500); max-width: 280px; line-height: 1.6; }
+    .modal-exito button {
+      margin-top: .8rem;
+      background: var(--verde-suave); color: var(--verde-oscuro);
+      border: none; border-radius: 8px; padding: .6rem 1.4rem;
+      font-size: .88rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .15s;
+    }
+    .modal-exito button:hover { background: var(--verde-medio); }
+
+    .modal-error-msg {
+      display: none;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 8px; padding: .7rem 1rem;
+      font-size: .84rem; color: #b91c1c;
+      margin-bottom: 1rem;
+    }
+    .modal-error-msg.visible { display: block; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -105,7 +238,6 @@
     <p class="seccion-lead">Para que tu experiencia sea clara y sin sorpresas, aquí explicamos cómo funciona cada parte del proceso.</p>
 
     <div class="avisos-grid">
-
       <div class="aviso aviso-info">
         <div class="aviso-icon">💬</div>
         <div>
@@ -113,7 +245,6 @@
           <p>Al tocar "Comprar por WhatsApp" o "Enviar pedido", se abre un chat directo con el vendedor. Él confirmará disponibilidad, precio final, forma de pago y opciones de envío.</p>
         </div>
       </div>
-
       <div class="aviso aviso-warn">
         <div class="aviso-icon">⚠️</div>
         <div>
@@ -121,7 +252,6 @@
           <p>Al cerrar o recargar la página tu selección se borra. El catálogo no usa cuentas ni sesiones. Te recomendamos armar tu pedido en una sola sesión y enviarlo antes de cerrar.</p>
         </div>
       </div>
-
       <div class="aviso aviso-info">
         <div class="aviso-icon">🚚</div>
         <div>
@@ -129,7 +259,6 @@
           <p>GI Store tiene cobertura nacional, pero los detalles de despacho (transportadora, costo de envío, tiempo de entrega) los define directamente el vendedor por WhatsApp.</p>
         </div>
       </div>
-
       <div class="aviso aviso-warn">
         <div class="aviso-icon">💳</div>
         <div>
@@ -137,7 +266,6 @@
           <p>GI Store no recibe ni gestiona ningún pago. Toda transacción económica se hace directamente entre el cliente y el vendedor. No tenemos pasarela de pagos.</p>
         </div>
       </div>
-
       <div class="aviso aviso-success">
         <div class="aviso-icon">🔗</div>
         <div>
@@ -145,7 +273,6 @@
           <p>Cada producto tiene un enlace único que puedes compartir por WhatsApp, redes o donde quieras. Al abrirlo, el producto aparece directamente en el catálogo.</p>
         </div>
       </div>
-
       <div class="aviso aviso-neutral">
         <div class="aviso-icon">📋</div>
         <div>
@@ -153,7 +280,6 @@
           <p>GI Store no es responsable de los productos, precios ni condiciones de venta de cada vendedor. Somos el escaparate digital; la relación comercial es entre comprador y vendedor.</p>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -190,14 +316,16 @@
       </div>
 
       <div class="membresia-cta">
-        <a href="mailto:aplicativosawebs@gmail.com?subject=Consulta%20membres%C3%ADa%20GI%20Store&body=Hola%2C%20me%20interesa%20publicar%20mis%20productos%20en%20GI%20Store.%20Quisiera%20informaci%C3%B3n%20sobre%20la%20membres%C3%ADa.">
+        <button id="btnSolicitarRegistro">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
-          Consultar membresía por correo
-        </a>
-        <p>Escríbenos a <strong style="color:#fff">aplicativosawebs@gmail.com</strong> · Te respondemos a la brevedad</p>
+          Solicitar registro
+        </button>
+        <p>Te respondemos a la brevedad</p>
       </div>
     </section>
   </div>
@@ -207,6 +335,70 @@
     <p>© 2026 <span>GI Store</span> · Todos los derechos reservados<br>
     Plataforma de Catálogo Digital · Colombia · <a href="../index.html">Ir al catálogo →</a></p>
   </footer>
+
+
+  <!-- ══════════════════════════════════════
+       MODAL — SOLICITAR REGISTRO
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal" id="modal">
+
+      <button class="modal-cerrar" id="btnCerrar" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
+
+      <!-- Formulario -->
+      <div id="modalFormulario">
+        <div class="modal-icono">🏪</div>
+        <h2 id="modalTitulo">Solicitar registro</h2>
+        <p class="modal-subtitulo">Déjanos tus datos y nos comunicamos contigo para activar tu membresía.</p>
+
+        <div class="modal-error-msg" id="modalError">Por favor completa todos los campos correctamente.</div>
+
+        <div class="campo">
+          <label for="campo-tienda">Nombre de la tienda o tu nombre</label>
+          <input type="text" id="campo-tienda" placeholder="Ej: Tienda Sofía / Juan Pérez" autocomplete="off" />
+        </div>
+
+        <div class="campo">
+          <label for="campo-ciudad">Ciudad o municipio</label>
+          <input type="text" id="campo-ciudad" autocomplete="off" />
+        </div>
+
+        <div class="campo">
+          <label for="campo-correo">Correo electrónico</label>
+          <input type="email" id="campo-correo" placeholder="tu@correo.com" autocomplete="email" />
+        </div>
+
+        <div class="campo">
+          <label for="campo-whatsapp">WhatsApp</label>
+          <div class="campo-telefono">
+            <span>+57</span>
+            <input type="tel" id="campo-whatsapp" placeholder="300 000 0000" autocomplete="tel" maxlength="15" />
+          </div>
+        </div>
+
+        <button class="modal-enviar" id="btnEnviar">
+          <span id="btnTexto">Enviar solicitud</span>
+          <div class="spinner" id="spinner"></div>
+        </button>
+      </div>
+
+      <!-- Estado éxito -->
+      <div class="modal-exito" id="modalExito">
+        <div class="exito-check">✅</div>
+        <h3>¡Solicitud enviada!</h3>
+        <p>Recibimos tu información. Nos pondremos en contacto contigo pronto para activar tu membresía.</p>
+        <button id="btnExitoCerrar">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script src=",,/js/colombia-ciudades.js"></script>
 
 </body>
 </html>
