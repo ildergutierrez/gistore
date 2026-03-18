@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotlight Producto — GI Store</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* ═══════════════════════════════════════════════
+       SPOTLIGHT — estilos del módulo
+    ═══════════════════════════════════════════════ */
+
+    /* ── IA badge ── */
+    .ia-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff; font-size: .78rem; font-weight: 600;
+      padding: .28rem .7rem; border-radius: 20px; letter-spacing: .02em;
+    }
+
+    /* ── loading overlay ── */
+    #spLoading {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+    }
+    #spLoading.visible { display: flex; }
+    .sp-spinner {
+      width: 52px; height: 52px;
+      border: 5px solid rgba(255,255,255,.25); border-top-color: #fff;
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    #spLoading p { color: #fff; font-size: 1rem; font-weight: 600; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── barra de filtros ── */
+    .sp-filtros {
+      display: flex; gap: .75rem; flex-wrap: wrap;
+      align-items: center; margin-bottom: 1.25rem;
+    }
+    .sp-filtros input,
+    .sp-filtros select {
+      padding: .55rem .85rem;
+      border: 1.5px solid var(--borde);
+      border-radius: var(--radio-sm);
+      font-family: inherit; font-size: .88rem;
+      background: var(--fondo-2); color: var(--texto);
+      transition: border-color .2s; cursor: pointer;
+    }
+    .sp-filtros input { flex: 1; min-width: 180px; }
+    .sp-filtros input:focus,
+    .sp-filtros select:focus { outline: none; border-color: var(--verde-medio); }
+
+    /* ── grid de productos ── */
+    #spListaProductos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: .25rem .1rem;
+    }
+
+    /* tarjeta de selección */
+    .sp-prod-card {
+      border: 2px solid var(--borde);
+      border-radius: var(--radio);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--fondo-2);
+      transition: border-color .18s, box-shadow .18s, transform .15s;
+      position: relative;
+    }
+    .sp-prod-card:hover {
+      border-color: var(--verde-medio);
+      box-shadow: var(--sombra-md);
+      transform: translateY(-2px);
+    }
+    .sp-prod-card.seleccionado {
+      border-color: var(--verde);
+      box-shadow: 0 0 0 3px rgba(26,107,60,.18);
+    }
+    .sp-prod-img {
+      height: 130px; position: relative; overflow: hidden;
+      background: var(--verde-claro);
+    }
+    .sp-prod-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; transition: transform .3s;
+    }
+    .sp-prod-card:hover .sp-prod-img img { transform: scale(1.05); }
+    .sp-prod-noimg {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; background: var(--verde-claro);
+    }
+    .sp-prod-estado {
+      position: absolute; top: 7px; right: 7px;
+      font-size: .68rem; font-weight: 700;
+      padding: .2rem .55rem; border-radius: 12px;
+      backdrop-filter: blur(4px);
+    }
+    .sp-prod-estado.activo   { background: rgba(22,163,74,.15); color: #15803d; border: 1px solid #86efac; }
+    .sp-prod-estado.inactivo { background: rgba(107,114,128,.12); color: #6b7280; border: 1px solid #d1d5db; }
+    .sp-prod-body {
+      padding: .65rem .75rem .8rem;
+      display: flex; flex-direction: column; gap: .25rem;
+    }
+    .sp-prod-cat {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--verde-medio);
+    }
+    .sp-prod-nombre {
+      font-family: 'Nunito', sans-serif; font-size: .92rem;
+      font-weight: 700; color: var(--texto); line-height: 1.25;
+    }
+    .sp-prod-precio {
+      font-size: .82rem; font-weight: 800; color: var(--verde);
+    }
+    .sp-prod-precio span { font-weight: 400; font-size: .72rem; color: var(--texto-suave); }
+    .sp-prod-desc {
+      font-size: .75rem; color: var(--texto-suave); line-height: 1.4; margin-top: .1rem;
+    }
+    /* check de selección */
+    .sp-prod-check {
+      display: none; position: absolute; top: 7px; left: 7px;
+    }
+    .sp-prod-check .material-symbols-outlined {
+      font-size: 1.35rem; color: var(--verde);
+      background: rgba(255,255,255,.9); border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .sp-prod-card.seleccionado .sp-prod-check { display: block; }
+
+    /* ── resultado ── */
+    #spResultArea { display: none; }
+    #spResultArea.visible { display: block; }
+
+    /* ── status ── */
+    #spIaStatus {
+      text-align: center; font-size: .85rem;
+      color: var(--texto-suave); margin-top: .6rem; min-height: 1.2em;
+    }
+
+    /* ═══════════════════════════════════════════
+       TARJETA EXPORTABLE — estilo de revista
+    ═══════════════════════════════════════════ */
+    #spCard {
+      width: 800px; max-width: 100%;
+      background: #fff; border-radius: 20px; overflow: hidden;
+      box-shadow: 0 8px 48px rgba(0,0,0,.18);
+      margin: 0 auto 1.5rem; font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+    #spCard .card-topbar {
+      height: 6px;
+      background: linear-gradient(90deg, #1a6b3c, #22c55e, #4f46e5);
+    }
+    #spCard .card-inner {
+      display: grid; grid-template-columns: 320px 1fr; min-height: 480px;
+    }
+    /* imagen */
+    #spCard .card-img-col {
+      position: relative; background: #f0f4f2; overflow: hidden;
+    }
+    #spCard .card-img-col img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    #spCard .card-img-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(26,107,60,.12) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    #spCard .card-cat-badge {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(255,255,255,.92); color: var(--verde);
+      font-size: .72rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; padding: .3rem .75rem;
+      border-radius: 20px; backdrop-filter: blur(4px);
+    }
+    /* info */
+    #spCard .card-info-col {
+      padding: 2.25rem 2rem 1.75rem;
+      display: flex; flex-direction: column; gap: .85rem; position: relative;
+    }
+    #spCard .card-marca {
+      font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--verde-medio);
+    }
+    #spCard .card-nombre {
+      font-family: 'Nunito', sans-serif; font-size: 1.75rem;
+      font-weight: 800; color: #111827; line-height: 1.2;
+    }
+    #spCard .card-divider {
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, #22c55e, #1a6b3c); border-radius: 2px;
+    }
+    #spCard .card-precio {
+      display: flex; align-items: baseline; gap: .4rem;
+    }
+    #spCard .card-precio .monto {
+      font-family: 'Nunito', sans-serif; font-size: 2.4rem;
+      font-weight: 900; color: var(--verde); line-height: 1;
+    }
+    #spCard .card-precio .moneda {
+      font-size: 1rem; font-weight: 600; color: #4b5563;
+    }
+    #spCard .card-descripcion {
+      font-size: .88rem; color: #1f2937; line-height: 1.7; flex: 1;
+    }
+    #spCard .card-beneficios { display: flex; flex-direction: column; gap: .45rem; }
+    #spCard .card-beneficios .ben-titulo {
+      font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: #374151; margin-bottom: .15rem;
+    }
+    #spCard .card-beneficios .ben-item {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .83rem; color: #111827;
+    }
+    #spCard .card-beneficios .ben-item::before {
+      content: '✦'; color: #22c55e; font-size: .7rem; flex-shrink: 0;
+    }
+    #spCard .card-reco {
+      background: #f0fdf4; border-left: 3px solid #22c55e;
+      padding: .65rem .9rem; border-radius: 0 8px 8px 0;
+      font-size: .82rem; color: #14532d; font-weight: 500;
+      font-style: italic; line-height: 1.5;
+    }
+    #spCard .card-footer {
+      padding: .85rem 2rem; background: #f3f4f6;
+      border-top: 1px solid #d1d5db;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #spCard .card-footer .gi-brand {
+      font-size: .78rem; font-weight: 700; color: var(--verde); letter-spacing: .04em;
+    }
+    #spCard .card-footer .ia-note {
+      font-size: .7rem; color: #4b5563;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    #spIaTexto {
+      display: none; font-size: .82rem; color: #1f2937; line-height: 1.65;
+      font-style: italic; border-top: 1px solid #d1d5db;
+      padding-top: .75rem; margin-top: .25rem;
+    }
+
+    /* ── botones ── */
+    .sp-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+
+    .btn-disenio {
+      background: linear-gradient(135deg, #0891b2, #0ea5e9);
+      color: #fff; border: none; padding: .65rem 1.4rem;
+      border-radius: var(--radio-sm); font-family: inherit;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-disenio:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+    .btn-disenio:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-ia {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff; border: none; padding: .65rem 1.4rem;
+      border-radius: var(--radio-sm); font-family: inherit;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-ia:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-ia:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-editor {
+      background: linear-gradient(135deg, #0891b2, #0ea5e9);
+      color: #fff; border: none; padding: .65rem 1.4rem;
+      border-radius: var(--radio-sm); font-family: inherit;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-editor:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-export {
+      background: linear-gradient(135deg, #1a6b3c, #22c55e);
+      color: #fff; border: none; padding: .65rem 1.4rem;
+      border-radius: var(--radio-sm); font-family: inherit;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-export:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-export:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── responsive ── */
+    @media (max-width: 700px) {
+      #spCard .card-inner { grid-template-columns: 1fr; }
+      #spCard .card-img-col { height: 220px; }
+      #spCard .card-nombre { font-size: 1.35rem; }
+      #spCard .card-precio .monto { font-size: 1.8rem; }
+      #spListaProductos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading overlay -->
+  <div id="spLoading">
+    <div class="sp-spinner"></div>
+    <p id="spLoadingMsg">Generando diseño con IA…</p>
+  </div>
+
+  <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar">
+    <a href="#" class="sidebar-logo" title="Ir al inicio 🏠"
+      style="text-decoration:none;display:flex;align-items:center;gap:.75rem;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
+      <div class="sidebar-logo-icono">
+        <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/>
+      </div>
+      <div class="sidebar-logo-txt">
+        <strong>GI Store</strong>
+        <span id="vendedorNombre">Portal Vendedor</span>
+      </div>
+    </a>
+    <nav class="nav">
+      <div class="nav-titulo">Mi cuenta</div>
+      <a href="dashboard.html">
+        <span class="icono"><span class="material-symbols-outlined">bento</span></span>Dashboard
+      </a>
+      <a href="productos.html">
+        <span class="icono"><span class="material-symbols-outlined">package_2</span></span>Mis productos
+      </a>
+      <a href="catalogo.html">
+        <span class="icono"><span class="material-symbols-outlined">photo_library</span></span>Exportar catálogo
+      </a>
+      <a href="spotlight.html" class="activo">
+        <span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span>Spotlight IA
+      </a>
+      <a href="membresia.html">
+        <span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>Mi membresía
+      </a>
+      <div class="nav-titulo">Sitio</div>
+      <a href="perfil.html">
+        <span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span>Mi perfil
+      </a>
+      <a href="../../index.html" target="_blank">
+        <span class="icono"><span class="material-symbols-outlined">article_person</span></span>Ver catálogo
+      </a>
+    </nav>
+    <div class="sidebar-pie">
+      <button class="btn-salir" id="btnSalir">
+        <span class="material-symbols-outlined">logout</span> Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-izq">
+        <h1>✨ Spotlight de Producto</h1>
+        <p class="fecha" id="fechaHoy"></p>
+      </div>
+      <div class="topbar-der">
+        <span class="ia-badge">
+          <span class="material-symbols-outlined" style="font-size:.95rem">auto_awesome</span>
+          Potenciado con IA
+        </span>
+      </div>
+    </div>
+
+    <!-- Panel selector -->
+    <div class="panel" style="margin-bottom:1.5rem">
+      <div class="panel-header">
+        <h2>🎯 Selecciona un producto</h2>
+      </div>
+      <div style="padding:1.25rem 1.5rem">
+        <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:1rem">
+          Elige un producto de tu catálogo. La IA creará una tarjeta visual estilo revista lista para exportar como PNG.
+        </p>
+
+        <!-- Filtros -->
+        <div class="sp-filtros">
+          <input type="text" id="spBusqueda" placeholder="🔍 Buscar por nombre o descripción…" />
+          <select id="spFiltroCategoria">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="spFiltroEstado">
+            <option value="todos">Todos</option>
+            <option value="activos">Solo activos</option>
+            <option value="inactivos">Solo inactivos</option>
+          </select>
+        </div>
+
+        <!-- Grid de productos -->
+        <div id="spListaProductos">
+          <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--texto-suave);font-size:.9rem">
+            Cargando productos…
+          </div>
+        </div>
+
+        <!-- Acción y estado -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.1rem;flex-wrap:wrap;gap:.75rem">
+          <p id="spIaStatus">Selecciona un producto para comenzar.</p>
+          <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:center">
+            <button class="btn-disenio" id="btnDiseñar" disabled>
+              <span class="material-symbols-outlined" style="font-size:1rem">draw</span>
+              Editar diseño
+            </button>
+            <button class="btn-ia" id="btnGenerar" disabled>
+              <span class="material-symbols-outlined" style="font-size:1.1rem">auto_awesome</span>
+              Generar con IA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div id="spResultArea">
+      <div class="panel" style="margin-bottom:1.25rem">
+        <div class="panel-header" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+          <h2>🖼️ Vista previa exportable</h2>
+          <div class="sp-actions">
+            <button class="btn-ia" id="btnRegenerar">
+              <span class="material-symbols-outlined" style="font-size:1rem">refresh</span>
+              Regenerar
+            </button>
+            <button class="btn-export" id="btnExportar">
+              <span class="material-symbols-outlined" style="font-size:1rem">download</span>
+              Exportar PNG
+            </button>
+            <button class="btn-editor" id="btnEditor">
+              <span class="material-symbols-outlined" style="font-size:1rem">draw</span>
+              Abrir en Editor
+            </button>
+          </div>
+        </div>
+        <div style="padding:1.5rem;overflow-x:auto">
+
+          <!-- Tarjeta exportable -->
+          <div id="spCard">
+            <div class="card-topbar"></div>
+            <div class="card-inner">
+
+              <!-- columna imagen -->
+              <div class="card-img-col" id="spImgCol">
+                <img id="spImgEl" src="" alt="Producto" />
+                <div class="card-img-overlay"></div>
+                <span class="card-cat-badge" id="spCategoria">Categoría</span>
+              </div>
+
+              <!-- columna info -->
+              <div class="card-info-col">
+                <div class="card-marca" id="spMarca">GI Store</div>
+                <div class="card-nombre" id="spNombre">Nombre del producto</div>
+                <div class="card-divider"></div>
+                <div class="card-precio">
+                  <span class="monto" id="spPrecio">0</span>
+                  <span class="moneda">COP</span>
+                </div>
+                <div class="card-descripcion" id="spDescripcion"></div>
+                <div class="card-beneficios" id="spBeneficios">
+                  <div class="ben-titulo">Beneficios</div>
+                </div>
+                <div class="card-reco" id="spReco" style="display:none"></div>
+                <div id="spIaTexto"></div>
+              </div>
+
+            </div>
+            <div class="card-footer">
+              <span class="gi-brand">🌿 GI Store</span>
+              <span class="ia-note">
+                <span class="material-symbols-outlined" style="font-size:.85rem">auto_awesome</span>
+                Diseño generado con IA
+              </span>
+            </div>
+          </div>
+          <!-- fin tarjeta -->
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="../js/spotlight.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btnH    = document.getElementById('btnHamburguesa');
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      if (!btnH || !sidebar || !overlay) return;
+      function abrir()  { sidebar.classList.add('abierto');    overlay.classList.add('visible');    btnH.classList.add('abierto'); }
+      function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
+      btnH.addEventListener('click', function () { sidebar.classList.contains('abierto') ? cerrar() : abrir(); });
+      overlay.addEventListener('click', cerrar);
+      document.querySelectorAll('.nav a').forEach(function (a) {
+        a.addEventListener('click', function () { if (window.innerWidth <= 700) cerrar(); });
+      });
+    });
+  </script>
+</body>
+</html>
