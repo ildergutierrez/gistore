@@ -97,6 +97,7 @@ onAuthStateChanged(auth, async (user) => {
     if (el("fCiudad"))       el("fCiudad").value       = vendedor.ciudad      || "";
     if (el("fWhatsapp"))     el("fWhatsapp").value     = vendedor.whatsapp    || "";
     if (el("fCorreo"))       el("fCorreo").value       = vendedor.correo      || user.email || "";
+    if (el("fUrlWeb"))       el("fUrlWeb").value       = vendedor.url_web     || "";
     if (el("fDescripcion"))  el("fDescripcion").value  = vendedor.descripcion || "";
     actualizarContador();
 
@@ -223,17 +224,30 @@ el("btnGuardarPerfil")?.addEventListener("click", async () => {
   const nombre      = el("fNombre")?.value.trim()      || "";
   const ciudad      = el("fCiudad")?.value.trim()      || "";
   const whatsapp    = el("fWhatsapp")?.value.trim()    || "";
+  const urlWeb      = el("fUrlWeb")?.value.trim()      || "";
   const descripcion = el("fDescripcion")?.value.trim() || "";
 
   if (!nombre) { mostrarError("El nombre es obligatorio."); return; }
   if (descripcion.length > 300) { mostrarError("La descripción no puede superar 300 caracteres."); return; }
 
+  // Validar URL si se ingresó
+  if (urlWeb) {
+    try {
+      const u = new URL(urlWeb);
+      if (!["http:", "https:"].includes(u.protocol)) throw new Error();
+    } catch {
+      mostrarError("La URL de la página web no es válida. Debe iniciar con https:// o http://");
+      return;
+    }
+  }
+
   const btn = el("btnGuardarPerfil");
   btnCargando(btn, true); ocultarMensajes();
   try {
-    await actualizarVendedor(vendedor.id, { nombre, ciudad, whatsapp, descripcion });
+    await actualizarVendedor(vendedor.id, { nombre, ciudad, whatsapp, url_web: urlWeb, descripcion });
     vendedor.nombre      = nombre;
     vendedor.descripcion = descripcion;
+    vendedor.url_web     = urlWeb;
     if (el("vendedorNombre")) el("vendedorNombre").textContent = nombre;
     if (!vendedor.perfil) renderAvatar("", nombre, vendedor.color);
     mostrarOk("✓ Datos actualizados correctamente.");

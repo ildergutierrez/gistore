@@ -40,6 +40,15 @@ async function obtenerVendedorPorUid(uid) {
  * Actualiza los datos del perfil del vendedor.
  * @param {string} id     — ID del documento en "vendedores"
  * @param {object} datos  — campos a actualizar
+ *
+ * Campos soportados (todos opcionales en cada llamada):
+ *   nombre       string  — nombre del vendedor / tienda
+ *   ciudad       string  — ciudad de operación
+ *   whatsapp     string  — número con código país, ej: 573145891108
+ *   url_web      string  — URL de página web personal (https://…) — NUEVO
+ *   descripcion  string  — descripción pública de la tienda (máx 300 chars)
+ *   perfil       string  — URL de foto de perfil (Cloudinary)
+ *   color        string  — color de marca en hex
  */
 async function actualizarVendedor(id, datos) {
   await updateDoc(doc(db, "vendedores", id), {
