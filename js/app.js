@@ -16,7 +16,7 @@ import { initializeApp }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
   getFirestore, collection, getDocs,
-  query, where
+  query, where, doc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // ── Firebase ───────────────────────────────────────────────
@@ -204,12 +204,7 @@ async function iniciar() {
 
     // Abrir producto por URL ?p=…
     const enc = new URLSearchParams(window.location.search).get("p");
-    if (enc) {
-      const id = decodeId(enc);
-      const pag = cachePaginas[`1||`] || [];
-      const prod = pag.find(p => p.id === id);
-      if (prod) setTimeout(() => abrirModal(prod), 350);
-    }
+    if (enc) abrirProductoPorUrl(enc);
   } catch (e) {
     console.error(e);
     document.getElementById("grilla").innerHTML =
@@ -456,6 +451,40 @@ function cerrarModal() {
   const u = new URL(window.location.href);
   u.searchParams.delete("p");
   history.replaceState(null, "", u);
+}
+
+// ── Abrir producto por URL ?p=ID (link compartido) ──────────
+// Busca primero en la caché local; si no lo encuentra va directo
+// a Firestore para no depender de qué página esté cargada.
+async function abrirProductoPorUrl(enc) {
+  try {
+    const id = decodeId(enc);
+    if (!id) return;
+
+    // 1. Buscar en todas las páginas cacheadas
+    let prod = null;
+    for (const pagina of Object.values(cachePaginas)) {
+      prod = pagina.find(p => p.id === id);
+      if (prod) break;
+    }
+
+    // 2. Si no está en caché → buscar directamente en Firestore
+    if (!prod) {
+      const snap = await getDoc(doc(_db, "productos", id));
+      if (snap.exists()) {
+        prod = { id: snap.id, ...snap.data() };
+      }
+    }
+
+    if (prod) {
+      // Asegurarse de que categorías y vendedores ya estén cargados
+      setTimeout(() => abrirModal(prod), 350);
+    } else {
+      console.warn("Producto no encontrado:", id);
+    }
+  } catch (e) {
+    console.error("Error al abrir producto por URL:", e);
+  }
 }
 
 function actualizarBtnSeleccionModal() {
