@@ -17,7 +17,7 @@ import { esFundadorVigente, obtenerPlanes } from "./db.js";
 // ════════════════════════════════════════════════════════════
 
 const ADMIN_EMAIL         = "aplicativosawebs@gmail.com";
-const WOMPI_LLAVE_PUBLICA = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2am0ldc2";
+const WOMPI_LLAVE_PUBLICA = "pub_prod_tbXbehx4yN4oEHj50A4mmWhR2amOldc2";
 const FIRMA_URL           = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/firmaWompi";
 const REDIRECT_URL        = "https://ildergutierrez.github.io/gistore/user/pages/pago-resultado.html";
 
