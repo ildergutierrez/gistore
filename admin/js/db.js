@@ -2,12 +2,29 @@
 //  db.js — Operaciones Firestore (CRUD)
 //  Colecciones: vendedores, membresias, categorias, productos, fundadores
 // ============================================================
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 import {
   collection, doc,
   getDoc, getDocs, addDoc, updateDoc, deleteDoc,
   query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+// URL de la Cloud Function que gestiona Firebase Auth
+const CF_GESTIONAR_USUARIO = "https://us-central1-gi-store-5a5eb.cloudfunctions.net/gestionarUsuario";
+
+// ── Llama a la Cloud Function enviando el ID Token del admin ──
+async function llamarGestionarUsuario(uid, accion) {
+  if (!uid) return; // vendedor sin cuenta Auth registrada — nada que hacer
+  const token    = await auth.currentUser.getIdToken();
+  const respuesta = await fetch(CF_GESTIONAR_USUARIO, {
+    method:  "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body:    JSON.stringify({ uid, accion }),
+  });
+  const data = await respuesta.json();
+  if (!respuesta.ok) throw new Error(data.error || "Error en gestionarUsuario");
+  return data;
+}
 
 // ══════════════════════════════════════════════════════════
 //  VENDEDORES
@@ -42,8 +59,53 @@ async function actualizarVendedor(id, datos) {
     actualizado_en: new Date().toISOString(),
   });
 }
-async function eliminarVendedor(id) {
-  await deleteDoc(doc(db, "vendedores", id));
+// ── Desactivar vendedor ────────────────────────────────────
+//  1. Deshabilita la cuenta en Firebase Auth (el vendedor no podrá iniciar sesión)
+//  2. Pone estado="desactivado" en Firestore
+//  3. Inhabilita todos sus productos
+async function desactivarVendedor(id) {
+  // Obtener el uid_auth del vendedor para deshabilitar en Auth
+  const snap = await getDoc(doc(db, "vendedores", id));
+  const uid_auth = snap.exists() ? snap.data().uid_auth : null;
+
+  // Deshabilitar en Firebase Auth (Admin SDK vía Cloud Function)
+  if (uid_auth) {
+    await llamarGestionarUsuario(uid_auth, "deshabilitar");
+  }
+
+  // Actualizar estado en Firestore
+  await actualizarVendedor(id, { estado: "desactivado" });
+  await actualizarProductosVendedor(id, false);
+}
+
+// ── Reactivar vendedor ─────────────────────────────────────
+//  1. Habilita la cuenta en Firebase Auth
+//  2. Restaura estado según si tiene membresía vigente
+//  3. Reactiva productos si corresponde
+async function reactivarVendedor(id) {
+  // Obtener el uid_auth del vendedor
+  const snap     = await getDoc(doc(db, "vendedores", id));
+  const uid_auth = snap.exists() ? snap.data().uid_auth : null;
+
+  // Habilitar en Firebase Auth (Admin SDK vía Cloud Function)
+  if (uid_auth) {
+    await llamarGestionarUsuario(uid_auth, "habilitar");
+  }
+
+  // Restaurar estado según membresía
+  const membresia = await obtenerMembresia(id);
+  const hoy       = new Date().toISOString().split("T")[0];
+  const vigente   = membresia && membresia.estado === "activa" && (membresia.fecha_fin || "") >= hoy;
+  await actualizarVendedor(id, { estado: vigente ? "activo" : "inactivo" });
+  await actualizarProductosVendedor(id, vigente);
+  return { vigente };
+}
+
+// ── Obtener vendedores desactivados ───────────────────────
+async function obtenerVendedoresDesactivados() {
+  const q    = query(collection(db, "vendedores"), where("estado", "==", "desactivado"));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -297,8 +359,8 @@ async function eliminarPlan(id) {
 }
 
 export {
-  obtenerVendedores, obtenerVendedor,
-  crearVendedor, actualizarVendedor, eliminarVendedor,
+  obtenerVendedores, obtenerVendedor, obtenerVendedoresDesactivados,
+  crearVendedor, actualizarVendedor, desactivarVendedor, reactivarVendedor,
   obtenerMembresias, obtenerMembresia,
   crearMembresia, actualizarMembresia, eliminarMembresia,
   actualizarProductosVendedor,

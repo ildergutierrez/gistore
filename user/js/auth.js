@@ -6,6 +6,10 @@ import { auth } from "./firebase.js";
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { db } from "./firebase.js";
+import {
+  collection, query, where, getDocs
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // Correo del admin — bloqueado en este portal
 const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
@@ -17,7 +21,31 @@ async function iniciarSesion(correo, contrasena) {
     err.code = "auth/is-admin";
     throw err;
   }
+
+  // Autenticar en Firebase Auth (credenciales correctas)
   const cred = await signInWithEmailAndPassword(auth, correo, contrasena);
+
+  // Verificar estado del vendedor en Firestore
+  try {
+    const q    = query(collection(db, "vendedores"), where("uid_auth", "==", cred.user.uid));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const vendedor = snap.docs[0].data();
+      if (vendedor.estado === "desactivado") {
+        // Cerrar sesión inmediatamente — no permitir acceso
+        await signOut(auth);
+        const err = new Error("Cuenta desactivada");
+        err.code  = "auth/cuenta-desactivada";
+        throw err;
+      }
+    }
+  } catch (e) {
+    // Si el error es el de desactivado, relanzarlo
+    if (e.code === "auth/cuenta-desactivada") throw e;
+    // Otros errores de Firestore: dejar pasar (no bloquear el login por problemas de red)
+    console.warn("No se pudo verificar estado del vendedor:", e.message);
+  }
+
   return cred.user;
 }
 
@@ -65,6 +93,8 @@ const ERRORES_AUTH = {
   "auth/too-many-requests":      "Demasiados intentos. Espera unos minutos.",
   "auth/network-request-failed": "Sin conexión. Verifica tu internet.",
   "auth/is-admin":               "Esta cuenta es del administrador. Ingresa por el panel admin.",
+  "auth/user-disabled":          "__DESACTIVADO__",
+  "auth/cuenta-desactivada":     "__DESACTIVADO__",
 };
 
 function mensajeError(codigo) {

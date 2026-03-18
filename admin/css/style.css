@@ -728,17 +728,17 @@ td {
   border-bottom: 1px solid var(--fondo);
   color: var(--texto-medio);
   vertical-align: middle;
-  max-width: 220px;
+  white-space: nowrap;       /* nunca partir contenido */
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 260px;          /* cortar con … si es muy largo */
 }
 
-/* Textos importantes (nombre, strong, links) sí muestran completo */
+/* Nombres y links dentro de td: no partir, respetar nowrap del td */
 td strong,
 td a {
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
+  word-break: normal;
 }
 
 /* Imágenes en celda: respetar tamaño de celda */
@@ -1056,7 +1056,8 @@ tr:hover td {
   td {
     padding: .55rem .65rem;
     font-size: .8rem;
-    max-width: 130px;
+    max-width: 160px;
+    white-space: nowrap;
   }
 
   /* Botones de acción en columna */

@@ -30,6 +30,7 @@ function limpiarError() {
 
 async function login() {
   limpiarError();
+  ocultarPanelDesactivado();
   const correo = inputCorreo.value.trim();
   const pass   = inputPass.value;
   if (!correo || !pass) { mostrarError("Completa todos los campos."); return; }
@@ -39,9 +40,25 @@ async function login() {
     await iniciarSesion(correo, pass);
     window.location.href = "pages/dashboard.html";
   } catch (err) {
-    mostrarError(mensajeError(err.code));
+    // auth/user-disabled  → cuenta deshabilitada en Firebase Auth (nuevo flujo)
+    // auth/cuenta-desactivada → desactivada vía Firestore (flujo anterior, fallback)
+    if (err.code === "auth/user-disabled" || err.code === "auth/cuenta-desactivada") {
+      mostrarPanelDesactivado();
+    } else {
+      mostrarError(mensajeError(err.code));
+    }
     btnCargando(btnLogin, false);
   }
+}
+
+// ── Cuenta desactivada: panel de aviso ───────────────────
+function mostrarPanelDesactivado() {
+  msgError.classList.remove("visible");
+  document.getElementById("panelDesactivado").style.display = "block";
+  document.getElementById("panelDesactivado").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+function ocultarPanelDesactivado() {
+  document.getElementById("panelDesactivado").style.display = "none";
 }
 
 btnLogin.addEventListener("click", login);
@@ -113,4 +130,88 @@ btnEnviarRecup.addEventListener("click", async () => {
   } finally {
     btnCargando(btnEnviarRecup, false);
   }
+});
+
+// ── Modal solicitar reactivación ─────────────────────────
+const DESTINO_ADMIN = "aplicativosawebs+gistore@gmail.com";
+
+document.getElementById("btnSolicitarReactivacion").addEventListener("click", () => {
+  // Pre-llenar correo si ya está escrito
+  document.getElementById("rCorreo").value    = inputCorreo.value.trim();
+  document.getElementById("rWhatsapp").value  = "";
+  document.getElementById("rMsgError").style.display = "none";
+  document.getElementById("modalReactivacion").style.display = "flex";
+});
+
+document.getElementById("btnCerrarModalReac").addEventListener("click", cerrarModalReac);
+document.getElementById("modalReactivacion").addEventListener("click", e => {
+  if (e.target === document.getElementById("modalReactivacion")) cerrarModalReac();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") cerrarModalReac();
+});
+
+function cerrarModalReac() {
+  document.getElementById("modalReactivacion").style.display = "none";
+}
+
+document.getElementById("btnEnviarReactivacion").addEventListener("click", async () => {
+  const correo    = document.getElementById("rCorreo").value.trim();
+  const whatsapp  = document.getElementById("rWhatsapp").value.trim();
+  const errorEl   = document.getElementById("rMsgError");
+
+  errorEl.style.display = "none";
+
+  if (!correo || !whatsapp) {
+    errorEl.textContent = "Por favor completa los dos campos.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    errorEl.textContent = "Ingresa un correo válido.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!/^\d{7,15}$/.test(whatsapp.replace(/\s/g, ""))) {
+    errorEl.textContent = "Ingresa un número de WhatsApp válido (solo dígitos).";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  const btn = document.getElementById("btnEnviarReactivacion");
+  const txt = btn.querySelector(".btn-texto");
+  btn.disabled = true;
+  txt.textContent = "Enviando...";
+
+  const asunto = encodeURIComponent("Solicitud de reactivación — GI Store");
+  const cuerpo = encodeURIComponent(
+    `Hola, solicito la reactivación de mi cuenta en GI Store.
+
+` +
+    `📧 Correo registrado: ${correo}
+` +
+    `📱 WhatsApp: +57 ${whatsapp}
+
+` +
+    `Por favor revisen mi cuenta y me informen el proceso para reactivarla.`
+  );
+
+  await new Promise(r => setTimeout(r, 600));
+  window.location.href = `mailto:${DESTINO_ADMIN}?subject=${asunto}&body=${cuerpo}`;
+
+  // Mostrar confirmación dentro del modal
+  document.getElementById("modalReacForm").style.display  = "none";
+  document.getElementById("modalReacExito").style.display = "flex";
+
+  btn.disabled = false;
+  txt.textContent = "Enviar solicitud";
+});
+
+document.getElementById("btnCerrarExitoReac").addEventListener("click", () => {
+  cerrarModalReac();
+  // Resetear modal para próxima vez
+  setTimeout(() => {
+    document.getElementById("modalReacForm").style.display  = "";
+    document.getElementById("modalReacExito").style.display = "none";
+  }, 300);
 });

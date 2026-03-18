@@ -6,7 +6,7 @@
 import { cerrarSesion, protegerPagina } from "./auth.js";
 import {
   obtenerVendedores, crearVendedor,
-  actualizarVendedor, eliminarVendedor
+  actualizarVendedor, desactivarVendedor
 } from "./db.js";
 import { fechaHoy, btnCargando, abrirModal, cerrarModal } from "./ui.js";
 import { auth } from "./firebase.js";
@@ -110,19 +110,53 @@ let idVincular = "";
 // ── Cargar tabla ──────────────────────────────────────────
 async function cargar() {
   try {
-    vendedores = await obtenerVendedores();
+    const todos = await obtenerVendedores();
+    // Solo mostrar vendedores activos e inactivos (no los desactivados)
+    vendedores = todos.filter(v => v.estado !== "desactivado");
     document.getElementById("totalVendedores").textContent =
       vendedores.length + " vendedor" + (vendedores.length !== 1 ? "es" : "");
-    renderTabla();
+    aplicarFiltro();
   } catch (e) { console.error(e); }
 }
 
-function renderTabla() {
+// ── Filtro por teléfono y/o correo ────────────────────────
+function aplicarFiltro() {
+  const tel    = (document.getElementById("filtroTelefono")?.value || "").trim().replace(/\s/g, "");
+  const correo = (document.getElementById("filtroCorreo")?.value   || "").trim().toLowerCase();
+
+  const lista = vendedores.filter(v => {
+    const telOk    = !tel    || (v.whatsapp || "").replace(/\s/g, "").includes(tel);
+    const correoOk = !correo || (v.correo   || "").toLowerCase().includes(correo);
+    return telOk && correoOk;
+  });
+
+  // Mostrar/ocultar botones limpiar
+  const clT = document.getElementById("clearTelefono");
+  const clC = document.getElementById("clearCorreo");
+  if (clT) clT.style.display = tel    ? "inline" : "none";
+  if (clC) clC.style.display = correo ? "inline" : "none";
+
+  renderTabla(lista, tel, correo);
+}
+
+function renderTabla(lista, tel, correo) {
+  if (lista === undefined) lista = vendedores;
   const wrap = document.getElementById("tablaWrap");
+
   if (!vendedores.length) {
     wrap.innerHTML = '<p class="vacio-txt">Sin vendedores registrados. Crea el primero.</p>';
     return;
   }
+
+  if (!lista.length) {
+    const q = [tel, correo].filter(Boolean).join(" / ");
+    wrap.innerHTML = `<p class="filtro-sin-resultados">
+      🔍 Sin resultados para <strong>${q}</strong>.
+      <br/><span style="font-size:.8rem">Verifica los datos e intenta de nuevo.</span>
+    </p>`;
+    return;
+  }
+
   wrap.innerHTML = `
     <table>
       <thead>
@@ -132,7 +166,7 @@ function renderTabla() {
         </tr>
       </thead>
       <tbody>
-        ${vendedores.map(v => `
+        ${lista.map(v => `
           <tr>
             <td><div style="width:22px;height:22px;border-radius:50%;background:${v.color||'#1a6b3c'};border:2px solid #ddd"></div></td>
             <td><strong>${v.nombre}</strong></td>
@@ -156,7 +190,7 @@ function renderTabla() {
                        🔑 Vincular
                      </button>`
                   : ""}
-                <button class="btn-tabla btn-eliminar" data-id="${v.id}" data-nombre="${v.nombre}">🗑 Eliminar</button>
+                <button class="btn-tabla btn-eliminar" data-id="${v.id}" data-nombre="${v.nombre}">🚫 Desactivar</button>
               </div>
             </td>
           </tr>`).join("")}
@@ -170,6 +204,23 @@ function renderTabla() {
   wrap.querySelectorAll(".btn-eliminar").forEach(btn =>
     btn.addEventListener("click", () => abrirEliminar(btn.dataset.id, btn.dataset.nombre)));
 }
+
+// ── Eventos de los filtros ────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  const inTel  = document.getElementById("filtroTelefono");
+  const inCorr = document.getElementById("filtroCorreo");
+  const clT    = document.getElementById("clearTelefono");
+  const clC    = document.getElementById("clearCorreo");
+
+  inTel ?.addEventListener("input", aplicarFiltro);
+  inCorr?.addEventListener("input", aplicarFiltro);
+
+  clT?.addEventListener("click", () => { inTel.value  = ""; inTel.focus();  aplicarFiltro(); });
+  clC?.addEventListener("click", () => { inCorr.value = ""; inCorr.focus(); aplicarFiltro(); });
+
+  inTel ?.addEventListener("keydown", e => { if (e.key === "Escape" && inTel.value)  { inTel.value  = ""; aplicarFiltro(); } });
+  inCorr?.addEventListener("keydown", e => { if (e.key === "Escape" && inCorr.value) { inCorr.value = ""; aplicarFiltro(); } });
+});
 
 // ── Modal crear ───────────────────────────────────────────
 document.getElementById("btnNuevo").addEventListener("click", () => {
@@ -351,7 +402,7 @@ document.getElementById("btnConfirmarEliminar").addEventListener("click", async 
   const btn = document.getElementById("btnConfirmarEliminar");
   btnCargando(btn, true);
   try {
-    await eliminarVendedor(idEliminar);
+    await desactivarVendedor(idEliminar);
     cerrarModal("modalEliminar");
     await cargar();
   } catch (e) { console.error(e); }

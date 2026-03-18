@@ -11,6 +11,80 @@
       type="image/svg+xml"
     />
     <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <style>
+    /* ── Buscador vendedores ── */
+    .filtro-barra {
+      display: flex;
+      gap: .6rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filtro-campo {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      flex: 1;
+      min-width: 180px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: .5rem .85rem;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .filtro-campo:focus-within {
+      border-color: var(--verde, #1a6b3c);
+      box-shadow: 0 0 0 3px rgba(26,107,60,.1);
+      background: #fff;
+    }
+    .filtro-campo svg { flex-shrink: 0; color: #94a3b8; }
+    .filtro-campo input {
+      flex: 1; border: none; outline: none;
+      background: transparent; font-family: inherit;
+      font-size: .88rem; color: #1a2e22;
+    }
+    .filtro-campo input::placeholder { color: #b0b8c1; }
+    .filtro-clear {
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; font-size: .95rem; line-height: 1;
+      padding: 0 2px; display: none;
+    }
+    .filtro-clear:hover { color: #475569; }
+    .filtro-sin-resultados {
+      text-align: center; padding: 1.5rem 0;
+      color: #94a3b8; font-size: .88rem;
+    }
+
+    /* ── Tabla vendedores: columnas sin saltos de línea ── */
+    #tablaWrap table {
+      min-width: 780px; /* fuerza scroll horizontal antes de romper */
+    }
+    /* WhatsApp y correo: nunca parten */
+    #tablaWrap td:nth-child(4),
+    #tablaWrap td:nth-child(5) {
+      white-space: nowrap;
+    }
+    /* Nombre: mínimo 110px para que no parta tan rápido */
+    #tablaWrap td:nth-child(2) {
+      min-width: 110px;
+      white-space: nowrap;
+    }
+    /* Ciudad */
+    #tablaWrap td:nth-child(3) {
+      white-space: nowrap;
+    }
+    /* Acceso y estado: compactos */
+    #tablaWrap td:nth-child(6),
+    #tablaWrap td:nth-child(7) {
+      white-space: nowrap;
+    }
+    /* Botones de acción en columna vertical compacta */
+    #tablaWrap .td-acciones {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      align-items: flex-start;
+    }
+  </style>
   </head>
   <body>
     <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
@@ -40,6 +114,12 @@
             ><span class="material-symbols-outlined">point_of_sale</span></span
           >
           Vendedores</a
+        >
+        <a href="vendedores-inactivos.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">person_off</span></span
+          >
+          Desactivados</a
         >
         <a href="membresias.html"
           ><span class="icono"
@@ -110,6 +190,29 @@
             style="font-size: 0.8rem; color: var(--texto-suave)"
           ></span>
         </div>
+        <!-- Buscador por número y correo -->
+        <div class="filtro-barra">
+          <div class="filtro-campo">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M2 2h2l.4 2m0 0L6 10h8l1.5-6H4.4z"/>
+            </svg>
+            <input type="tel" id="filtroTelefono"
+                   placeholder="Buscar por celular…" autocomplete="off" maxlength="20"/>
+            <button class="filtro-clear" id="clearTelefono" title="Limpiar">✕</button>
+          </div>
+          <div class="filtro-campo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input type="email" id="filtroCorreo"
+                   placeholder="Buscar por correo…" autocomplete="off"/>
+            <button class="filtro-clear" id="clearCorreo" title="Limpiar">✕</button>
+          </div>
+        </div>
+
         <div id="tablaWrap"><p class="cargando-txt">Cargando...</p></div>
       </div>
     </main>
@@ -350,7 +453,7 @@
     <!-- ── Modal Confirmar Eliminar ── -->
     <div class="modal-overlay" id="modalEliminar">
       <div class="modal" style="max-width: 400px">
-        <div class="modal-titulo">⚠ Eliminar vendedor</div>
+        <div class="modal-titulo">🚫 Desactivar vendedor</div>
         <p
           style="
             color: var(--texto-medio);
@@ -367,7 +470,7 @@
             Cancelar
           </button>
           <button class="btn btn-peligro" id="btnConfirmarEliminar">
-            <span class="btn-texto">Sí, eliminar</span>
+            <span class="btn-texto">Sí, desactivar</span>
             <div class="spinner"></div>
           </button>
         </div>
