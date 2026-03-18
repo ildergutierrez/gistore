@@ -184,6 +184,30 @@ async function obtenerFirma(referencia, montoEnCentavos) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  WOMPI — ESPERAR A QUE EL SDK ESTÉ DISPONIBLE
+//  El script de Wompi se carga como <script> normal, pero este
+//  archivo es type="module" (scope aislado). WidgetCheckout puede
+//  no estar en window todavía cuando se ejecuta este módulo.
+// ════════════════════════════════════════════════════════════
+
+function esperarWidgetCheckout(intentosMax = 20, intervaloMs = 300) {
+  return new Promise((resolve, reject) => {
+    if (typeof window.WidgetCheckout === "function") { resolve(); return; }
+    let intentos = 0;
+    const id = setInterval(() => {
+      intentos++;
+      if (typeof window.WidgetCheckout === "function") {
+        clearInterval(id);
+        resolve();
+      } else if (intentos >= intentosMax) {
+        clearInterval(id);
+        reject(new Error("WidgetCheckout no cargó después de esperar."));
+      }
+    }, intervaloMs);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
 //  WOMPI — BOTÓN DE PAGO (API JS OFICIAL)
 // ════════════════════════════════════════════════════════════
 
@@ -204,6 +228,20 @@ async function inyectarBotonWompi(monto, referencia) {
       Preparando botón de pago…
     </div>`;
 
+  // ── Esperar a que el SDK de Wompi esté disponible ──────────────────────
+  // Necesario porque este archivo es type="module" y tiene scope aislado.
+  // WidgetCheckout se carga como <script> normal y puede llegar después.
+  try {
+    await esperarWidgetCheckout();
+  } catch (e) {
+    console.error("WidgetCheckout no disponible:", e.message);
+    wrap.innerHTML = `
+      <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
+        Error al cargar el sistema de pago. Recarga la página.
+      </p>`;
+    return;
+  }
+
   // Obtener firma del servidor
   let firma;
   try {
@@ -222,16 +260,6 @@ async function inyectarBotonWompi(monto, referencia) {
     wrap.innerHTML = `
       <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
         Error de seguridad al preparar el pago. Recarga la página.
-      </p>`;
-    return;
-  }
-
-  // Verificar que el SDK ya está disponible (fue cargado en el <head> del HTML)
-  if (typeof window.WidgetCheckout !== "function") {
-    console.error("WidgetCheckout no está disponible. Verifica que el script esté en el <head>.");
-    wrap.innerHTML = `
-      <p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
-        Error al cargar el sistema de pago. Recarga la página.
       </p>`;
     return;
   }
