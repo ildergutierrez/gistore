@@ -40,7 +40,7 @@ const _db  = getFirestore(_app);
 // ── Timings ───────────────────────────────────────────────
 const DELAY_INICIAL   = 15_000;      // 15 s tras carga
 const DURACION_VIS    = 20_000;      // visible 20 s
-const CICLO           = 3 * 60_000;  // cada 3 min
+const CICLO           = 1 * 60_000;  // cada 1 min
 
 // ── Umbral y frecuencia de productos ──────────────────────
 const UMBRAL_PUBS          = 15;  // si hay < 15 pubs → modo mixto
