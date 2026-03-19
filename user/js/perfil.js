@@ -99,6 +99,12 @@ onAuthStateChanged(auth, async (user) => {
     if (el("fCorreo"))       el("fCorreo").value       = vendedor.correo      || user.email || "";
     if (el("fUrlWeb"))       el("fUrlWeb").value       = vendedor.url_web     || "";
     if (el("fDescripcion"))  el("fDescripcion").value  = vendedor.descripcion || "";
+    // Redes sociales
+    const redes = vendedor.redes || {};
+    if (el("fRedFacebook"))  el("fRedFacebook").value  = redes.facebook  || "";
+    if (el("fRedTiktok"))    el("fRedTiktok").value    = redes.tiktok    || "";
+    if (el("fRedInstagram")) el("fRedInstagram").value = redes.instagram || "";
+    if (el("fRedYoutube"))   el("fRedYoutube").value   = redes.youtube   || "";
     actualizarContador();
 
     // Avatar
@@ -227,10 +233,16 @@ el("btnGuardarPerfil")?.addEventListener("click", async () => {
   const urlWeb      = el("fUrlWeb")?.value.trim()      || "";
   const descripcion = el("fDescripcion")?.value.trim() || "";
 
+  // Redes sociales
+  const redFacebook  = el("fRedFacebook")?.value.trim()  || "";
+  const redTiktok    = el("fRedTiktok")?.value.trim()    || "";
+  const redInstagram = el("fRedInstagram")?.value.trim() || "";
+  const redYoutube   = el("fRedYoutube")?.value.trim()   || "";
+
   if (!nombre) { mostrarError("El nombre es obligatorio."); return; }
   if (descripcion.length > 300) { mostrarError("La descripción no puede superar 300 caracteres."); return; }
 
-  // Validar URL si se ingresó
+  // Validar URL web
   if (urlWeb) {
     try {
       const u = new URL(urlWeb);
@@ -241,13 +253,40 @@ el("btnGuardarPerfil")?.addEventListener("click", async () => {
     }
   }
 
+  // Validar URLs de redes (solo si tienen valor)
+  const redesParaValidar = [
+    { val: redFacebook,  nombre: "Facebook" },
+    { val: redTiktok,    nombre: "TikTok" },
+    { val: redInstagram, nombre: "Instagram" },
+    { val: redYoutube,   nombre: "YouTube" },
+  ];
+  for (const r of redesParaValidar) {
+    if (r.val) {
+      try {
+        const u = new URL(r.val);
+        if (!["http:", "https:"].includes(u.protocol)) throw new Error();
+      } catch {
+        mostrarError("La URL de " + r.nombre + " no es válida. Debe iniciar con https://");
+        return;
+      }
+    }
+  }
+
+  // Construir objeto redes (solo campos con valor)
+  const redes = {};
+  if (redFacebook)  redes.facebook  = redFacebook;
+  if (redTiktok)    redes.tiktok    = redTiktok;
+  if (redInstagram) redes.instagram = redInstagram;
+  if (redYoutube)   redes.youtube   = redYoutube;
+
   const btn = el("btnGuardarPerfil");
   btnCargando(btn, true); ocultarMensajes();
   try {
-    await actualizarVendedor(vendedor.id, { nombre, ciudad, whatsapp, url_web: urlWeb, descripcion });
+    await actualizarVendedor(vendedor.id, { nombre, ciudad, whatsapp, url_web: urlWeb, descripcion, redes });
     vendedor.nombre      = nombre;
     vendedor.descripcion = descripcion;
     vendedor.url_web     = urlWeb;
+    vendedor.redes       = redes;
     if (el("vendedorNombre")) el("vendedorNombre").textContent = nombre;
     if (!vendedor.perfil) renderAvatar("", nombre, vendedor.color);
     mostrarOk("✓ Datos actualizados correctamente.");

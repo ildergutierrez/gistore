@@ -413,7 +413,8 @@ function renderFundadores() {
       </p>
       ${!fundadores.length
         ? '<p class="vacio-txt">No hay fundadores registrados aún.</p>'
-        : `<table>
+        : `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--borde)">
+            <table style="min-width:560px;border:none">
             <thead>
               <tr><th>#</th><th>Vendedor</th><th>Registro</th><th>Vence</th><th>Estado</th><th>Acción</th></tr>
             </thead>
@@ -446,7 +447,7 @@ function renderFundadores() {
                 </tr>`;
               }).join("")}
             </tbody>
-          </table>`}
+          </table></div>`}
       ${cupos > 0
         ? `<div style="margin-top:1rem">
             <button class="btn btn-primary btn-sm" id="btnRegistrarFundador" style="font-size:.82rem;padding:.5rem 1rem">

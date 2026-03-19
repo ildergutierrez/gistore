@@ -133,6 +133,8 @@ async function _getTodosActivos() {
   docs.sort((a, b) => normalizar(a.nombre).localeCompare(normalizar(b.nombre)));
 
   _cacheTodos = docs;
+  window._cacheTodos    = docs;            // expuesto al appendice
+  window._categoriasMap = CATEGORIAS;      // expuesto al appendice
   return docs;
 }
 

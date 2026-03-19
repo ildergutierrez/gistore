@@ -45,10 +45,21 @@ async function obtenerVendedorPorUid(uid) {
  *   nombre       string  — nombre del vendedor / tienda
  *   ciudad       string  — ciudad de operación
  *   whatsapp     string  — número con código país, ej: 573145891108
- *   url_web      string  — URL de página web personal (https://…) — NUEVO
+ *   url_web      string  — URL de página web personal (https://…)
  *   descripcion  string  — descripción pública de la tienda (máx 300 chars)
  *   perfil       string  — URL de foto de perfil (Cloudinary)
  *   color        string  — color de marca en hex
+ *
+ * Redes sociales (subcolección "redes_sociales" en el documento del vendedor,
+ * o bien almacenadas en el propio documento bajo el objeto "redes"):
+ *   redes.facebook   string  — URL completa https://facebook.com/…
+ *   redes.tiktok     string  — URL completa https://tiktok.com/@…
+ *   redes.instagram  string  — URL completa https://instagram.com/…
+ *   redes.youtube    string  — URL completa https://youtube.com/…
+ *
+ * Diseño: se guardan como un objeto anidado "redes" dentro del documento
+ * "vendedores" para evitar crear una colección extra y simplificar las
+ * consultas. Firestore permite actualizaciones parciales con dot-notation.
  */
 async function actualizarVendedor(id, datos) {
   await updateDoc(doc(db, "vendedores", id), {

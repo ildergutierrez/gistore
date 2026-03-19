@@ -128,6 +128,39 @@
       .tienda-avatar, .tienda-avatar-inicial { width: 80px; height: 80px; }
       .tienda-avatar-inicial { font-size: 2rem; }
     }
+
+    /* ── Redes sociales en hero ───────────────────────────── */
+    .tienda-redes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .55rem;
+      flex-wrap: wrap;
+      margin-bottom: .6rem;
+    }
+    .tienda-red-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff;
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+    .tienda-red-btn:hover {
+      background: var(--red-color, rgba(255,255,255,.35));
+      border-color: transparent;
+      transform: translateY(-2px) scale(1.08);
+      box-shadow: 0 4px 14px rgba(0,0,0,.22);
+    }
+    @media (max-width: 380px) {
+      .tienda-red-btn { width: 34px; height: 34px; }
+      .tienda-red-btn svg { width: 16px; height: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -263,6 +296,13 @@
 <footer>
   <p>© 2026 <span>GI Store</span> · Todos los derechos reservados
     <br/>Tienda Virtual - Aguachica Cesar</p>
+
+  <!-- Banner publicidad flotante -->
+  <script type="module">
+    import { iniciarBannerPublicidad } from "../js/banner-pub.js";
+    iniciarBannerPublicidad();
+  </script>
+
 </footer>
 
 <script type="module" src="../js/app.js"></script>

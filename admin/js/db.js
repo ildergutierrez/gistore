@@ -6,7 +6,7 @@ import { db, auth } from "./firebase.js";
 import {
   collection, doc,
   getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy
+  query, where, orderBy, increment, setDoc,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // URL de la Cloud Function que gestiona Firebase Auth
@@ -358,6 +358,100 @@ async function eliminarPlan(id) {
   await deleteDoc(doc(db, "planes_membresia", id));
 }
 
+// ════════════════════════════════════════════════════════════
+//  PUBLICIDAD
+//  Colección: "publicidad"
+//  Campos: titulo, imagen_url, url_destino, fecha_inicio,
+//          fecha_fin, limite_diario, estado, creado_en, actualizado_en
+//
+//  Subcolección de impresiones: publicidad/{id}/impresiones/{YYYY-MM-DD}
+//  Campo: { count: number }  — se incrementa desde cliente
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Devuelve todas las publicidades, ordenadas por fecha de creación desc.
+ */
+async function obtenerPublicidades() {
+  try {
+    const q    = query(collection(db, "publicidad"), orderBy("creado_en", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    // Fallback sin índice
+    const snap = await getDocs(collection(db, "publicidad"));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => (b.creado_en || "").localeCompare(a.creado_en || ""));
+    return docs;
+  }
+}
+
+/**
+ * Devuelve las publicidades con estado "activa" y fechas vigentes hoy.
+ */
+async function obtenerPublicidadesActivas() {
+  const hoy  = new Date().toISOString().split("T")[0];
+  const snap = await getDocs(query(collection(db, "publicidad"), where("estado", "==", "activa")));
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(p => p.fecha_inicio <= hoy && p.fecha_fin >= hoy);
+}
+
+/**
+ * Crea una nueva publicidad.
+ */
+async function crearPublicidad(datos) {
+  const ref = await addDoc(collection(db, "publicidad"), {
+    titulo:         datos.titulo        || "",
+    imagen_url:     datos.imagen_url    || "",
+    url_destino:    datos.url_destino   || "",
+    fecha_inicio:   datos.fecha_inicio  || "",
+    fecha_fin:      datos.fecha_fin     || "",
+    limite_diario:  datos.limite_diario ?? 50,
+    estado:         datos.estado        || "activa",
+    creado_en:      new Date().toISOString(),
+    actualizado_en: new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+/**
+ * Actualiza una publicidad existente.
+ */
+async function actualizarPublicidad(id, datos) {
+  await updateDoc(doc(db, "publicidad", id), {
+    ...datos,
+    actualizado_en: new Date().toISOString(),
+  });
+}
+
+/**
+ * Elimina una publicidad.
+ */
+async function eliminarPublicidad(id) {
+  await deleteDoc(doc(db, "publicidad", id));
+}
+
+/**
+ * Lee el contador de impresiones de hoy para una publicidad.
+ */
+async function leerImpresionesHoy(pubId) {
+  const hoy  = new Date().toISOString().split("T")[0];
+  const ref  = doc(db, "publicidad", pubId, "impresiones", hoy);
+  const snap = await getDoc(ref);
+  return snap.exists() ? (snap.data().count || 0) : 0;
+}
+
+/**
+ * Incrementa el contador de impresiones de hoy.
+ * Se llama desde el cliente (index.html / tienda.html) cada vez
+ * que la publicidad se muestra al visitante.
+ */
+async function incrementarImpresion(pubId) {
+  const hoy = new Date().toISOString().split("T")[0];
+  const ref = doc(db, "publicidad", pubId, "impresiones", hoy);
+  await setDoc(ref, { count: increment(1) }, { merge: true });
+}
+
 export {
   obtenerVendedores, obtenerVendedor, obtenerVendedoresDesactivados,
   crearVendedor, actualizarVendedor, desactivarVendedor, reactivarVendedor,
@@ -372,4 +466,7 @@ export {
   crearProducto, actualizarProducto, eliminarProducto,
   membresiaVigente,
   obtenerPlanes, crearPlan, actualizarPlan, eliminarPlan,
+  obtenerPublicidades, obtenerPublicidadesActivas,
+  crearPublicidad, actualizarPublicidad, eliminarPublicidad,
+  leerImpresionesHoy, incrementarImpresion,
 };
