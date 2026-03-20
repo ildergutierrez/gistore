@@ -755,6 +755,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("overlay")
           .addEventListener("click", e => { if (e.target.id === "overlay") cerrarModal(); });
   document.getElementById("btn-cerrar-modal").addEventListener("click", cerrarModal);
+
+  // Exponer para que banner-pub.js abra el modal directamente al hacer clic
+  window._abrirModalProducto = abrirModal;
   document.getElementById("btn-seleccionar-modal")
           .addEventListener("click", () => { if (productoModal) toggleSeleccion(productoModal.id); });
   document.getElementById("btn-limpiar").addEventListener("click", limpiarSeleccion);

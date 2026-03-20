@@ -12,6 +12,7 @@ import {
   obtenerVendedorPorUid,
   obtenerMisProductos,
   obtenerCategorias,
+  obtenerClaveApi,
 } from "./db.js";
 import { fechaHoy } from "./ui.js";
 import { auth } from "./firebase.js";
@@ -39,14 +40,10 @@ function resolverUrlImagen(url) {
 // ── Protección de ruta ──────────────────────────────────────
 protegerPagina("../../index.html");
 
-// ── OpenRouter — cadena de fallback ────────────────────────
-const OR_KEY  = "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";
-const OR_URL  = "https://openrouter.ai/api/v1/chat/completions";
-const OR_MODELS = [
-  "google/gemini-2.5-pro-exp-03-25:free",
-  "google/gemma-3-27b-it:free",
-  "meta-llama/llama-4-scout:free",
-];
+// ── Configuración IA — cargada desde Firestore ─────────────
+// servicio: "openrouter"  (puede ser cualquier otro en el futuro)
+// Las claves y modelos se gestionan desde Admin → Claves API
+let _apiConfig = null;  // { clave, origen_url, modelos[] } — se carga una sola vez
 
 // ── Estado global ───────────────────────────────────────────
 let productos       = [];
@@ -341,13 +338,49 @@ Reglas estrictas:
 
   let ultimoError = null;
 
-  for (const modelo of OR_MODELS) {
+  // Cargar configuración de API desde Firestore si aún no está en caché
+  if (!_apiConfig) {
     try {
-      const res = await fetch(OR_URL, {
+      const cfg = await obtenerClaveApi("openrouter");
+      // cfg es la clave string; necesitamos el doc completo → usar db directamente
+      // obtenerClaveApi() ya devuelve la clave; el doc completo se lee aparte
+      // Re-usamos la función que devuelve el doc completo vía import adicional
+      const { db } = await import("./firebase.js");
+      const { collection, query, where, getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js"
+      );
+      const q = query(
+        collection(db, "api_claves"),
+        where("servicio", "==", "openrouter"),
+        where("activo", "==", true)
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const d = snap.docs[0].data();
+        _apiConfig = {
+          clave:      d.clave      || "",
+          origen_url: d.origen_url || "https://openrouter.ai/api/v1/chat/completions",
+          modelos:    Array.isArray(d.modelos) && d.modelos.length
+                        ? d.modelos
+                        : ["google/gemini-2.5-pro-exp-03-25:free",
+                           "google/gemma-3-27b-it:free",
+                           "meta-llama/llama-4-scout:free"],
+        };
+      }
+    } catch (cfgErr) {
+      console.warn("Spotlight: no se pudo cargar config API:", cfgErr);
+      return "";
+    }
+  }
+  if (!_apiConfig?.clave) { console.warn("Spotlight: clave API no configurada."); return ""; }
+
+  for (const modelo of _apiConfig.modelos) {
+    try {
+      const res = await fetch(_apiConfig.origen_url, {
         method: "POST",
         headers: {
           "Content-Type":  "application/json",
-          "Authorization": `Bearer ${OR_KEY}`,
+          "Authorization": `Bearer ${_apiConfig.clave}`,
           "HTTP-Referer":  "https://gistore.com.co",
           "X-Title":       "GI Store Spotlight",
         },

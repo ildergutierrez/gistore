@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tiendas — GI Store</title>
+  <link rel="icon" href="../img/favicon/gi-icono.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <style>
+    /* ══ Stores ════════════════════════════════════════════ */
+    .stores-hero {
+      background: linear-gradient(135deg, #1a6b3c 0%, #2d9e5f 100%);
+      color: #fff; padding: 3.5rem 1.5rem 2.5rem; text-align: center;
+    }
+    .stores-hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800;
+      margin-bottom: .5rem; letter-spacing: -.02em;
+    }
+    .stores-hero p { opacity: .88; font-size: 1rem; max-width: 500px; margin: 0 auto; }
+
+    /* ── Filtros ── */
+    .stores-filtro-wrap {
+      position: sticky; top: 64px; z-index: 50;
+      background: #fff; border-bottom: 1px solid var(--borde,#e5e7eb);
+      padding: .75rem 1.5rem;
+    }
+    .stores-filtro-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    }
+    .stores-busqueda {
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--fondo,#f9fafb); border: 1.5px solid var(--borde,#e5e7eb);
+      border-radius: 8px; padding: .45rem .85rem;
+      flex: 1; min-width: 200px; max-width: 380px;
+    }
+    .stores-busqueda input {
+      border: none; outline: none; flex: 1;
+      font-size: .9rem; color: var(--texto,#111); background: transparent;
+    }
+    .stores-busqueda svg { color: var(--gris-500,#9ca3af); flex-shrink: 0; }
+    .stores-info-count {
+      font-size: .82rem; color: var(--gris-500,#9ca3af); margin-left: auto;
+    }
+
+    /* ── Grid de tiendas ── */
+    .stores-main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+    .stores-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    /* Tarjeta de tienda — estilo similar a tarjeta de producto */
+    .store-card {
+      background: #fff;
+      border: 1.5px solid var(--borde,#e5e7eb);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .18s, box-shadow .18s;
+      display: flex; flex-direction: column;
+      text-decoration: none;
+    }
+    .store-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.11);
+    }
+
+    /* Banda de color de marca */
+    .store-card-banner {
+      height: 80px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Avatar */
+    .store-card-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.85);
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+      object-fit: cover; background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.7rem; font-weight: 700; color: #fff;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .store-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Cuerpo */
+    .store-card-body {
+      padding: .85rem 1rem 1rem;
+      display: flex; flex-direction: column; gap: .25rem; flex: 1;
+    }
+    .store-card-nombre {
+      font-size: .98rem; font-weight: 700;
+      color: var(--texto,#111); line-height: 1.25;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .store-card-ciudad {
+      font-size: .78rem; color: var(--gris-500,#9ca3af);
+      display: flex; align-items: center; gap: .25rem;
+    }
+    .store-card-desc {
+      font-size: .78rem; color: var(--gris-700,#374151); line-height: 1.45; margin-top: .15rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .store-card-badge {
+      display: inline-block; margin-top: .4rem;
+      font-size: .68rem; font-weight: 700; padding: .18rem .55rem;
+      border-radius: 999px; background: #dcfce7; color: #166534;
+      text-transform: uppercase; letter-spacing: .04em; width: fit-content;
+    }
+
+    /* ── Cargando / vacío ── */
+    .stores-vacio {
+      grid-column: 1 / -1; text-align: center;
+      padding: 4rem 1rem; color: var(--gris-500,#9ca3af);
+    }
+    .stores-vacio span { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) { .stores-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 780px)  { .stores-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px)  {
+      .stores-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+      .stores-main { padding: 1rem .9rem 2.5rem; }
+      .stores-filtro-wrap { padding: .6rem .9rem; }
+      .stores-busqueda { max-width: 100%; }
+      .store-card-banner { height: 65px; }
+      .store-card-avatar { width: 52px; height: 52px; font-size: 1.3rem; }
+      .store-card-nombre { font-size: .88rem; }
+    }
+  /* ── Footer sticky ── */
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; min-height: 100vh; }
+.stores-main { flex: 1; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <a href="../index.html">
+        <img src="../img/favicon/favicon.svg" alt="GI Store"/>
+      </a>
+    </div>
+    <nav class="header-nav">
+      <a href="../index.html">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="info.html">Ayuda</a>
+        <a href="foro.html">Foro</a>
+      <a href="#" class="activo">Stores</a>
+      <a href="../user/index.html" class="btn-login-header" title="Portal vendedores">
+        <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="stores-hero">
+  <h1>🏪 Tiendas</h1>
+  <p>Descubre todos los vendedores de GI Store. Explora, filtra y visita su catálogo.</p>
+</div>
+
+<!-- FILTROS -->
+<div class="stores-filtro-wrap">
+  <div class="stores-filtro-inner">
+    <div class="stores-busqueda">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="busqStores" placeholder="Buscar tienda por nombre…" autocomplete="off"/>
+    </div>
+    <span class="stores-info-count" id="storesCount"></span>
+  </div>
+</div>
+
+<!-- GRILLA -->
+<main class="stores-main">
+  <div class="stores-grid" id="storesGrid">
+    <div class="stores-vacio"><span>⏳</span>Cargando tiendas…</div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 <span>GI Store</span> · Todos los derechos reservados<br/>Tienda Virtual – Aguachica Cesar</p>
+</footer>
+
+<script type="module" src="../js/stores.js"></script>
+ <!-- Banner publicidad flotante -->
+  <script type="module">
+    import { iniciarBannerPublicidad } from "../js/banner-pub-pages.js";
+    iniciarBannerPublicidad();
+  </script>
+   <script type="module" src="../js/accesoadmin.js"></script>
+</body>
+</html>

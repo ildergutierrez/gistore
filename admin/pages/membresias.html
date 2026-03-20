@@ -3,281 +3,932 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Membresías — GI Store Admin</title>
-  <link rel="stylesheet" href="../css/style.css"/>
-  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
-  <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg"/>
+  <title>Manual de Usuario — Admin · GI Store</title>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --verde:       #1a6b3c;
+      --verde-m:     #2d8a56;
+      --verde-cl:    #e8f5ee;
+      --acento:      #22c55e;
+      --bg:          #f4f9f6;
+      --white:       #ffffff;
+      --borde:       #d4e8dc;
+      --texto:       #1a2e22;
+      --texto-m:     #3d5a45;
+      --texto-s:     #6b8c76;
+      --warn:        #d97706;
+      --warn-bg:     #fffbeb;
+      --info:        #0891b2;
+      --info-bg:     #f0f9ff;
+      --tip-bg:      #f0fdf4;
+      --sidebar-w:   260px;
+      --radio:       12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--verde);
+      overflow-y: auto;
+      z-index: 100;
+      padding-bottom: 2rem;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+
+    .sb-brand {
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .sb-brand-icon {
+      width: 40px; height: 40px; background: rgba(255,255,255,.15);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .sb-brand-txt { color: #fff; }
+    .sb-brand-txt strong { display: block; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; }
+    .sb-brand-txt span { font-size: .73rem; opacity: .75; }
+
+    .sb-section { padding: .85rem 1rem .35rem; }
+    .sb-section-title {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.55);
+      padding: 0 .25rem; margin-bottom: .35rem;
+    }
+    .sb-link {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .48rem .75rem; border-radius: 8px;
+      color: rgba(255,255,255,.82); text-decoration: none;
+      font-size: .84rem; font-weight: 500;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .sb-link:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .sb-link.activo { background: rgba(255,255,255,.18); color: #fff; font-weight: 600; }
+    .sb-num {
+      margin-left: auto; background: rgba(255,255,255,.18);
+      border-radius: 10px; padding: .1rem .45rem;
+      font-size: .7rem; font-weight: 700;
+    }
+
+    /* ── MAIN ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      padding: 0 0 4rem;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--verde) 0%, #0f4026 100%);
+      padding: 3.5rem 3rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 80% 20%, rgba(34,197,94,.18), transparent);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.9); font-size: .75rem; font-weight: 600;
+      padding: .3rem .8rem; border-radius: 20px; margin-bottom: 1rem;
+      letter-spacing: .03em;
+    }
+    .hero h1 {
+      font-family: 'Nunito', sans-serif; font-size: 2.4rem; font-weight: 900;
+      color: #fff; line-height: 1.15; margin-bottom: .75rem; position: relative;
+    }
+    .hero p { color: rgba(255,255,255,.78); font-size: 1rem; max-width: 560px; position: relative; }
+    .hero-meta {
+      display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative;
+    }
+    .hero-meta span {
+      color: rgba(255,255,255,.7); font-size: .82rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .hero-meta strong { color: #fff; }
+
+    /* TOC */
+    .toc-bar {
+      background: var(--white); border-bottom: 1px solid var(--borde);
+      padding: .75rem 3rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+    }
+    .toc-bar span { font-size: .78rem; color: var(--texto-s); margin-right: .25rem; }
+    .toc-pill {
+      background: var(--verde-cl); color: var(--verde);
+      border-radius: 20px; padding: .28rem .75rem;
+      font-size: .78rem; font-weight: 600; text-decoration: none;
+      transition: background .15s;
+    }
+    .toc-pill:hover { background: var(--acento); color: #fff; }
+
+    /* Content area */
+    .content { padding: 2.5rem 3rem; }
+
+    /* Module section */
+    .modulo {
+      background: var(--white);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .modulo-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--borde);
+      display: flex; align-items: center; gap: 1rem;
+      background: linear-gradient(135deg, var(--verde-cl), var(--white));
+    }
+    .modulo-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--verde); display: flex; align-items: center;
+      justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+    }
+    .modulo-header-txt h2 {
+      font-family: 'Nunito', sans-serif; font-size: 1.25rem;
+      font-weight: 800; color: var(--verde); margin-bottom: .15rem;
+    }
+    .modulo-header-txt p { font-size: .84rem; color: var(--texto-m); }
+    .modulo-body { padding: 1.75rem 2rem; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 1rem; }
+    .step {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--verde); color: #fff;
+      font-size: .82rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: .05rem;
+    }
+    .step-body { flex: 1; }
+    .step-body strong { display: block; font-size: .95rem; color: var(--texto); margin-bottom: .2rem; }
+    .step-body p, .step-body li { font-size: .88rem; color: var(--texto-m); }
+    .step-body ul { padding-left: 1.1rem; margin-top: .3rem; }
+    .step-body ul li { margin-bottom: .2rem; }
+
+    /* Feature grid */
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem; margin-top: .5rem;
+    }
+    .feat-card {
+      background: var(--bg); border: 1px solid var(--borde);
+      border-radius: var(--radio); padding: 1rem 1.1rem;
+    }
+    .feat-card .feat-icon { font-size: 1.5rem; margin-bottom: .4rem; }
+    .feat-card strong { display: block; font-size: .9rem; color: var(--texto); margin-bottom: .25rem; }
+    .feat-card p { font-size: .82rem; color: var(--texto-m); line-height: 1.5; }
+
+    /* Callout */
+    .callout {
+      border-radius: var(--radio); padding: .9rem 1.1rem;
+      display: flex; gap: .7rem; align-items: flex-start;
+      margin: .75rem 0; font-size: .86rem;
+    }
+    .callout.warn { background: var(--warn-bg); border-left: 3px solid var(--warn); color: #78350f; }
+    .callout.info { background: var(--info-bg); border-left: 3px solid var(--info); color: #0c4a6e; }
+    .callout.tip  { background: var(--tip-bg);  border-left: 3px solid var(--acento); color: #14532d; }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .callout div strong { display: block; font-weight: 700; margin-bottom: .1rem; }
+
+    /* Table */
+    .manual-table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .86rem; }
+    .manual-table th {
+      background: var(--verde-cl); color: var(--verde);
+      font-weight: 700; text-align: left; padding: .6rem .9rem;
+      border-bottom: 2px solid var(--borde);
+    }
+    .manual-table td { padding: .55rem .9rem; border-bottom: 1px solid var(--borde); color: var(--texto-m); }
+    .manual-table tr:last-child td { border-bottom: none; }
+    .manual-table tr:hover td { background: var(--verde-cl); }
+
+    /* Badge */
+    .badge {
+      display: inline-block; padding: .18rem .55rem; border-radius: 20px;
+      font-size: .72rem; font-weight: 700;
+    }
+    .badge-verde  { background: #dcfce7; color: #15803d; }
+    .badge-rojo   { background: #fee2e2; color: #dc2626; }
+    .badge-gris   { background: #f1f5f9; color: #475569; }
+    .badge-ambar  { background: #fef3c7; color: #d97706; }
+
+    /* Divider */
+    .section-divider {
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+      color: var(--verde); padding: .5rem 0 1rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--borde);
+    }
+
+    /* Back to top */
+    .back-top {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--verde-m); font-size: .8rem; font-weight: 600;
+      text-decoration: none; margin-top: .5rem;
+      transition: color .15s;
+    }
+    .back-top:hover { color: var(--verde); }
+
+    /* Print */
+    @media print {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      #sidebar { position: relative; width: 100%; height: auto; }
+      #main { margin-left: 0; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.8rem; }
+      .content { padding: 1.5rem; }
+      .toc-bar { padding: .75rem 1.5rem; }
+      .modulo-body { padding: 1.25rem 1.25rem; }
+    }
+  </style>
 </head>
 <body>
 
-<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
-  <span></span><span></span><span></span>
-</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<aside class="sidebar">
-  <a href="../../index.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none">
-    <div class="sidebar-logo-icono">
-      <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/>
-    </div>
-    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Admin Panel</span></div>
-  </a>
-  <nav class="nav">
-    <div class="nav-titulo">General</div>
-    <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bar_chart</span></span> Dashboard</a>
-    <div class="nav-titulo">Gestión</div>
-    <a href="vendedores.html"><span class="icono"><span class="material-symbols-outlined">point_of_sale</span></span> Vendedores</a>
-    <a href="vendedores-inactivos.html"><span class="icono"><span class="material-symbols-outlined">person_off</span></span> Desactivados</a>
-    <a href="#" class="activo"><span class="icono"><span class="material-symbols-outlined">id_card</span></span> Membresías</a>
-    <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">shopping_bag</span></span> Productos</a>
-    <a href="categorias.html"><span class="icono"><span class="material-symbols-outlined">article_person</span></span> Categorías</a>
-    <div class="nav-titulo">Admin</div>
-    <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">export_notes</span></span> Exportar catálogo</a>
-    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span> Publicidad</a>
-    <a href="perfil.html"><span class="icono"><span class="material-symbols-outlined">contacts_product</span></span> Mi perfil</a>
-    <div class="nav-titulo">Sitio</div>
-    <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">trolley</span></span> Ver catálogo</a>
-  </nav>
-  <div class="sidebar-pie">
-    <button class="btn-salir" id="btnSalir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
-  </div>
-</aside>
-
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-izq">
-      <h1>Membresías</h1>
-      <p class="fecha" id="fechaHoy"></p>
-    </div>
-    <div class="topbar-der">
-      <button class="btn btn-primary" id="btnNuevo">+ Nueva membresía</button>
-    </div>
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-brand">
+     <a
+        href="dashboard.html"
+        class="sidebar-logo"
+        title="Ir al inicio 🏠"
+        style="
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1.25rem 1.25rem 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);        "
+      >
+        <div class="sidebar-logo-icono">
+          <img
+            src="../../img/favicon/gi-icono-blanco.svg"
+            alt="GI Store"
+            style="width: 22px; height: 22px; object-fit: contain"
+          />
+        </div>
+        <div class="sb-brand-txt">
+          <strong>GI Store</strong>
+          <span>Volver al panel</span>
+        </div>
+      </a>
   </div>
 
-  <!-- ══ 1. Panel membresías ══ -->
-  <div class="panel" style="margin-bottom:1.5rem">
-    <div class="panel-header">
-      <h2>🎫 Lista de membresías</h2>
-      <span id="totalMembresias" style="font-size:.8rem;color:var(--texto-suave)"></span>
-    </div>
-    <div id="tablaWrap"><p class="cargando-txt">Cargando...</p></div>
-    <!-- Paginado: visible solo cuando hay más de 30 registros -->
-    <div id="paginadoWrap" style="padding:.75rem 1.5rem;display:flex;align-items:center;
-         justify-content:center;gap:.4rem;flex-wrap:wrap"></div>
+  <div class="sb-section">
+    <div class="sb-section-title">Introducción</div>
+    <a class="sb-link activo" href="#intro">📖 Bienvenida</a>
+    <a class="sb-link" href="#acceso">🔐 Acceso al panel</a>
   </div>
 
-  <!-- ══ 2. Panel planes de membresía (sección completamente independiente) ══ -->
-  <div class="panel" id="panelPlanes" style="margin-bottom:1.5rem">
-    <div class="panel-header">
-      <h2>📋 Planes de membresía</h2>
-      <button class="btn btn-primary" id="btnNuevoPlan"
-              style="font-size:.82rem;padding:.45rem .95rem">+ Nuevo plan</button>
-    </div>
-    <div style="padding:.5rem 1.5rem .25rem">
-      <p style="font-size:.83rem;color:var(--texto-medio)">
-        Define los planes disponibles con su precio y duración. El sistema usa estos planes para
-        identificar qué compró el vendedor y calcular automáticamente la fecha de vencimiento.
-      </p>
-    </div>
-    <div id="tablaPlanes"><p class="cargando-txt" style="padding:1rem 1.5rem">Cargando planes...</p></div>
+  <div class="sb-section">
+    <div class="sb-section-title">Módulos</div>
+    <a class="sb-link" href="#mod-dashboard">📊 Dashboard <span class="sb-num">1</span></a>
+    <a class="sb-link" href="#mod-vendedores">👥 Vendedores <span class="sb-num">2</span></a>
+    <a class="sb-link" href="#mod-desactivados">🚫 Desactivados <span class="sb-num">3</span></a>
+    <a class="sb-link" href="#mod-membresias">💳 Membresías <span class="sb-num">4</span></a>
+    <a class="sb-link" href="#mod-productos">📦 Productos <span class="sb-num">5</span></a>
+    <a class="sb-link" href="#mod-categorias">🏷️ Categorías <span class="sb-num">6</span></a>
+    <a class="sb-link" href="#mod-catalogo">📄 Exportar catálogo <span class="sb-num">7</span></a>
+    <a class="sb-link" href="#mod-perfil">👤 Mi perfil <span class="sb-num">8</span></a>
   </div>
 
-  <!-- ══ 3. Panel fundadores ══ -->
-  <div class="panel" id="panelFundadores">
-    <p class="cargando-txt">Cargando fundadores...</p>
+  <div class="sb-section">
+    <div class="sb-section-title">Referencia</div>
+    <a class="sb-link" href="#faq">❓ Preguntas frecuentes</a>
   </div>
-</main>
+</nav>
 
-<!-- ════════════════════════════════════════════════════════
-     Modal Crear / Editar membresía  (sin cambios)
-     ════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-titulo" id="modalTitulo">Nueva membresía</div>
-    <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
-    <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
-    <input type="hidden" id="membresiaId"/>
+<!-- MAIN -->
+<div id="main">
 
-    <div class="campo">
-      <label>Buscar vendedor por teléfono / WhatsApp</label>
-      <input type="text" id="buscarTelefono" placeholder="Ej: 3145891108" autocomplete="off"/>
-      <div id="vendedorEncontrado"></div>
-      <input type="hidden" id="fVendedor"/>
+  <!-- HERO -->
+  <div class="hero" id="intro">
+    <div class="hero-badge">🛡️ Panel de Administrador</div>
+    <h1>Manual de Usuario<br>GI Store · Admin</h1>
+    <p>Guía completa para gestionar la plataforma: vendedores, membresías, productos, categorías y más.</p>
+    <div class="hero-meta">
+      <span>📅 <strong>Versión 2026</strong></span>
+      <span>📂 <strong>8 módulos</strong></span>
+      <span>👤 <strong>Rol: Administrador</strong></span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem">
-      <div class="campo">
-        <label>Fecha de inicio</label>
-        <input type="date" id="fInicio"/>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc-bar">
+    <span>Ir a:</span>
+    <a class="toc-pill" href="#mod-dashboard">Dashboard</a>
+    <a class="toc-pill" href="#mod-vendedores">Vendedores</a>
+    <a class="toc-pill" href="#mod-membresias">Membresías</a>
+    <a class="toc-pill" href="#mod-productos">Productos</a>
+    <a class="toc-pill" href="#mod-categorias">Categorías</a>
+    <a class="toc-pill" href="#mod-catalogo">Catálogo</a>
+    <a class="toc-pill" href="#mod-publicidad">Publicidad</a>
+    <a class="toc-pill" href="#mod-foro">Foro</a>
+    <a class="toc-pill" href="#mod-apiclaves">Claves API</a>
+    <a class="toc-pill" href="#mod-perfil">Perfil</a>
+  </div>
+
+  <div class="content">
+
+    <!-- ACCESO -->
+    <div id="acceso" class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">🔐</div>
+        <div class="modulo-header-txt">
+          <h2>Acceso al panel de administrador</h2>
+          <p>Cómo ingresar y qué protecciones tiene el panel</p>
+        </div>
       </div>
-      <div class="campo">
-        <label>Fecha de fin</label>
-        <input type="date" id="fFin"/>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Abre el panel admin</strong>
+              <p>Navega a <code>gistore/admin/</code> (o la URL equivalente en producción). Verás la pantalla de inicio de sesión.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Ingresa tus credenciales</strong>
+              <p>Usa el correo y contraseña del administrador. Solo la cuenta con el correo admin registrado puede acceder — cualquier otra cuenta es rechazada automáticamente.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Acceso concedido</strong>
+              <p>Se redirige al <strong>Dashboard</strong>. Todas las páginas del panel están protegidas: si la sesión expira, el sistema devuelve al login automáticamente.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1.25rem">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Cuenta exclusiva</strong> La cuenta admin no puede ingresar al portal de vendedores y viceversa. El sistema bloquea el intento automáticamente.</div>
+        </div>
       </div>
     </div>
-    <div class="campo">
-      <label>Estado</label>
-      <select id="fEstado">
-        <option value="activa">Activa</option>
-        <option value="suspendida">Suspendida</option>
-        <option value="vencida">Vencida</option>
-      </select>
+
+    <!-- MÓDULO 1 — DASHBOARD -->
+    <div class="section-divider" id="mod-dashboard">Módulo 1 — Dashboard</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">📊</div>
+        <div class="modulo-header-txt">
+          <h2>Dashboard</h2>
+          <p>Resumen general del estado de la plataforma en tiempo real</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="margin-bottom:1rem;font-size:.9rem;color:var(--texto-m)">El Dashboard es la pantalla de inicio del panel admin. Muestra 4 indicadores clave y tablas de actividad reciente.</p>
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">🧑‍💼</div>
+            <strong>Vendedores activos</strong>
+            <p>Cuenta los vendedores con estado <span class="badge badge-verde">activo</span> en Firestore.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">💳</div>
+            <strong>Membresías vigentes</strong>
+            <p>Membresías con estado <span class="badge badge-verde">activa</span> y fecha de vencimiento futura.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📦</div>
+            <strong>Productos activos</strong>
+            <p>Total de productos visibles en el catálogo público.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🏷️</div>
+            <strong>Categorías</strong>
+            <p>Número total de categorías configuradas en la plataforma.</p>
+          </div>
+        </div>
+        <div style="margin-top:1.25rem">
+          <strong style="font-size:.9rem;color:var(--texto)">Tablas de actividad reciente</strong>
+          <ul style="padding-left:1.2rem;margin-top:.5rem;font-size:.87rem;color:var(--texto-m)">
+            <li><strong>Últimos vendedores registrados</strong> — nombre, ciudad y estado (máx. 6).</li>
+            <li><strong>Últimas membresías</strong> — vendedor, fecha de vencimiento y estado (máx. 6).</li>
+          </ul>
+        </div>
+        <div class="callout tip" style="margin-top:1rem">
+          <span class="callout-icon">💡</span>
+          <div>Los datos se cargan en tiempo real desde Firestore cada vez que abres el Dashboard. No hay botón de "refrescar" — simplemente recarga la página.</div>
+        </div>
+      </div>
     </div>
-    <div class="campo">
-      <label>Notas (opcional)</label>
-      <textarea id="fNotas" placeholder="Observaciones sobre esta membresía..."></textarea>
+
+    <!-- MÓDULO 2 — VENDEDORES -->
+    <div class="section-divider" id="mod-vendedores">Módulo 2 — Vendedores</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">👥</div>
+        <div class="modulo-header-txt">
+          <h2>Vendedores</h2>
+          <p>Registrar, editar y gestionar todos los vendedores activos de la plataforma</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Registrar nuevo vendedor</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Haz clic en "Nuevo vendedor"</strong>
+              <p>Se abre el formulario modal de creación.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Completa los datos requeridos</strong>
+              <ul>
+                <li><strong>Nombre</strong> — nombre completo o nombre de la tienda</li>
+                <li><strong>Correo electrónico</strong> — será el usuario de acceso</li>
+                <li><strong>Contraseña inicial</strong> — mínimo 6 caracteres</li>
+                <li><strong>Ciudad</strong> — ciudad de operación</li>
+                <li><strong>WhatsApp</strong> — con código de país (ej: 573145891108)</li>
+                <li><strong>Color de marca</strong> — elige de la paleta o usa el picker personalizado</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>El sistema crea dos registros</strong>
+              <p>Se crea el usuario en <strong>Firebase Authentication</strong> (usando una instancia secundaria para no afectar la sesión admin) y el documento en la colección <strong>vendedores</strong> de Firestore.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem">
+          <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Acciones disponibles por vendedor</div>
+          <table class="manual-table">
+            <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td>✏️ <strong>Editar</strong></td><td>Modifica nombre, ciudad, WhatsApp, color y descripción. El correo no se puede cambiar.</td></tr>
+              <tr><td>🔗 <strong>Vincular tienda</strong></td><td>Genera o copia el link público de la tienda del vendedor.</td></tr>
+              <tr><td>🚫 <strong>Desactivar</strong></td><td>Cambia el estado a <span class="badge badge-rojo">desactivado</span>. El vendedor no podrá iniciar sesión y sus productos dejan de ser visibles.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout info" style="margin-top:1rem">
+          <span class="callout-icon">ℹ️</span>
+          <div><strong>Color de marca</strong> El color elegido se aplica en la tienda pública del vendedor: botones, precios, avatares y acentos visuales.</div>
+        </div>
+      </div>
     </div>
-    <div class="modal-acciones">
-      <button class="btn btn-secundario" id="btnCancelar">Cancelar</button>
-      <button class="btn btn-primary"    id="btnGuardar">
-        <span class="btn-texto">Guardar</span>
-        <div class="spinner"></div>
-      </button>
+
+    <!-- MÓDULO 3 — DESACTIVADOS -->
+    <div class="section-divider" id="mod-desactivados">Módulo 3 — Vendedores desactivados</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">🚫</div>
+        <div class="modulo-header-txt">
+          <h2>Vendedores desactivados</h2>
+          <p>Listado de cuentas suspendidas y opción de reactivación</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1rem">Muestra todos los vendedores con estado <span class="badge badge-rojo">desactivado</span>. Aquí puedes revisar el historial de cuentas suspendidas y reactivarlas si es necesario.</p>
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">🔍</div>
+            <strong>Ver detalle</strong>
+            <p>Consulta el nombre, correo, ciudad y fecha de registro del vendedor desactivado.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">✅</div>
+            <strong>Reactivar cuenta</strong>
+            <p>Devuelve el estado a <span class="badge badge-verde">activo</span>. El vendedor podrá iniciar sesión nuevamente.</p>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1rem">
+          <span class="callout-icon">⚠️</span>
+          <div>Reactivar un vendedor <strong>no</strong> reactiva automáticamente su membresía ni sus productos. Deberás gestionarlos en los módulos correspondientes.</div>
+        </div>
+      </div>
     </div>
+
+    <!-- MÓDULO 4 — MEMBRESÍAS -->
+    <div class="section-divider" id="mod-membresias">Módulo 4 — Membresías</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">💳</div>
+        <div class="modulo-header-txt">
+          <h2>Membresías</h2>
+          <p>Gestión de suscripciones de vendedores y planes de precio</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1.25rem">Este módulo tiene <strong>dos secciones independientes</strong>: la tabla de membresías por vendedor y la configuración de planes.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Sección 1 — Membresías de vendedores</div>
+        <table class="manual-table" style="margin-bottom:1.25rem">
+          <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>➕ <strong>Nueva membresía</strong></td><td>Crea una membresía manual para un vendedor. Selecciona vendedor, plan, fecha de inicio y estado.</td></tr>
+            <tr><td>✏️ <strong>Editar</strong></td><td>Modifica fechas, plan o estado de una membresía existente.</td></tr>
+            <tr><td>🗑️ <strong>Eliminar</strong></td><td>Borra permanentemente el registro de membresía.</td></tr>
+          </tbody>
+        </table>
+
+        <p style="font-size:.87rem;color:var(--texto-m);margin-bottom:.75rem">La tabla muestra: vendedor, plan, fecha inicio, fecha fin, días restantes y estado calculado automáticamente:</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem">
+          <span class="badge badge-verde">activa</span>
+          <span class="badge badge-rojo">vencida</span>
+          <span class="badge badge-ambar">pendiente</span>
+          <span class="badge badge-gris">cancelada</span>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Sección 2 — Planes de membresía</div>
+        <p style="font-size:.87rem;color:var(--texto-m);margin-bottom:.75rem">Los planes se almacenan en Firestore y son dinámicos — los vendedores los ven en tiempo real al elegir su suscripción.</p>
+        <table class="manual-table">
+          <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Nombre</strong></td><td>Ej: "Plan Estándar", "Plan Pro"</td></tr>
+            <tr><td><strong>Precio</strong></td><td>En COP (sin centavos). Cambiar aquí actualiza el precio para todos los vendedores de inmediato.</td></tr>
+            <tr><td><strong>Duración</strong></td><td>En días. Ej: 30 = mensual, 365 = anual.</td></tr>
+            <tr><td><strong>Activo</strong></td><td>Solo los planes con activo = true aparecen para los vendedores.</td></tr>
+            <tr><td><strong>Orden</strong></td><td>Posición en la lista (1 = primero).</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout tip" style="margin-top:1rem">
+          <span class="callout-icon">💡</span>
+          <div><strong>Fundadores:</strong> Los vendedores registrados en la colección <em>fundadores</em> tienen beneficio de precio especial durante 1 año desde su fecha de registro.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 5 — PRODUCTOS -->
+    <div class="section-divider" id="mod-productos">Módulo 5 — Productos</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">📦</div>
+        <div class="modulo-header-txt">
+          <h2>Productos</h2>
+          <p>Vista global de todos los productos de la plataforma</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1rem">El admin puede ver, crear, editar y eliminar <strong>cualquier producto</strong> de cualquier vendedor, con filtros por vendedor, categoría y estado.</p>
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">🔍</div>
+            <strong>Filtros</strong>
+            <p>Filtra por vendedor, categoría y estado (activo/inactivo). Los resultados se paginan.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🖼️</div>
+            <strong>Subir imagen</strong>
+            <p>Al crear o editar un producto, la imagen se sube a Cloudinary y se guarda la URL segura.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">✏️</div>
+            <strong>Editar</strong>
+            <p>Modifica nombre, precio, descripción, categoría, vendedor, imagen, beneficios y recomendación.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🗑️</div>
+            <strong>Eliminar</strong>
+            <p>Borra permanentemente el producto. Esta acción no se puede deshacer.</p>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1rem">
+          <span class="callout-icon">⚠️</span>
+          <div>Si la membresía de un vendedor vence, sus productos se desactivan automáticamente. Al renovar la membresía, se reactivan desde el portal del vendedor.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 6 — CATEGORÍAS -->
+    <div class="section-divider" id="mod-categorias">Módulo 6 — Categorías</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">🏷️</div>
+        <div class="modulo-header-txt">
+          <h2>Categorías</h2>
+          <p>Administrar las categorías que organizan los productos del catálogo</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Crear categoría</strong>
+              <p>Clic en <em>"Nueva categoría"</em>. Ingresa el <strong>nombre</strong> y el <strong>orden</strong> (número entero, 1 = primero en el filtro del catálogo).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Editar</strong>
+              <p>Modifica el nombre y/o el orden de visualización. Los cambios se reflejan de inmediato en el catálogo público.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Eliminar</strong>
+              <p>Borra la categoría. Los productos asociados a ella quedarán sin categoría asignada — se recomienda reasignarlos antes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout info" style="margin-top:1rem">
+          <span class="callout-icon">ℹ️</span>
+          <div>Las categorías son globales: todos los vendedores las comparten. Solo el admin puede crearlas o editarlas.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 7 — EXPORTAR CATÁLOGO -->
+    <div class="section-divider" id="mod-catalogo">Módulo 7 — Exportar catálogo</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">📄</div>
+        <div class="modulo-header-txt">
+          <h2>Exportar catálogo</h2>
+          <p>Generar un PDF del catálogo de productos para compartir o imprimir</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Seleccionar filtros</strong>
+              <ul>
+                <li><strong>Vendedor</strong> — todos o uno específico</li>
+                <li><strong>Estado</strong> — activos, inactivos o ambos</li>
+                <li><strong>Orden</strong> — por nombre, precio o categoría</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Vista previa</strong>
+              <p>El sistema renderiza una vista paginada del catálogo con imágenes, precios y descripciones.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Generar PDF</strong>
+              <p>Clic en <em>"Exportar PDF"</em>. El archivo se descarga directamente al navegador.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout tip" style="margin-top:1rem">
+          <span class="callout-icon">💡</span>
+          <div>El catálogo incluye una portada con estadísticas y CTA de contacto. Para mejores resultados, usa Chrome o Edge al exportar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 8 — PERFIL -->
+    <div class="section-divider" id="mod-perfil">Módulo 8 — Mi perfil</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">👤</div>
+        <div class="modulo-header-txt">
+          <h2>Mi perfil</h2>
+          <p>Gestión de la cuenta del administrador</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">📸</div>
+            <strong>Foto de perfil</strong>
+            <p>Sube una imagen (máx. 2 MB). Se almacena en Cloudinary y se muestra en el sidebar.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📝</div>
+            <strong>Datos personales</strong>
+            <p>Actualiza nombre y ciudad. El correo electrónico no se puede cambiar desde aquí.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔑</div>
+            <strong>Cambiar contraseña</strong>
+            <p>Requiere ingresar la contraseña actual para verificar identidad. Mínimo 6 caracteres.</p>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1rem">
+          <span class="callout-icon">⚠️</span>
+          <div>Si olvidaste tu contraseña, deberás usar la opción de recuperación de Firebase Authentication directamente, ya que el panel no incluye recuperación automática.</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Módulo Publicidad -->
+    <div class="section-divider" id="mod-publicidad">Módulo 9 — Publicidad</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">📢</div>
+        <div class="modulo-header-txt">
+          <h2>Publicidad</h2>
+          <p>Gestiona campañas publicitarias que aparecen en el catálogo y las tiendas</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>El módulo de Publicidad permite crear campañas con imagen, URL de destino, fechas de vigencia y un límite de impresiones por día. Las campañas se muestran como un panel flotante en <code>index.html</code> y <code>page/tienda.html</code>.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Crear una campaña</div>
+        <ol>
+          <li>Haz clic en <strong>+ Nueva publicidad</strong>.</li>
+          <li>Sube la imagen (JPG, PNG, WebP · máx. 3 MB) — se sube automáticamente a Cloudinary en la carpeta <code>publicidad</code>.</li>
+          <li>Ingresa el <strong>Título</strong> de la campaña (solo referencia interna, también aparece debajo de la imagen en el banner).</li>
+          <li>Ingresa la <strong>URL de destino</strong> (opcional) — a dónde va el usuario al hacer clic.</li>
+          <li>Define las <strong>fechas de inicio y fin</strong> de vigencia.</li>
+          <li>Define el <strong>límite de impresiones por día</strong> (ej. 50). Cuando se alcanza ese número, esa campaña deja de mostrarse por el resto del día y el sistema muestra productos del catálogo como fallback. <strong>Al día siguiente el conteo se reinicia automáticamente a 0.</strong></li>
+          <li>Guarda. La campaña queda activa inmediatamente si las fechas son vigentes.</li>
+        </ol>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Lógica de rotación</div>
+        <table class="manual-table">
+          <thead><tr><th>Situación</th><th>Comportamiento del banner</th></tr></thead>
+          <tbody>
+            <tr><td>Hay publicidades activas con cupo disponible</td><td>Se muestra la publicidad con menos impresiones del día (la menos vista primero).</td></tr>
+            <tr><td>Hay menos de 15 publicidades con cupo</td><td>Modo mixto: 50 % de probabilidad de mostrar un producto del catálogo, 50 % publicidad.</td></tr>
+            <tr><td>Todas las publicidades agotaron su límite diario</td><td>Se muestran productos del catálogo todo el día. Al día siguiente las campañas se reanudan solas.</td></tr>
+            <tr><td>No hay publicidades activas ni productos</td><td>El banner no aparece.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Acciones disponibles</div>
+        <table class="manual-table">
+          <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>✏️ Editar</strong></td><td>Modifica cualquier campo. Si dejas la imagen vacía al editar, conserva la imagen actual.</td></tr>
+            <tr><td><strong>⏸ Pausar / ▶️ Activar</strong></td><td>Pausa manual de la campaña. Una campaña pausada no aparece aunque tenga cupo.</td></tr>
+            <tr><td><strong>🗑 Eliminar</strong></td><td>Elimina la campaña permanentemente.</td></tr>
+          </tbody>
+        </table>
+
+        <div style="background:#f0faf4;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#155c32">
+          💡 <strong>Tip:</strong> La barra de progreso en cada tarjeta muestra cuántas impresiones se usaron hoy vs. el límite. Si está al 100 %, esa campaña solo se reanudará mañana.
+        </div>
+      </div>
+    </div>
+
+    <!-- Módulo Foro -->
+    <div class="section-divider" id="mod-foro">Módulo 10 — Foro</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">💬</div>
+        <div class="modulo-header-txt">
+          <h2>Foro — Moderación</h2>
+          <p>Supervisa y modera las discusiones de la comunidad</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>El Foro es un espacio público donde cualquier visitante puede leer los hilos. Solo los vendedores y el administrador pueden crear hilos y responder. Tú, como admin, tienes poderes de moderación completos.</p>
+
+        <table class="manual-table">
+          <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Ver hilos</strong></td><td>Haz clic en un hilo para expandirlo y ver todas sus respuestas.</td></tr>
+            <tr><td><strong>🗑 Eliminar hilo</strong></td><td>Elimina el hilo Y todas sus respuestas. Acción irreversible.</td></tr>
+            <tr><td><strong>🗑 Eliminar respuesta</strong></td><td>Elimina una respuesta individual sin afectar el resto del hilo.</td></tr>
+          </tbody>
+        </table>
+
+        <div style="background:#fee2e2;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#991b1b">
+          ⚠️ <strong>Importante:</strong> Eliminar un hilo borra permanentemente todas sus respuestas. Esta acción no se puede deshacer.
+        </div>
+      </div>
+    </div>
+
+    <!-- Módulo Claves API -->
+    <div class="section-divider" id="mod-apiclaves">Módulo 11 — Claves API</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">🔑</div>
+        <div class="modulo-header-txt">
+          <h2>Claves API</h2>
+          <p>Gestiona claves de servicios externos desde Firestore — sin tocar el código</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>Todas las claves API (como la de OpenRouter para el Spotlight IA) se almacenan en Firestore, no en el código. Esto permite cambiarlas sin necesidad de subir archivos nuevos al servidor.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Campos de una clave</div>
+        <table class="manual-table">
+          <thead><tr><th>Campo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Identificador</strong></td><td>Nombre único que usa el código para buscar la clave. No cambiar una vez creado.</td><td><code>openrouter</code></td></tr>
+            <tr><td><strong>Nombre legible</strong></td><td>Descripción para reconocerla en el panel.</td><td><code>OpenRouter IA</code></td></tr>
+            <tr><td><strong>URL de origen</strong></td><td>Endpoint base de la API.</td><td><code>https://openrouter.ai/api/v1/chat/completions</code></td></tr>
+            <tr><td><strong>Clave API</strong></td><td>La clave secreta. Se muestra oculta con opción de revelar.</td><td><code>sk-or-v1-…</code></td></tr>
+            <tr><td><strong>Modelos</strong></td><td>Lista de modelos a usar, uno por línea, en orden de preferencia (el primero se intenta primero).</td><td><code>google/gemma-3-27b-it:free</code></td></tr>
+            <tr><td><strong>Estado</strong></td><td>Activa o Inactiva. Solo las activas se usan.</td><td>Activa</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Cambiar la clave de OpenRouter</div>
+        <ol>
+          <li>Ve a <strong>Admin → Claves API</strong>.</li>
+          <li>Haz clic en ✏️ junto a <code>openrouter</code>.</li>
+          <li>Ingresa la nueva clave en el campo <strong>Clave API</strong>.</li>
+          <li>Guarda. El cambio aplica inmediatamente — no se requiere subir ningún archivo.</li>
+        </ol>
+
+        <div style="background:#f0faf4;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#155c32">
+          💡 <strong>Tip:</strong> Si un modelo da error 429 (rate limit), actualiza la lista de modelos poniendo primero <code>openrouter/free</code> como comodín automático.
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-divider" id="faq">Preguntas frecuentes</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">❓</div>
+        <div class="modulo-header-txt">
+          <h2>Preguntas frecuentes — Admin</h2>
+          <p>Situaciones comunes y cómo resolverlas</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <table class="manual-table">
+          <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>¿Por qué el Dashboard muestra cero en todas las estadísticas?</strong></td>
+              <td>Firestore puede tardar unos segundos. Espera y recarga. Si persiste, verifica la conexión a internet y que el proyecto Firebase esté activo.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo cambio el precio de un plan sin afectar membresías activas?</strong></td>
+              <td>Edita el plan en el módulo Membresías → Planes. Los precios solo afectan nuevas compras, no las membresías ya activas.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puedo eliminar un vendedor permanentemente?</strong></td>
+              <td>El sistema solo permite desactivarlo. Para eliminar completamente debes hacerlo desde la consola de Firebase Authentication y Firestore.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Qué pasa si elimino una categoría que tiene productos?</strong></td>
+              <td>Los productos quedan sin categoría asignada. Reasígnalos antes de eliminar la categoría.</td>
+            </tr>
+            <tr>
+              <td><strong>¿El PDF del catálogo incluye productos inactivos?</strong></td>
+              <td>Depende del filtro de Estado que selecciones antes de exportar.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo sé si la membresía de un vendedor está por vencer?</strong></td>
+              <td>En el módulo Membresías, la columna de días restantes muestra una etiqueta de color: verde = OK, amarillo = pronto a vencer, rojo = vencida.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Por qué la publicidad dejó de mostrarse hoy?</strong></td>
+              <td>Llegó al límite de impresiones diarias. Al día siguiente el conteo se reinicia automáticamente y vuelve a mostrarse.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo cambio la clave de OpenRouter sin tocar el código?</strong></td>
+              <td>Ve a Admin → Claves API, edita el servicio <code>openrouter</code> e ingresa la nueva clave. El cambio aplica inmediatamente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿El foro es público para todos?</strong></td>
+              <td>Sí, cualquier visitante puede leer. Solo vendedores y el admin pueden crear hilos o responder.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <a href="#intro" class="back-top">↑ Volver al inicio</a>
+
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════
-     Modal Confirmar Revocar membresía  (sin cambios)
-     ════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modalEliminar">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-titulo">⚠ Revocar membresía</div>
-    <p style="color:var(--texto-medio);font-size:.9rem;margin-bottom:.5rem">
-      ¿Revocar la membresía de <strong id="nombreEliminar" style="color:var(--error)"></strong>?
-    </p>
-    <div style="background:var(--error-bg);border:1.5px solid var(--error-borde);border-radius:8px;
-                padding:.75rem 1rem;font-size:.82rem;color:var(--error);margin-bottom:1.25rem">
-      ⛔ Todos los productos de este vendedor quedarán <strong>inactivos</strong>
-      y no serán visibles en el catálogo hasta que se cree una nueva membresía.
-    </div>
-    <div class="modal-acciones">
-      <button class="btn btn-secundario" id="btnCancelarEliminar">Cancelar</button>
-      <button class="btn btn-peligro"    id="btnConfirmarEliminar">
-        <span class="btn-texto">Sí, revocar</span>
-        <div class="spinner"></div>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════
-     Modal Registrar fundador  (sin cambios)
-     ════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modalFundadorOverlay">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-titulo">⭐ Registrar vendedor fundador</div>
-    <p style="color:var(--texto-medio);font-size:.85rem;margin-bottom:1rem">
-      Selecciona el vendedor a registrar como fundador. Tendrá el plan fundador durante
-      <strong>1 año</strong> desde hoy. Solo están disponibles los vendedores que aún
-      no están en el programa.
-    </p>
-    <div class="campo">
-      <label>Vendedor</label>
-      <select id="fFundadorVendedor"></select>
-    </div>
-    <div class="modal-acciones">
-      <button class="btn btn-secundario" id="btnCancelarFundador">Cancelar</button>
-      <button class="btn btn-primary"    id="btnGuardarFundador">
-        <span class="btn-texto">⭐ Registrar fundador</span>
-        <div class="spinner"></div>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════
-     Modal Crear / Editar plan de membresía  (NUEVO)
-     ════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modalPlanOverlay">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-titulo" id="modalPlanTitulo">Nuevo plan</div>
-    <div class="msg-error" id="msgErrorPlan"><span>⚠&nbsp;</span><span id="textoErrorPlan"></span></div>
-    <div class="msg-ok"    id="msgOkPlan"   ><span>✓&nbsp;</span><span id="textoOkPlan"></span></div>
-    <input type="hidden" id="planId"/>
-
-    <div class="campo">
-      <label>Nombre del plan <span style="color:var(--error)">*</span></label>
-      <input type="text" id="pNombre" placeholder="Ej: Plan Anual, Plan 6 meses…" maxlength="60"/>
-    </div>
-    <div class="campo">
-      <label>Descripción (opcional)</label>
-      <textarea id="pDescripcion"
-                placeholder="Breve descripción visible para el vendedor…"
-                style="min-height:68px"></textarea>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem">
-      <div class="campo">
-        <label>Precio (COP) <span style="color:var(--error)">*</span></label>
-        <input type="number" id="pPrecio" min="0" step="100" placeholder="Ej: 150000"/>
-      </div>
-      <div class="campo">
-        <label>Duración (días) <span style="color:var(--error)">*</span></label>
-        <input type="number" id="pDuracionDias" min="1" placeholder="Ej: 365"/>
-        <small id="hintDuracion"
-               style="color:var(--texto-suave);font-size:.74rem;margin-top:.25rem;display:block"></small>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 1rem;align-items:end">
-      <div class="campo">
-        <label>Orden de aparición</label>
-        <input type="number" id="pOrden" min="0" placeholder="Ej: 1"/>
-      </div>
-      <div class="campo" style="padding-bottom:.7rem">
-        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none">
-          <input type="checkbox" id="pActivo" checked
-                 style="width:15px;height:15px;accent-color:var(--verde);flex-shrink:0"/>
-          Plan activo (disponible)
-        </label>
-      </div>
-    </div>
-    <div class="modal-acciones">
-      <button class="btn btn-secundario" id="btnCancelarPlan">Cancelar</button>
-      <button class="btn btn-primary"    id="btnGuardarPlan">
-        <span class="btn-texto">Guardar plan</span>
-        <div class="spinner"></div>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════
-     Modal Confirmar eliminar plan  (NUEVO)
-     ════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modalEliminarPlan">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-titulo">⚠ Eliminar plan</div>
-    <p style="color:var(--texto-medio);font-size:.9rem;margin-bottom:.5rem">
-      ¿Eliminar el plan <strong id="nombreEliminarPlan" style="color:var(--error)"></strong>?
-    </p>
-    <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:1.25rem">
-      Las membresías ya creadas con este plan no se verán afectadas.
-    </p>
-    <div class="modal-acciones">
-      <button class="btn btn-secundario" id="btnCancelarEliminarPlan">Cancelar</button>
-      <button class="btn btn-peligro"    id="btnConfirmarEliminarPlan">
-        <span class="btn-texto">Sí, eliminar</span>
-        <div class="spinner"></div>
-      </button>
-    </div>
-  </div>
-</div>
-
-<script type="module" src="../js/membresias.js"></script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var btnH    = document.getElementById('btnHamburguesa');
-    var sidebar = document.querySelector('.sidebar');
-    var overlay = document.getElementById('sidebarOverlay');
-    if (!btnH || !sidebar || !overlay) return;
-    function abrir()  { sidebar.classList.add('abierto');    overlay.classList.add('visible');    btnH.classList.add('abierto'); }
-    function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
-    btnH.addEventListener('click', function() { sidebar.classList.contains('abierto') ? cerrar() : abrir(); });
-    overlay.addEventListener('click', cerrar);
-    document.querySelectorAll('.nav a').forEach(function(a) {
-      a.addEventListener('click', function() { if (window.innerWidth <= 700) cerrar(); });
-    });
-  });
-</script>
 </body>
 </html>

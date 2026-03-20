@@ -14,7 +14,7 @@
 import { db } from "./firebase.js";
 import {
   collection, doc,
-  getDocs, addDoc, updateDoc, deleteDoc,
+  getDocs, getDoc, addDoc, updateDoc, deleteDoc,
   query, where, orderBy, limit,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
@@ -274,6 +274,144 @@ async function reactivarProductosVendedor(vendedor_id) {
 }
 
 // ════════════════════════════════════════════════════════════
+//  FORO
+//  Colecciones:
+//    foro_hilos/{id}       — hilos / preguntas
+//    foro_respuestas/{id}  — respuestas a hilos
+//
+//  El vendedor puede:
+//    · Crear hilos y respuestas (escritura con auth)
+//    · Eliminar sus propias respuestas en cualquier momento
+//    · Editar sus respuestas solo si han pasado < 30 minutos
+// ════════════════════════════════════════════════════════════
+
+async function obtenerHilosForo() {
+  try {
+    const q = query(collection(db, "foro_hilos"), orderBy("creado_en", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(collection(db, "foro_hilos"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.creado_en || "").localeCompare(a.creado_en || ""));
+  }
+}
+
+async function crearHiloForo(datos) {
+  const ref = await addDoc(collection(db, "foro_hilos"), {
+    titulo:       datos.titulo       || "",
+    cuerpo:       datos.cuerpo       || "",
+    autor_id:     datos.autor_id     || "",
+    autor_nombre: datos.autor_nombre || "",
+    autor_foto:   datos.autor_foto   || "",
+    autor_color:  datos.autor_color  || "#1a6b3c",
+    respuestas:   0,
+    creado_en:    new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+async function obtenerRespuestasForo(hiloId) {
+  try {
+    const q = query(
+      collection(db, "foro_respuestas"),
+      where("hilo_id", "==", hiloId),
+      orderBy("creado_en", "asc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(
+      query(collection(db, "foro_respuestas"), where("hilo_id", "==", hiloId))
+    );
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.creado_en || "").localeCompare(b.creado_en || ""));
+  }
+}
+
+async function crearRespuestaForo(datos) {
+  // Incrementar contador en el hilo
+  const hiloRef  = doc(db, "foro_hilos", datos.hilo_id);
+  const hiloSnap = await getDoc(hiloRef);
+  if (hiloSnap.exists()) {
+    await updateDoc(hiloRef, { respuestas: (hiloSnap.data().respuestas || 0) + 1 });
+  }
+  const ref = await addDoc(collection(db, "foro_respuestas"), {
+    hilo_id:      datos.hilo_id      || "",
+    autor_id:     datos.autor_id     || "",
+    autor_nombre: datos.autor_nombre || "",
+    autor_foto:   datos.autor_foto   || "",
+    autor_color:  datos.autor_color  || "#1a6b3c",
+    texto:        datos.texto        || "",
+    creado_en:    new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+/**
+ * Edita una respuesta — solo si han pasado < 30 minutos.
+ * La validación de tiempo también debe estar en las reglas Firestore.
+ */
+async function editarRespuestaForo(respId, nuevoTexto) {
+  const snap = await getDoc(doc(db, "foro_respuestas", respId));
+  if (!snap.exists()) throw new Error("Respuesta no encontrada.");
+  const diffMin = (new Date() - new Date(snap.data().creado_en)) / 1000 / 60;
+  if (diffMin > 30) throw new Error("Han pasado más de 30 minutos. No puedes editar esta respuesta.");
+  await updateDoc(doc(db, "foro_respuestas", respId), { texto: nuevoTexto });
+}
+
+async function eliminarRespuestaForo(respId, hiloId) {
+  await deleteDoc(doc(db, "foro_respuestas", respId));
+  // Decrementar contador
+  const hiloRef  = doc(db, "foro_hilos", hiloId);
+  const hiloSnap = await getDoc(hiloRef);
+  if (hiloSnap.exists()) {
+    await updateDoc(hiloRef, { respuestas: Math.max(0, (hiloSnap.data().respuestas || 0) - 1) });
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  CLAVES API (tabla: api_claves)
+//
+//  Colección: "api_claves"
+//  Cada documento tiene:
+//    servicio   string  — ej: "openrouter", "cloudinary", "wompi_pub"
+//    clave      string  — valor de la clave API
+//    activo     boolean — solo se usa si activo: true
+//    nota       string  — descripción interna (opcional)
+//
+//  Las claves NUNCA se almacenan en el código fuente.
+//  Primero se obtiene la clave de Firestore, luego se usa.
+//  Solo el admin puede escribir en esta colección (reglas).
+//  Los vendedores autenticados pueden leer las claves que necesiten.
+// ════════════════════════════════════════════════════════════
+
+const _cacheClaves = {};  // cache en memoria para no repetir lecturas
+
+/**
+ * Obtiene la clave API de un servicio desde Firestore.
+ * Usa caché en memoria durante la sesión para minimizar lecturas.
+ *
+ * @param {string} servicio — ej: "openrouter"
+ * @returns {Promise<string>} — la clave, o lanza error si no existe
+ */
+async function obtenerClaveApi(servicio) {
+  if (_cacheClaves[servicio]) return _cacheClaves[servicio];
+
+  const q    = query(
+    collection(db, "api_claves"),
+    where("servicio", "==", servicio),
+    where("activo",   "==", true)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) throw new Error(`Clave API "${servicio}" no encontrada o inactiva en Firestore.`);
+
+  const clave = snap.docs[0].data().clave;
+  _cacheClaves[servicio] = clave;
+  return clave;
+}
+
+// ════════════════════════════════════════════════════════════
 //  EXPORTACIONES
 // ════════════════════════════════════════════════════════════
 
@@ -297,4 +435,13 @@ export {
   eliminarProducto,
   desactivarProductosVendedor,
   reactivarProductosVendedor,
+  // Foro
+  obtenerHilosForo,
+  crearHiloForo,
+  obtenerRespuestasForo,
+  crearRespuestaForo,
+  editarRespuestaForo,
+  eliminarRespuestaForo,
+  // Claves API
+  obtenerClaveApi,
 };

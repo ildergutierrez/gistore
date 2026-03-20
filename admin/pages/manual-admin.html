@@ -316,6 +316,9 @@
     <a class="sb-link" href="#mod-categorias">🏷️ Categorías <span class="sb-num">6</span></a>
     <a class="sb-link" href="#mod-catalogo">📄 Exportar catálogo <span class="sb-num">7</span></a>
     <a class="sb-link" href="#mod-perfil">👤 Mi perfil <span class="sb-num">8</span></a>
+    <a class="sb-link" href="#mod-publicidad">📢 Publicidad <span class="sb-num">9</span></a>
+    <a class="sb-link" href="#mod-foro">💬 Foro <span class="sb-num">10</span></a>
+    <a class="sb-link" href="#mod-apiclaves">🔑 Claves API <span class="sb-num">11</span></a>
   </div>
 
   <div class="sb-section">
@@ -331,10 +334,10 @@
   <div class="hero" id="intro">
     <div class="hero-badge">🛡️ Panel de Administrador</div>
     <h1>Manual de Usuario<br>GI Store · Admin</h1>
-    <p>Guía completa para gestionar la plataforma: vendedores, membresías, productos, categorías y más.</p>
+    <p>Guía completa para gestionar la plataforma: vendedores, membresías, productos, publicidad, foro, claves API y más.</p>
     <div class="hero-meta">
       <span>📅 <strong>Versión 2026</strong></span>
-      <span>📂 <strong>8 módulos</strong></span>
+      <span>📂 <strong>11 módulos</strong></span>
       <span>👤 <strong>Rol: Administrador</strong></span>
     </div>
   </div>
@@ -349,6 +352,9 @@
     <a class="toc-pill" href="#mod-categorias">Categorías</a>
     <a class="toc-pill" href="#mod-catalogo">Catálogo</a>
     <a class="toc-pill" href="#mod-perfil">Perfil</a>
+    <a class="toc-pill" href="#mod-publicidad">Publicidad</a>
+    <a class="toc-pill" href="#mod-foro">Foro</a>
+    <a class="toc-pill" href="#mod-apiclaves">Claves API</a>
   </div>
 
   <div class="content">
@@ -747,6 +753,235 @@
       </div>
     </div>
 
+
+    <!-- ══ MÓDULO 9 — PUBLICIDAD ══ -->
+    <div class="section-divider" id="mod-publicidad">Módulo 9 — Publicidad</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">📢</div>
+        <div class="modulo-header-txt">
+          <h2>Publicidad</h2>
+          <p>Crea y gestiona campañas que aparecen en el catálogo y las tiendas de los vendedores</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>El sistema de publicidad muestra un <strong>panel flotante</strong> en la esquina inferior izquierda del catálogo público y de cada tienda de vendedor. Aparece 15 s después de que el visitante carga la página, permanece visible 20 s y se repite cada 3 minutos.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Crear una campaña</div>
+        <ol>
+          <li>Ve a <strong>Admin → Publicidad</strong> y haz clic en <strong>+ Nueva publicidad</strong>.</li>
+          <li>Sube la <strong>imagen</strong> (JPG, PNG o WebP · máx. 3 MB). Se guarda en Cloudinary, carpeta <code>publicidad</code>.</li>
+          <li>Escribe el <strong>Título de la campaña</strong> — se muestra debajo de la imagen en el banner y sirve de referencia interna.</li>
+          <li>Ingresa la <strong>URL de destino</strong> (opcional): a dónde va el visitante al hacer clic.</li>
+          <li>Define las <strong>fechas de inicio y fin</strong> de vigencia.</li>
+          <li>Define el <strong>límite de impresiones por día</strong>. Cuando se alcanza, esa campaña deja de mostrarse ese día y el sistema pasa a mostrar productos del catálogo. <strong>Al día siguiente el conteo se reinicia automáticamente a 0.</strong></li>
+          <li>Guarda. La campaña queda activa inmediatamente si las fechas son vigentes.</li>
+        </ol>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Lógica de rotación del banner</div>
+        <table class="manual-table">
+          <thead><tr><th>Situación</th><th>Comportamiento</th></tr></thead>
+          <tbody>
+            <tr><td>≥ 15 campañas activas con cupo</td><td>Publicidad dominante: cada 5 ciclos se intercala un producto del catálogo.</td></tr>
+            <tr><td>&lt; 15 campañas activas con cupo</td><td>Modo mixto: 50 % probabilidad de mostrar un producto del catálogo, 50 % publicidad.</td></tr>
+            <tr><td>Todas las campañas agotaron su límite diario</td><td>Solo se muestran productos del catálogo durante el resto del día.</td></tr>
+            <tr><td>Sin campañas ni productos</td><td>El banner no aparece.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">📊 Planes de publicidad — Tarifas de referencia</div>
+        <p style="font-size:.85rem;color:var(--texto-medio);margin-bottom:.75rem">La siguiente tabla es una guía de precios sugeridos por volumen de impresiones y duración. Los precios son en COP e incluyen la configuración de la campaña en el panel.</p>
+        <table class="manual-table">
+          <thead>
+            <tr>
+              <th>Plan</th>
+              <th>Impresiones/día</th>
+              <th>Duración</th>
+              <th>Total impresiones</th>
+              <th>Precio COP</th>
+              <th>Precio por impresión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Básico</strong></td>
+              <td>50</td>
+              <td>7 días</td>
+              <td>350</td>
+              <td><strong>$ 8.000</strong></td>
+              <td>$ 23/imp.</td>
+            </tr>
+            <tr>
+              <td><strong>Estándar</strong></td>
+              <td>100</td>
+              <td>15 días</td>
+              <td>1.500</td>
+              <td><strong>$ 25.000</strong></td>
+              <td>$ 17/imp.</td>
+            </tr>
+            <tr>
+              <td><strong>Pro</strong></td>
+              <td>200</td>
+              <td>15 días</td>
+              <td>3.000</td>
+              <td><strong>$ 40.000</strong></td>
+              <td>$ 13/imp.</td>
+            </tr>
+            <tr>
+              <td><strong>Mensual</strong></td>
+              <td>150</td>
+              <td>30 días</td>
+              <td>4.500</td>
+              <td><strong>$ 55.000</strong></td>
+              <td>$ 12/imp.</td>
+            </tr>
+            <tr style="background:#f0faf4">
+              <td><strong>Premium</strong></td>
+              <td>300</td>
+              <td>30 días</td>
+              <td>9.000</td>
+              <td><strong>$ 90.000</strong></td>
+              <td>$ 10/imp.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:.78rem;color:var(--texto-suave);margin-top:.5rem">* Precios sugeridos. El administrador fija las tarifas reales según demanda y temporada.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Acciones sobre campañas existentes</div>
+        <table class="manual-table">
+          <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>✏️ Editar</strong></td><td>Modifica título, URL, fechas o límite. Si dejas el campo imagen vacío, conserva la imagen actual.</td></tr>
+            <tr><td><strong>⏸ Pausar / ▶️ Activar</strong></td><td>Pausa manual inmediata. No afecta el conteo diario; al reactivar sigue desde donde estaba.</td></tr>
+            <tr><td><strong>🗑 Eliminar</strong></td><td>Elimina la campaña permanentemente junto con su historial de impresiones.</td></tr>
+          </tbody>
+        </table>
+
+        <div style="background:#f0faf4;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#155c32">
+          💡 <strong>Consejo:</strong> La barra de progreso en cada tarjeta muestra las impresiones usadas hoy vs. el límite. Si llega al 100 %, la campaña se reanuda automáticamente al día siguiente.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MÓDULO 10 — FORO ══ -->
+    <div class="section-divider" id="mod-foro">Módulo 10 — Foro (Moderación)</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">💬</div>
+        <div class="modulo-header-txt">
+          <h2>Foro — Moderación</h2>
+          <p>Supervisa y modera las discusiones de la comunidad de vendedores</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>El Foro es público: cualquier visitante puede leer los hilos. Solo los <strong>vendedores con sesión activa</strong> y el <strong>administrador</strong> pueden crear hilos y responder. Como admin tienes poderes de moderación completos.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Reglas del foro</div>
+        <table class="manual-table">
+          <thead><tr><th>Rol</th><th>Puede hacer</th></tr></thead>
+          <tbody>
+            <tr><td>Visitante (sin sesión)</td><td>Leer todos los hilos y respuestas.</td></tr>
+            <tr><td>Vendedor autenticado</td><td>Leer, crear hilos, responder, editar sus respuestas (máx. 30 min), eliminar sus respuestas.</td></tr>
+            <tr><td>Administrador</td><td>Todo lo anterior + eliminar cualquier hilo o respuesta sin límite de tiempo.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Moderar desde el panel</div>
+        <ol>
+          <li>Ve a <strong>Admin → Foro</strong>.</li>
+          <li>Verás la lista de todos los hilos con autor, fecha y número de respuestas.</li>
+          <li>Haz clic en un hilo para expandirlo y ver sus respuestas.</li>
+          <li>Usa <strong>🗑 Eliminar hilo</strong> para borrar el hilo y <strong>todas</strong> sus respuestas.</li>
+          <li>Usa <strong>🗑</strong> junto a una respuesta para borrarla individualmente.</li>
+        </ol>
+
+        <div style="background:#fee2e2;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#991b1b">
+          ⚠️ <strong>Atención:</strong> Eliminar un hilo borra permanentemente todas sus respuestas. Acción irreversible.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MÓDULO 11 — CLAVES API ══ -->
+    <div class="section-divider" id="mod-apiclaves">Módulo 11 — Claves API</div>
+    <div class="modulo">
+      <div class="modulo-header">
+        <div class="modulo-icon">🔑</div>
+        <div class="modulo-header-txt">
+          <h2>Claves API</h2>
+          <p>Gestiona claves de servicios externos desde Firestore — sin tocar el código fuente</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>Todas las claves API (como la de OpenRouter para el Spotlight IA) se almacenan en Firestore, <strong>nunca en el código fuente</strong>. Cambiar una clave aquí aplica de inmediato sin subir archivos.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Campos de una clave API</div>
+        <table class="manual-table">
+          <thead><tr><th>Campo</th><th>Descripción</th><th>Ejemplo</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Identificador</strong></td>
+              <td>Nombre único que usa el código para buscar la clave. <strong>No cambiar</strong> una vez creado.</td>
+              <td><code>openrouter</code></td>
+            </tr>
+            <tr>
+              <td><strong>Nombre legible</strong></td>
+              <td>Etiqueta descriptiva para reconocerla en el panel.</td>
+              <td><code>OpenRouter IA</code></td>
+            </tr>
+            <tr>
+              <td><strong>URL de origen</strong></td>
+              <td>Endpoint de la API. Permite cambiar de proveedor sin tocar código.</td>
+              <td><code>https://openrouter.ai/api/v1/chat/completions</code></td>
+            </tr>
+            <tr>
+              <td><strong>Clave API</strong></td>
+              <td>La clave secreta. Se muestra oculta; usa el botón 👁 para revelarla.</td>
+              <td><code>sk-or-v1-…</code></td>
+            </tr>
+            <tr>
+              <td><strong>Modelos</strong></td>
+              <td>Lista de modelos IA, uno por línea, en orden de preferencia. Si el primero falla, intenta el siguiente.</td>
+              <td><code>google/gemma-3-27b-it:free</code></td>
+            </tr>
+            <tr>
+              <td><strong>Nota interna</strong></td>
+              <td>Descripción libre para recordar cuándo se generó o qué plan tiene.</td>
+              <td><code>Generada 2026-03-19, plan gratuito</code></td>
+            </tr>
+            <tr>
+              <td><strong>Estado</strong></td>
+              <td>Solo las claves <strong>Activas</strong> se usan. Las inactivas se ignoran.</td>
+              <td>Activa / Inactiva</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Cómo cambiar la clave de OpenRouter</div>
+        <ol>
+          <li>Ve a <a href="https://openrouter.ai/settings/keys" target="_blank">openrouter.ai/settings/keys</a> y genera una nueva clave.</li>
+          <li>En el panel, ve a <strong>Admin → Claves API</strong>.</li>
+          <li>Haz clic en ✏️ junto al servicio <code>openrouter</code>.</li>
+          <li>Pega la nueva clave en el campo <strong>Clave API</strong> y guarda.</li>
+          <li>El cambio aplica de inmediato — no se requiere subir ningún archivo.</li>
+        </ol>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Modelos recomendados (gratuitos)</div>
+        <table class="manual-table">
+          <thead><tr><th>Modelo</th><th>Uso recomendado</th></tr></thead>
+          <tbody>
+            <tr><td><code>openrouter/free</code></td><td>Comodín automático — siempre disponible, ideal como primera opción.</td></tr>
+            <tr><td><code>google/gemma-3-27b-it:free</code></td><td>Excelente para texto en español. Requiere clave de Google AI Studio en OpenRouter.</td></tr>
+            <tr><td><code>meta-llama/llama-3.3-70b-instruct:free</code></td><td>Alta calidad, buena para copywriting.</td></tr>
+            <tr><td><code>deepseek/deepseek-r1-distill-llama-70b:free</code></td><td>Respaldo sólido.</td></tr>
+          </tbody>
+        </table>
+
+        <div style="background:#f0faf4;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#155c32">
+          💡 <strong>Tip:</strong> Si ves errores 429 (rate limit), pon <code>openrouter/free</code> como primer modelo. Si persiste, recarga créditos en OpenRouter ($10 sube el límite de 50 a 1000 peticiones/día con modelos gratuitos).
+        </div>
+      </div>
+    </div>
+
     <!-- FAQ -->
     <div class="section-divider" id="faq">Preguntas frecuentes</div>
     <div class="modulo">
@@ -784,6 +1019,22 @@
             <tr>
               <td><strong>¿Cómo sé si la membresía de un vendedor está por vencer?</strong></td>
               <td>En el módulo Membresías, la columna de días restantes muestra una etiqueta de color: verde = OK, amarillo = pronto a vencer, rojo = vencida.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Por qué la publicidad dejó de aparecer hoy?</strong></td>
+              <td>Alcanzó el límite de impresiones diarias configurado. Al día siguiente el conteo se reinicia a 0 y se reanuda automáticamente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo cambio la clave de OpenRouter sin tocar el código?</strong></td>
+              <td>Ve a Admin → Claves API, edita el servicio <code>openrouter</code> y pega la nueva clave. El cambio aplica de inmediato.</td>
+            </tr>
+            <tr>
+              <td><strong>¿El foro es visible para todos?</strong></td>
+              <td>Sí, cualquier visitante puede leer. Solo vendedores y el admin pueden crear hilos o responder.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo cobro la publicidad a un cliente?</strong></td>
+              <td>Usa la tabla de planes en Módulo 9 como guía de precios sugeridos. Crea la campaña tú mismo desde el panel con los parámetros acordados.</td>
             </tr>
           </tbody>
         </table>

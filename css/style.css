@@ -50,7 +50,26 @@ header {
   gap: 1.5rem;
 }
 .logo img { height: 48px; width: auto; display: block; }
+.btn-login-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fff !important;
+      text-decoration: none;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
 
+    .btn-login-header:hover {
+      background: rgba(255, 255, 255, 0.28) !important;
+      color: #fff !important;
+    }
 .cart-btn {
   position: relative;
   background: rgba(255,255,255,.15);

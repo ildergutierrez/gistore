@@ -25,14 +25,20 @@ let busqueda    = "";
 const POR_PAG_PROD = 30;
 let paginaProd     = 1;
 // ── Cargar ────────────────────────────────────────────────
-async function cargar() {
+async function cargar(mantenerPagina = false) {
+  const paginaAntes = paginaProd;  // guardar posición actual
   try {
     [productos, categorias, vendedores] = await Promise.all([
       obtenerProductos(),
       obtenerCategorias(),
       obtenerVendedores(),
     ]);
-    renderTabla();
+    if (mantenerPagina) {
+      paginaProd = paginaAntes;   // restaurar antes de renderizar
+      renderTablaPag();
+    } else {
+      renderTabla();
+    }
   } catch (e) { console.error(e); }
 }
 
@@ -360,7 +366,7 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
       await crearProducto(datos);
       mostrarOk("Producto creado correctamente.");
     }
-    await cargar();
+    await cargar(true);   // mantener página actual
     setTimeout(() => cerrarModal("modalOverlay"), 1200);
   } catch (e) {
     mostrarError("Error al guardar. Intenta de nuevo.");
@@ -382,7 +388,7 @@ document.getElementById("btnConfirmarEliminar").addEventListener("click", async 
   try {
     await eliminarProducto(idEliminar);
     cerrarModal("modalEliminar");
-    await cargar();
+    await cargar(true);   // mantener página actual
   } catch (e) { console.error(e); }
   finally { btnCargando(btn, false); }
 });
@@ -424,4 +430,4 @@ function mostrarOk(msg) {
   document.getElementById("msgError").classList.remove("visible");
 }
 
-cargar(); 
+cargar();

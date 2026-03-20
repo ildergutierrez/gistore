@@ -36,11 +36,65 @@ async function cargarPublicidades() {
       publicidades.map(p => leerImpresionesHoy(p.id).catch(() => 0))
     );
     publicidades.forEach((p, i) => { p._hoy_count = conteos[i]; });
+
+    // ── Auto-pausa / auto-reactivación ───────────────────
+    // Se evalúa silenciosamente al cargar el panel.
+    await verificarAutoPausa();
+
     renderLista();
   } catch (e) {
     console.error(e);
     el("pubLista").innerHTML = '<p class="vacio-txt">Error al cargar publicidades.</p>';
   }
+}
+
+/**
+ * Evalúa cada publicidad activa:
+ * · Si alcanzó el límite diario → la pausa con estado "pausada_auto"
+ *   (se distingue de la pausa manual para poder reactivarla sola).
+ *
+ * Y cada publicidad en "pausada_auto":
+ * · Si el conteo de HOY < límite diario → la reactiva (nuevo día).
+ * · Si la fecha_fin ya pasó → la deja inactiva definitivamente.
+ */
+async function verificarAutoPausa() {
+  const hoy = new Date().toISOString().split("T")[0];
+  const promesas = [];
+
+  for (const p of publicidades) {
+    const count  = p._hoy_count ?? 0;
+    const limite = p.limite_diario ?? Infinity;
+
+    // Campaña activa que agotó cupo hoy → pausar automáticamente
+    if (p.estado === "activa" && count >= limite) {
+      promesas.push(
+        actualizarPublicidad(p.id, { estado: "pausada_auto" })
+          .then(() => { p.estado = "pausada_auto"; })
+          .catch(e => console.warn("auto-pausa fallo:", e))
+      );
+    }
+
+    // Campaña pausada automáticamente → verificar si hoy tiene cupo
+    if (p.estado === "pausada_auto") {
+      if (p.fecha_fin < hoy) {
+        // Fuera de vigencia → inactiva definitivamente
+        promesas.push(
+          actualizarPublicidad(p.id, { estado: "inactiva" })
+            .then(() => { p.estado = "inactiva"; })
+            .catch(e => console.warn("inactivar fallo:", e))
+        );
+      } else if (count < limite) {
+        // Nuevo día, aún tiene vigencia → reactivar
+        promesas.push(
+          actualizarPublicidad(p.id, { estado: "activa" })
+            .then(() => { p.estado = "activa"; })
+            .catch(e => console.warn("reactivar fallo:", e))
+        );
+      }
+    }
+  }
+
+  if (promesas.length) await Promise.allSettled(promesas);
 }
 
 function renderLista() {
@@ -51,19 +105,39 @@ function renderLista() {
   const hoy = new Date().toISOString().split("T")[0];
   el("pubLista").innerHTML = `<div class="pub-grid">${publicidades.map(p => {
     const vigente = p.fecha_inicio <= hoy && p.fecha_fin >= hoy;
-    const badge   = p.estado === "pausada"
-      ? `<span class="badge badge-pausada">⏸ Pausada</span>`
-      : vigente
-        ? `<span class="badge badge-activa">✅ Activa</span>`
-        : `<span class="badge badge-vencida">⏰ Vencida</span>`;
+    const cupo    = p.limite_diario ?? 0;
+    const usado   = p._hoy_count   ?? 0;
+    const agotada = cupo > 0 && usado >= cupo;
+
+    // Badge de estado
+    let badge;
+    if (p.estado === "pausada_auto" || agotada) {
+      badge = `<span class="badge badge-agotada">⏰ Cupo agotado hoy</span>`;
+    } else if (p.estado === "pausada") {
+      badge = `<span class="badge badge-pausada">⏸ Pausada</span>`;
+    } else if (p.estado === "inactiva") {
+      badge = `<span class="badge badge-vencida">🚫 Inactiva</span>`;
+    } else if (!vigente) {
+      badge = `<span class="badge badge-vencida">⏰ Vencida</span>`;
+    } else {
+      badge = `<span class="badge badge-activa">✅ Activa</span>`;
+    }
+
     const imgHtml = p.imagen_url
       ? `<img class="pub-card-img" src="${p.imagen_url}" alt="${p.titulo||''}" loading="lazy"
-             onerror="this.parentElement.innerHTML='<div class=pub-card-img-placeholder>🖼</div>'">`
+             onerror="this.parentElement.innerHTML='<div class=pub-card-img-placeholder>🖼</div>';">`
       : `<div class="pub-card-img-placeholder">🖼</div>`;
-    const cupo  = p.limite_diario ?? 0;
-    const usado = p._hoy_count   ?? 0;
-    const pct   = cupo > 0 ? Math.min(100, Math.round((usado / cupo) * 100)) : 0;
+    const pct      = cupo > 0 ? Math.min(100, Math.round((usado / cupo) * 100)) : 0;
     const urlCorta = p.url_destino ? p.url_destino.replace(/^https?:\/\//, "") : "";
+
+    // Botón pausar/activar: no mostrar si está inactiva o vencida
+    const esGestionable = vigente && p.estado !== "inactiva";
+    const btnPausar = esGestionable ? `
+      <button class="btn-tabla" onclick="pausarToggle('${p.id}')"
+        style="background:${p.estado==='pausada'?'var(--verde-claro,#f0faf4)':'var(--fondo,#f9fafb)'}">
+        ${p.estado === 'pausada' ? '▶️ Activar' : '⏸ Pausar'}
+      </button>` : "";
+
     return `<div class="pub-card">
       ${imgHtml}
       <div class="pub-card-body">
@@ -79,16 +153,15 @@ function renderLista() {
         <div style="margin-bottom:.75rem">
           <div class="vistas-label">
             <span>Hoy: <strong>${usado}</strong> / ${cupo}</span>
-            <span>${pct}%</span>
+            <span>${pct}%${agotada ? " — <em style='color:#9a3412'>se reanuda mañana</em>" : ""}</span>
           </div>
-          <div class="vistas-bar"><div class="vistas-bar-fill" style="width:${pct}%"></div></div>
+          <div class="vistas-bar">
+            <div class="vistas-bar-fill" style="width:${pct}%;background:${agotada?'#f97316':'var(--verde,#1a6b3c)'}"></div>
+          </div>
         </div>
         <div class="pub-card-acciones">
           <button class="btn-tabla btn-editar" onclick="editarPub('${p.id}')">✏️ Editar</button>
-          <button class="btn-tabla" onclick="pausarToggle('${p.id}')"
-            style="background:${p.estado==='pausada'?'var(--verde-claro,#f0faf4)':'var(--fondo,#f9fafb)'}">
-            ${p.estado==='pausada'?'▶️ Activar':'⏸ Pausar'}
-          </button>
+          ${btnPausar}
           <button class="btn-tabla btn-eliminar" onclick="pedirEliminar('${p.id}')">🗑</button>
         </div>
       </div>
@@ -109,6 +182,13 @@ function abrirModal(pub = null) {
   el("fFechaFin").value          = pub?.fecha_fin    || "";
   el("fLimiteDiario").value      = pub?.limite_diario ?? 50;
   el("fEstado").value            = pub?.estado       || "activa";
+
+  // Resetear selector de plan (siempre empieza en blanco)
+  const fPlan = el("fPlan");
+  if (fPlan) fPlan.value = "";
+  const resumen = el("planResumen");
+  if (resumen) resumen.style.display = "none";
+
   if (pub?.imagen_url) {
     el("campoUrlActual").style.display = "block";
     el("imgActual").src = pub.imagen_url;
@@ -177,9 +257,19 @@ window.editarPub = id => { const p = publicidades.find(x => x.id === id); if (p)
 window.pausarToggle = async id => {
   const p = publicidades.find(x => x.id === id);
   if (!p) return;
+
+  // Si está pausada automáticamente por cupo, no permitir activar manualmente hoy
+  if (p.estado === "pausada_auto") {
+    mostrarError("Esta campaña se pausó automáticamente por alcanzar el cupo diario. Se reactivará sola mañana si aún está en vigencia.");
+    return;
+  }
+
   const nuevo = p.estado === "pausada" ? "activa" : "pausada";
-  try { await actualizarPublicidad(id, { estado: nuevo }); mostrarOk(`✓ Publicidad ${nuevo}.`); await cargarPublicidades(); }
-  catch(e) { console.error(e); mostrarError("Error al cambiar estado."); }
+  try {
+    await actualizarPublicidad(id, { estado: nuevo });
+    mostrarOk(`✓ Publicidad ${nuevo === "activa" ? "activada" : "pausada"}.`);
+    await cargarPublicidades();
+  } catch(e) { console.error(e); mostrarError("Error al cambiar estado."); }
 };
 
 window.pedirEliminar = id => { eliminarId = id; el("modalEliminarOverlay").classList.add("visible"); };

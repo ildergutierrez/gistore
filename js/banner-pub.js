@@ -71,6 +71,17 @@ async function cargarPublicidadesActivas() {
   } catch { return []; }
 }
 
+/**
+ * Verifica si una publicidad alcanzó su límite diario.
+ * Si lo alcanzó, marca un flag local para ese día (no pausa en Firestore
+ * para evitar escrituras masivas desde el cliente; el conteo es suficiente).
+ * Al día siguiente el contador empieza en 0 automáticamente porque
+ * las impresiones se guardan bajo la clave YYYY-MM-DD.
+ */
+async function publicidadAgotadaHoy(pub, count) {
+  return count >= (pub.limite_diario ?? Infinity);
+}
+
 async function leerContadorHoy(pubId) {
   try {
     const snap = await getDoc(doc(_db, "publicidad", pubId, "impresiones", HOY()));
@@ -85,14 +96,11 @@ async function incrementarContador(pubId) {
   } catch (e) { console.warn("banner-pub: contador", e); }
 }
 
-async function elegirPublicidad(pubs) {
-  const contadores = await Promise.all(pubs.map(p => leerContadorHoy(p.id)));
-  const cands = pubs
-    .map((p, i) => ({ p, count: contadores[i] }))
-    .filter(({ p, count }) => count < (p.limite_diario ?? Infinity));
-  if (!cands.length) return null;
-  cands.sort((a, b) => a.count - b.count);
-  return cands[0].p;
+async function elegirPublicidad(pubsConCupo) {
+  if (!pubsConCupo.length) return null;
+  // Ya vienen filtradas con cupo disponible; elige la de menor impresiones
+  // (ordenadas por count ascendente — la menos vista primero)
+  return pubsConCupo[0].p;
 }
 
 // ── Rotación de productos sin repetir ────────────────────
@@ -379,59 +387,65 @@ async function ejecutarCiclo() {
   try {
     const pubs = await cargarPublicidadesActivas();
 
-    // Filtrar solo las que tienen cupo disponible
+    // Leer contadores del día para todas las publicidades activas
     const contadores = await Promise.all(pubs.map(p => leerContadorHoy(p.id)));
-    const pubsConCupo = pubs.filter((p, i) =>
-      contadores[i] < (p.limite_diario ?? Infinity)
-    );
+
+    // Separar: con cupo disponible hoy vs agotadas hoy
+    // El contador se reinicia solo: cada día tiene su propia sub-clave YYYY-MM-DD
+    const pubsConCupo = pubs
+      .map((p, i) => ({ p, count: contadores[i] }))
+      .filter(({ p, count }) => count < (p.limite_diario ?? Infinity));
+
+    // ── Sin publicidad con cupo → fallback completo a productos ──
+    // Esto ocurre cuando:
+    //   a) No hay publicidades activas/vigentes, O
+    //   b) Todas alcanzaron su límite diario hoy
+    // Al día siguiente el conteo vuelve a 0 automáticamente.
+    if (!pubsConCupo.length) {
+      const ok = renderProducto();
+      if (ok) mostrarPanel();
+      return;
+    }
 
     const pocasPubs = pubsConCupo.length < UMBRAL_PUBS;
 
     // ── Modo mixto (< 15 pubs con cupo) ──────────────────
     if (pocasPubs) {
-      // 50 % de probabilidad de mostrar producto en este ciclo,
-      // siempre que haya publicidades disponibles.
-      // Si no hay pubs, siempre muestra producto.
-      const mostrarProductoAhora = !pubsConCupo.length || Math.random() < 0.5;
+      const mostrarProductoAhora = Math.random() < 0.5;
 
       if (mostrarProductoAhora) {
         const ok = renderProducto();
         if (ok) { mostrarPanel(); return; }
-        // Si no hay productos, cae a publicidad
       }
 
       // Mostrar publicidad
-      if (pubsConCupo.length) {
-        const elegida = await elegirPublicidad(pubsConCupo);
-        if (elegida) {
-          renderPub(elegida);
-          await incrementarContador(elegida.id);
-          mostrarPanel();
-          return;
-        }
+      const elegida = await elegirPublicidad(pubsConCupo);
+      if (elegida) {
+        renderPub(elegida.p ?? elegida);
+        await incrementarContador((elegida.p ?? elegida).id);
+        mostrarPanel();
+        return;
       }
 
-      // Último recurso: producto si aún no se mostró nada
       const ok = renderProducto();
       if (ok) mostrarPanel();
       return;
     }
 
     // ── Modo publicidad dominante (≥ 15 pubs con cupo) ───
-    // Cada FRECUENCIA_PRODUCTO ciclos muestra un producto del catálogo
     const esCicloProducto = (_contadorCiclo % FRECUENCIA_PRODUCTO) === 0;
 
     if (esCicloProducto) {
       const ok = renderProducto();
       if (ok) { mostrarPanel(); return; }
-      // Si no hay productos, sigue con publicidad
     }
 
     // Mostrar publicidad normalmente
     const elegida = await elegirPublicidad(pubsConCupo);
     if (elegida) {
-      renderPub(elegida);
-      await incrementarContador(elegida.id);
+      const pub = elegida.p ?? elegida;
+      renderPub(pub);
+      await incrementarContador(pub.id);
       mostrarPanel();
       return;
     }

@@ -1,5 +1,5 @@
 // ============================================================
-//  js/banner-pub.js — Panel flotante de publicidad / producto
+//  js/banner-pub-pages.js — Panel flotante de publicidad / producto
 //
 //  Comportamiento:
 //  · Aparece 15 s después de cargar la página
@@ -10,13 +10,12 @@
 //  Lógica de contenido (UMBRAL = 15 publicidades con cupo):
 //  · < 15 pubs activas con cupo:
 //      → Alterna entre publicidad y productos del catálogo.
-//        Cada ciclo 50 % de probabilidad de mostrar un producto
-//        diferente (sin repetir hasta agotar el catálogo).
+//        50 % de probabilidad de mostrar producto por ciclo.
 //  · ≥ 15 pubs activas con cupo:
-//      → Muestra publicidades, pero 1 de cada 5 ciclos fuerza
-//        un producto del catálogo (rotando sin repetir).
+//      → Publicidades dominantes, 1 cada 5 ciclos muestra producto.
+//  · Todas agotaron límite diario → solo productos ese día.
+//  · Al día siguiente el conteo se reinicia automáticamente (sub-clave YYYY-MM-DD).
 //  · Sin publicidad ni productos → no muestra nada.
-//  · Botón ✕ para cerrar manualmente (pausa hasta el próximo ciclo)
 // ============================================================
 import { initializeApp, getApps }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -25,7 +24,7 @@ import {
   query, where, increment, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// ── Firebase (reutiliza instancia si ya existe) ───────────
+// ── Firebase ──────────────────────────────────────────────
 const _fbConfig = {
   apiKey:            "AIzaSyBviMH3re9aHjiLb5p-5hSjXd4gAchTvgI",
   authDomain:        "gi-store-5a5eb.firebaseapp.com",
@@ -38,13 +37,12 @@ const _app = getApps().length ? getApps()[0] : initializeApp(_fbConfig);
 const _db  = getFirestore(_app);
 
 // ── Timings ───────────────────────────────────────────────
-const DELAY_INICIAL   = 15_000;      // 15 s tras carga
-const DURACION_VIS    = 20_000;      // visible 20 s
-const CICLO           = 1 * 60_000;  // cada 1 min
+const DELAY_INICIAL   = 15_000;
+const DURACION_VIS    = 20_000;
+const CICLO           = 1 * 60_000;
 
-// ── Umbral y frecuencia de productos ──────────────────────
-const UMBRAL_PUBS          = 15;  // si hay < 15 pubs → modo mixto
-const FRECUENCIA_PRODUCTO  = 5;   // con ≥ 15 pubs → 1 cada N ciclos muestra producto
+const UMBRAL_PUBS         = 15;
+const FRECUENCIA_PRODUCTO = 5;
 
 // ── Helpers ───────────────────────────────────────────────
 const fmt = v => "$ " + Number(v).toLocaleString("es-CO");
@@ -56,6 +54,7 @@ function resolverImgProducto(url) {
   url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
   const isGH     = window.location.hostname.includes("github.io");
   const base     = isGH ? "/gistore" : "";
+  // Desde page/tienda.html → prefijo "../"
   const isInPage = window.location.pathname.includes("/page/");
   const prefix   = isInPage ? "../" : "";
   return `${window.location.origin}${base}/${prefix}${url}`;
@@ -82,32 +81,46 @@ async function incrementarContador(pubId) {
   try {
     await setDoc(doc(_db, "publicidad", pubId, "impresiones", HOY()),
       { count: increment(1) }, { merge: true });
-  } catch (e) { console.warn("banner-pub: contador", e); }
+  } catch (e) { console.warn("banner-pub-pages: contador", e); }
 }
 
-async function elegirPublicidad(pubs) {
-  const contadores = await Promise.all(pubs.map(p => leerContadorHoy(p.id)));
-  const cands = pubs
-    .map((p, i) => ({ p, count: contadores[i] }))
-    .filter(({ p, count }) => count < (p.limite_diario ?? Infinity));
-  if (!cands.length) return null;
-  cands.sort((a, b) => a.count - b.count);
-  return cands[0].p;
+// Recibe array de {p, count} ya filtrado con cupo; elige el de menor impresiones
+function elegirPublicidad(pubsConCupo) {
+  if (!pubsConCupo.length) return null;
+  return pubsConCupo[0]; // ya vienen ordenados por count asc
 }
 
 // ── Rotación de productos sin repetir ────────────────────
-// Mantiene una cola aleatoria; cuando se agota, la recarga.
-let _colaProductos = [];   // índices pendientes de mostrar
+let _colaProductos  = [];
+let _cacheFallback  = null;  // productos del catálogo general (fallback)
 
-function _siguienteProducto() {
-  const cache   = window._cacheTodos || [];
-  const activos = cache.filter(p => p.activo !== false);
-  if (!activos.length) return null;
+async function _cargarFallbackProductos() {
+  if (_cacheFallback !== null) return _cacheFallback;
+  try {
+    const snap = await getDocs(query(
+      collection(_db, "productos"),
+      where("activo", "==", true)
+    ));
+    _cacheFallback = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.warn("banner-pub-pages: fallback productos", e);
+    _cacheFallback = [];
+  }
+  return _cacheFallback;
+}
 
-  // Si la cola está vacía o tiene items inválidos, reconstruirla
-  if (!_colaProductos.length) {
-    _colaProductos = activos.map((_, i) => i);
-    // Fisher-Yates shuffle
+function _siguienteProducto(productosExtra) {
+  // Usa el caché de la tienda (window._cacheTodos) si tiene activos,
+  // si no usa el catálogo general cargado como fallback
+  const localCache = window._cacheTodos || [];
+  const activos    = localCache.filter(p => p.activo !== false);
+  const fuente     = activos.length >= 3 ? activos : (productosExtra || activos);
+  if (!fuente.length) return null;
+
+  // Reconstruir cola si cambió la fuente o está vacía
+  if (!_colaProductos.length || _colaProductos._fuente !== fuente) {
+    _colaProductos = fuente.map((_, i) => i);
+    _colaProductos._fuente = fuente;
     for (let i = _colaProductos.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [_colaProductos[i], _colaProductos[j]] = [_colaProductos[j], _colaProductos[i]];
@@ -115,131 +128,66 @@ function _siguienteProducto() {
   }
 
   const idx = _colaProductos.shift();
-  return activos[idx] ?? null;
+  return fuente[idx] ?? null;
 }
 
 // ── Estado interno ────────────────────────────────────────
 let _timerOcultar  = null;
 let _cerradoManual = false;
-let _contadorCiclo = 0;   // cuenta ciclos para la frecuencia de productos
+let _contadorCiclo = 0;
 
-// ── Crear el panel DOM (una sola vez) ─────────────────────
+// ── Crear panel DOM (una sola vez) ────────────────────────
 function crearPanel() {
   if (document.getElementById("pub-float")) return;
 
   const style = document.createElement("style");
   style.textContent = `
     #pub-float {
-      position: fixed;
-      left: 1rem;
-      bottom: 1.5rem;
-      z-index: 1200;
-      width: 200px;
-      background: #fff;
-      border-radius: 14px;
+      position: fixed; left: 1rem; bottom: 1.5rem; z-index: 1200;
+      width: 200px; background: #fff; border-radius: 14px;
       box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
-      border: 1.5px solid var(--borde, #e5e7eb);
-      overflow: hidden;
-      transform: translateX(calc(-100% - 1.5rem));
-      opacity: 0;
-      transition: transform .45s cubic-bezier(.34,1.20,.64,1),
-                  opacity   .35s ease;
-      pointer-events: none;
-      will-change: transform, opacity;
+      border: 1.5px solid var(--borde, #e5e7eb); overflow: hidden;
+      transform: translateX(calc(-100% - 1.5rem)); opacity: 0;
+      transition: transform .45s cubic-bezier(.34,1.20,.64,1), opacity .35s ease;
+      pointer-events: none; will-change: transform, opacity;
     }
-    #pub-float.visible {
-      transform: translateX(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
+    #pub-float.visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
     #pub-float-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: .38rem .6rem .38rem .75rem;
-      background: var(--verde, #1a6b3c);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .38rem .6rem .38rem .75rem; background: var(--verde, #1a6b3c);
     }
     #pub-float-etiqueta {
-      font-size: .62rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.88);
+      font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: rgba(255,255,255,.88);
     }
     #pub-float-cerrar {
-      background: rgba(255,255,255,.15);
-      border: none;
-      border-radius: 50%;
-      width: 20px; height: 20px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff;
-      font-size: .75rem;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background .18s;
-      line-height: 1;
+      background: rgba(255,255,255,.15); border: none; border-radius: 50%;
+      width: 20px; height: 20px; display: flex; align-items: center;
+      justify-content: center; color: #fff; font-size: .75rem;
+      cursor: pointer; flex-shrink: 0; transition: background .18s; line-height: 1;
     }
     #pub-float-cerrar:hover { background: rgba(255,255,255,.3); }
-    #pub-float-img {
-      width: 200px;
-      height: 150px;
-      object-fit: cover;
-      display: block;
-    }
+    #pub-float-img { width: 200px; height: 150px; object-fit: cover; display: block; }
     #pub-float-placeholder {
-      width: 200px; height: 120px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.5rem;
-      background: var(--fondo, #f9fafb);
+      width: 200px; height: 120px; display: flex; align-items: center;
+      justify-content: center; font-size: 2.5rem; background: var(--fondo, #f9fafb);
     }
     #pub-float-info {
-      padding: .6rem .75rem .7rem;
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
+      padding: .6rem .75rem .7rem; display: flex; flex-direction: column; gap: .2rem;
     }
-    #pub-float-cat  {
-      font-size: .62rem; font-weight: 700;
-      color: var(--verde, #1a6b3c);
-      text-transform: uppercase; letter-spacing: .04em;
-    }
-    #pub-float-nombre {
-      font-size: .84rem; font-weight: 700;
-      color: var(--texto, #111); line-height: 1.25;
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
-    }
-    #pub-float-precio {
-      font-size: .92rem; font-weight: 800;
-      color: var(--verde, #1a6b3c);
-    }
-    #pub-float-cta {
-      font-size: .7rem; color: var(--verde, #1a6b3c);
-      font-weight: 600; margin-top: .1rem;
-    }
-    #pub-float-barra-wrap {
-      height: 3px;
-      background: var(--borde, #e5e7eb);
-    }
-    #pub-float-barra {
-      height: 100%;
-      background: var(--verde, #1a6b3c);
-      width: 100%;
-    }
+    #pub-float-cat  { font-size: .62rem; font-weight: 700; color: var(--verde, #1a6b3c); text-transform: uppercase; letter-spacing: .04em; }
+    #pub-float-nombre { font-size: .84rem; font-weight: 700; color: var(--texto, #111); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #pub-float-precio { font-size: .92rem; font-weight: 800; color: var(--verde, #1a6b3c); }
+    #pub-float-cta { font-size: .7rem; color: var(--verde, #1a6b3c); font-weight: 600; margin-top: .1rem; }
+    #pub-float-barra-wrap { height: 3px; background: var(--borde, #e5e7eb); }
+    #pub-float-barra { height: 100%; background: var(--verde, #1a6b3c); width: 100%; }
     #pub-float-pub-info {
-      padding: .5rem .75rem .6rem;
-      background: var(--fondo-2, #fff);
+      padding: .5rem .75rem .6rem; background: var(--fondo-2, #fff);
       border-top: 1px solid var(--borde, #e5e7eb);
     }
     #pub-float-pub-nombre {
-      font-size: .82rem;
-      font-weight: 700;
-      color: var(--texto, #111);
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      font-size: .82rem; font-weight: 700; color: var(--texto, #111); line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     @media (max-width: 420px) {
       #pub-float { width: 170px; left: .6rem; bottom: 1rem; }
@@ -258,9 +206,7 @@ function crearPanel() {
       <button id="pub-float-cerrar" aria-label="Cerrar">✕</button>
     </div>
     <div id="pub-float-body"></div>
-    <div id="pub-float-barra-wrap">
-      <div id="pub-float-barra"></div>
-    </div>
+    <div id="pub-float-barra-wrap"><div id="pub-float-barra"></div></div>
   `;
   document.body.appendChild(panel);
 
@@ -309,14 +255,12 @@ function renderPub(pub) {
   const tituloHtml = pub.titulo
     ? `<div id="pub-float-pub-nombre">${pub.titulo}</div>`
     : "";
-pub.imagen_url= pub.imagen_url?.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
+
   body.innerHTML = (pub.imagen_url
     ? `<img id="pub-float-img" src="${pub.imagen_url}" alt="${pub.titulo || 'Publicidad'}"
            loading="lazy" onerror="this.style.display='none'">`
     : `<div id="pub-float-placeholder">📢</div>`)
-    + (tituloHtml
-    ? `<div id="pub-float-pub-info">${tituloHtml}</div>`
-    : "");
+    + (tituloHtml ? `<div id="pub-float-pub-info">${tituloHtml}</div>` : "");
 
   if (pub.url_destino) {
     panel.style.cursor = "pointer";
@@ -328,9 +272,9 @@ pub.imagen_url= pub.imagen_url?.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gi
   }
 }
 
-// ── Renderizar producto (con rotación sin repetir) ────────
-function renderProducto() {
-  const prod = _siguienteProducto();
+// ── Renderizar producto ───────────────────────────────────
+function renderProducto(productosExtra) {
+  const prod = _siguienteProducto(productosExtra);
   if (!prod) return false;
 
   const cats   = window._categoriasMap || {};
@@ -377,73 +321,76 @@ async function ejecutarCiclo() {
   _contadorCiclo++;
 
   try {
-    const pubs = await cargarPublicidadesActivas();
-
-    // Filtrar solo las que tienen cupo disponible
+    const pubs       = await cargarPublicidadesActivas();
     const contadores = await Promise.all(pubs.map(p => leerContadorHoy(p.id)));
-    const pubsConCupo = pubs.filter((p, i) =>
-      contadores[i] < (p.limite_diario ?? Infinity)
-    );
+
+    // Separar con cupo vs agotadas
+    const pubsConCupo = pubs
+      .map((p, i) => ({ p, count: contadores[i] }))
+      .filter(({ p, count }) => count < (p.limite_diario ?? Infinity))
+      .sort((a, b) => a.count - b.count); // menor impresiones primero
+
+    // ── Pre-cargar fallback de productos si el caché local tiene pocos ──
+    // En page/tienda.html, _cacheTodos solo tiene productos del vendedor.
+    // Si tiene menos de 3, cargamos el catálogo general como respaldo.
+    const localActivos = (window._cacheTodos || []).filter(p => p.activo !== false);
+    const fallback = localActivos.length >= 3
+      ? localActivos
+      : await _cargarFallbackProductos();
+
+    // ── Sin cupo disponible hoy → solo productos ──────────
+    if (!pubsConCupo.length) {
+      const ok = renderProducto(fallback);
+      if (ok) mostrarPanel();
+      return;
+    }
 
     const pocasPubs = pubsConCupo.length < UMBRAL_PUBS;
 
     // ── Modo mixto (< 15 pubs con cupo) ──────────────────
     if (pocasPubs) {
-      // 50 % de probabilidad de mostrar producto en este ciclo,
-      // siempre que haya publicidades disponibles.
-      // Si no hay pubs, siempre muestra producto.
-      const mostrarProductoAhora = !pubsConCupo.length || Math.random() < 0.5;
+      const mostrarProductoAhora = Math.random() < 0.5;
 
       if (mostrarProductoAhora) {
-        const ok = renderProducto();
+        const ok = renderProducto(fallback);
         if (ok) { mostrarPanel(); return; }
-        // Si no hay productos, cae a publicidad
       }
 
-      // Mostrar publicidad
-      if (pubsConCupo.length) {
-        const elegida = await elegirPublicidad(pubsConCupo);
-        if (elegida) {
-          renderPub(elegida);
-          await incrementarContador(elegida.id);
-          mostrarPanel();
-          return;
-        }
+      const elegida = elegirPublicidad(pubsConCupo);
+      if (elegida) {
+        renderPub(elegida.p);
+        await incrementarContador(elegida.p.id);
+        mostrarPanel();
+        return;
       }
 
-      // Último recurso: producto si aún no se mostró nada
-      const ok = renderProducto();
+      const ok = renderProducto(fallback);
       if (ok) mostrarPanel();
       return;
     }
 
     // ── Modo publicidad dominante (≥ 15 pubs con cupo) ───
-    // Cada FRECUENCIA_PRODUCTO ciclos muestra un producto del catálogo
     const esCicloProducto = (_contadorCiclo % FRECUENCIA_PRODUCTO) === 0;
-
     if (esCicloProducto) {
-      const ok = renderProducto();
+      const ok = renderProducto(fallback);
       if (ok) { mostrarPanel(); return; }
-      // Si no hay productos, sigue con publicidad
     }
 
-    // Mostrar publicidad normalmente
-    const elegida = await elegirPublicidad(pubsConCupo);
+    const elegida = elegirPublicidad(pubsConCupo);
     if (elegida) {
-      renderPub(elegida);
-      await incrementarContador(elegida.id);
+      renderPub(elegida.p);
+      await incrementarContador(elegida.p.id);
       mostrarPanel();
       return;
     }
 
-    // Sin publicidad elegible → fallback a producto
-    const ok = renderProducto();
+    const ok = renderProducto(fallback);
     if (ok) mostrarPanel();
 
   } catch (e) {
-    console.warn("banner-pub:", e);
-    // Fallback silencioso — intenta con producto
-    const ok = renderProducto();
+    console.warn("banner-pub-pages:", e);
+    const fb = await _cargarFallbackProductos().catch(() => []);
+    const ok = renderProducto(fb);
     if (ok) mostrarPanel();
   }
 }

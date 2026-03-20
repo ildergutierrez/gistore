@@ -11,24 +11,24 @@
   <title>GI Store</title>
 
   <meta name="description"
-    content="GI Store — tu tienda online en Colombia. Encuentra productos de calidad para tu bienestar, hogar y estilo de vida. Catálogo variado, precios justos y atención directa por WhatsApp." />
+    content="GI Store — catálogo digital de productos en Colombia. Explora suplementos, tecnología, moda y hogar. Consulta precios, conoce a los vendedores y cierra tu compra directo por WhatsApp." />
 
   <meta name="keywords"
-    content="tienda online Colombia, productos de calidad, compras por WhatsApp, GI Store, bienestar, salud, hogar, moda, catálogo online Colombia" />
+    content="catálogo digital Colombia, productos por WhatsApp, GI Store, suplementos naturales, tecnología, hogar, moda, vendedores independientes, Aguachica Cesar" />
 
   <meta name="author" content="GI Store" />
   <meta name="robots" content="index, follow" />
   <meta name="language" content="es" />
-  <meta name="geo.region" content="CO" />
-  <meta name="geo.placename" content="Colombia" />
+  <meta name="geo.region" content="CO-CES" />
+  <meta name="geo.placename" content="Aguachica, Cesar, Colombia" />
 
   <!-- ═══════════════════════════════════════════
        Open Graph — Vista previa en redes sociales
        ═══════════════════════════════════════════ -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="GI Store " />
+  <meta property="og:title" content="GI Store — Catálogo digital en Colombia" />
   <meta property="og:description"
-    content="Descubre suplementos naturales, tecnologico, moda y más. Catálogo online con consulta directa por WhatsApp. Envíos en Colombia." />
+    content="Explora el catálogo de productos de vendedores independientes en Colombia. Suplementos, tecnología, moda, hogar y más. Consulta disponibilidad y cierra tu compra por WhatsApp." />
   <meta property="og:image" content="img/favicon/gi-icono.svg" />
   <meta property="og:locale" content="es_CO" />
   <meta property="og:site_name" content="GI Store" />
@@ -37,11 +37,10 @@
        Twitter / X Card
        ═══════════════════════════════════════════ -->
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="GI Store " />
+  <meta name="twitter:title" content="GI Store — Catálogo digital en Colombia" />
   <meta name="twitter:description"
-    content="Tu tienda de suplementos naturales, salud y más en Colombia. Consulta nuestro catálogo y pide por WhatsApp." />
+    content="Catálogo digital de vendedores independientes en Colombia. Explora productos, consulta precios y compra por WhatsApp." />
   <meta name="twitter:image" content="img/favicon/gi-icono.svg" />
-
   <!-- ═══════════════════════════════════════════
        Favicon e íconos
        ═══════════════════════════════════════════ -->
@@ -50,27 +49,6 @@
 
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    .btn-login-header {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
-      border-radius: 8px;
-      padding: 0.35rem 0.75rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #fff !important;
-      text-decoration: none;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-login-header:hover {
-      background: rgba(255, 255, 255, 0.28) !important;
-      color: #fff !important;
-    }
-
     .btn-login-admin {
       background: rgba(0, 0, 0, 0.2) !important;
       border-color: rgba(255, 255, 255, 0.2);
@@ -79,6 +57,7 @@
     .btn-login-admin:hover {
       background: rgba(0, 0, 0, 0.35) !important;
     }
+
     /* ── Mini menú compartir (PC fallback) ───────────────────── */
     #gi-share-menu {
       position: fixed;
@@ -88,29 +67,40 @@
       align-items: center;
       justify-content: center;
     }
+
     .gsm-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,.45);
+      background: rgba(0, 0, 0, .45);
       backdrop-filter: blur(3px);
       -webkit-backdrop-filter: blur(3px);
     }
+
     .gsm-box {
       position: relative;
       background: #fff;
       border-radius: 16px;
       padding: 1.5rem 1.25rem 1.25rem;
       width: min(320px, 90vw);
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
       display: flex;
       flex-direction: column;
       gap: .6rem;
       animation: gsm-in .18s ease;
     }
+
     @keyframes gsm-in {
-      from { opacity: 0; transform: scale(.94) translateY(8px); }
-      to   { opacity: 1; transform: scale(1)   translateY(0);   }
+      from {
+        opacity: 0;
+        transform: scale(.94) translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
+
     .gsm-titulo {
       font-size: .75rem;
       font-weight: 700;
@@ -119,6 +109,7 @@
       color: #888;
       margin: 0 0 .25rem;
     }
+
     .gsm-opcion {
       display: flex;
       align-items: center;
@@ -134,11 +125,30 @@
       transition: filter .15s, transform .1s;
       text-align: left;
     }
-    .gsm-opcion:hover  { filter: brightness(.92); transform: translateY(-1px); }
-    .gsm-opcion:active { transform: translateY(0); }
-    .gsm-wa   { background: #25d366; color: #fff; }
-    .gsm-tg   { background: #229ed9; color: #fff; }
-    .gsm-copy { background: #f0f0f0; color: #333; }
+
+    .gsm-opcion:hover {
+      filter: brightness(.92);
+      transform: translateY(-1px);
+    }
+
+    .gsm-opcion:active {
+      transform: translateY(0);
+    }
+
+    .gsm-wa {
+      background: #25d366;
+      color: #fff;
+    }
+
+    .gsm-tg {
+      background: #229ed9;
+      color: #fff;
+    }
+
+    .gsm-copy {
+      background: #f0f0f0;
+      color: #333;
+    }
   </style>
 </head>
 
@@ -163,14 +173,15 @@
       </div>
 
       <nav class="header-nav">
+        <a href="#">Catálogo</a>
         <a href="page/nosotros.html">Nosotros</a>
         <a href="page/info.html">Ayuda</a>
+        <a href="page/foro.html">Foro</a>
+        <a href="page/stores.html">Stores</a>
         <a href="user/index.html" class="btn-login-header" title="Portal vendedores">
-          <span class="material-symbols-outlined">real_estate_agent </span>
+          <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
         </a>
-        <a href="admin/index.html" class="btn-login-header btn-login-admin" title="Panel administrador"> <span
-            class="material-symbols-outlined">supervisor_account</span>
-        </a>
+
       </nav>
 
       <button class="cart-btn" id="cart-btn" style="display: none">
@@ -324,6 +335,7 @@
   </script>
 
   <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/accesoadmin.js"></script>
 </body>
 
 </html>

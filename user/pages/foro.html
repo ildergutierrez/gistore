@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Foro — GI Store Portal</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <style>
+    .foro-busqueda-portal{flex:1;min-width:180px;max-width:380px;display:flex;align-items:center;gap:.5rem;background:var(--fondo-2,#fff);border:1.5px solid var(--borde,#e5e7eb);border-radius:8px;padding:.5rem .85rem}
+    .foro-busqueda-portal input{border:none;outline:none;flex:1;font-size:.88rem;color:var(--texto,#111);background:transparent}
+    .hilo-card-p{background:var(--fondo-2,#fff);border:1.5px solid var(--borde,#e5e7eb);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.85rem;transition:box-shadow .18s}
+    .hilo-card-p:hover{box-shadow:0 3px 14px rgba(0,0,0,.07)}
+    .hilo-header-p{display:flex;align-items:flex-start;gap:.75rem}
+    .hilo-avatar-p{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:#fff;background:var(--verde,#1a6b3c);overflow:hidden}
+    .hilo-avatar-p img{width:100%;height:100%;object-fit:cover}
+    .hilo-meta-p{flex:1;min-width:0}
+    .hilo-autor-p{font-weight:700;font-size:.85rem;color:var(--texto,#111)}
+    .hilo-fecha-p{font-size:.72rem;color:var(--texto-suave,#9ca3af)}
+    .hilo-titulo-p{font-size:.98rem;font-weight:700;color:var(--texto,#111);margin:.6rem 0 .35rem;line-height:1.3}
+    .hilo-cuerpo-p{font-size:.85rem;color:var(--texto-medio,#374151);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .hilo-footer-p{display:flex;align-items:center;gap:.75rem;margin-top:.75rem;flex-wrap:wrap}
+    .hilo-stats-p{font-size:.75rem;color:var(--texto-suave,#9ca3af)}
+    .btn-ver-p{margin-left:auto;font-size:.82rem;font-weight:600;color:var(--verde,#1a6b3c);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:0}
+    .btn-ver-p:hover{text-decoration:underline}
+    .modal-foro-overlay{display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem}
+    .modal-foro-overlay.visible{display:flex}
+    .modal-foro{background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+    .modal-foro-head{padding:1rem 1.25rem;border-bottom:1px solid var(--borde,#e5e7eb);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+    .modal-foro-head h2{font-size:.95rem;font-weight:700;margin:0;flex:1}
+    .modal-foro-body{flex:1;overflow-y:auto;padding:1.1rem 1.25rem}
+    .modal-foro-foot{padding:.8rem 1.25rem;border-top:1px solid var(--borde,#e5e7eb)}
+    .resp-item{display:flex;gap:.65rem;margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--borde,#f3f4f6)}
+    .resp-item:last-child{border-bottom:none;margin-bottom:0}
+    .resp-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:#fff;background:var(--verde,#1a6b3c);overflow:hidden}
+    .resp-av img{width:100%;height:100%;object-fit:cover}
+    .resp-body{flex:1;min-width:0}
+    .resp-autor-p{font-size:.8rem;font-weight:700;color:var(--texto,#111)}
+    .resp-fecha-p{font-size:.68rem;color:var(--texto-suave,#9ca3af)}
+    .resp-texto-p{font-size:.86rem;color:var(--texto-medio,#374151);margin-top:.25rem;line-height:1.5}
+    .resp-acciones-p{display:flex;gap:.4rem;margin-top:.35rem}
+    .btn-accion-p{font-size:.7rem;font-weight:600;cursor:pointer;background:none;border:none;padding:.12rem .38rem;border-radius:4px;color:var(--texto-suave,#9ca3af);transition:color .15s,background .15s}
+    .btn-accion-p:hover{color:var(--verde,#1a6b3c);background:#f0faf4}
+    .btn-accion-p.del:hover{color:#dc2626;background:#fee2e2}
+    .caja-resp textarea{width:100%;min-height:75px;max-height:180px;resize:vertical;border:1.5px solid var(--borde,#e5e7eb);border-radius:8px;padding:.6rem .8rem;font-size:.86rem;font-family:inherit;line-height:1.5;box-sizing:border-box;background:var(--fondo,#f9fafb)}
+    .caja-resp textarea:focus{outline:none;border-color:var(--verde,#1a6b3c);background:#fff}
+    .caja-resp-footer{display:flex;justify-content:flex-end;margin-top:.45rem}
+    .modal-preg-overlay{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:1rem}
+    .modal-preg-overlay.visible{display:flex}
+    .modal-preg{background:#fff;border-radius:16px;width:100%;max-width:520px;padding:1.4rem;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+    .modal-preg h3{font-size:1rem;font-weight:700;margin-bottom:.9rem}
+    .campo-preg{margin-bottom:.75rem}
+    .campo-preg label{font-size:.8rem;font-weight:600;display:block;margin-bottom:.3rem}
+    .campo-preg input,.campo-preg textarea{width:100%;border:1.5px solid var(--borde,#e5e7eb);border-radius:8px;padding:.5rem .8rem;font-size:.86rem;font-family:inherit;box-sizing:border-box;color:var(--texto,#111)}
+    .campo-preg input:focus,.campo-preg textarea:focus{outline:none;border-color:var(--verde,#1a6b3c)}
+    .campo-preg textarea{min-height:90px;resize:vertical}
+    .foro-vacio-p{text-align:center;padding:2.5rem 1rem;color:var(--texto-suave,#9ca3af)}
+    .foro-paginado-p{display:flex;justify-content:center;gap:.5rem;margin:1rem 0;flex-wrap:wrap}
+    .pag-btn-p{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--borde,#e5e7eb);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--texto,#111);transition:all .15s}
+    .pag-btn-p:hover{border-color:var(--verde,#1a6b3c);color:var(--verde,#1a6b3c)}
+    .pag-btn-p.activo{background:var(--verde,#1a6b3c);color:#fff;border-color:var(--verde,#1a6b3c)}
+    .cerrar-btn{background:none;border:none;cursor:pointer;color:var(--texto-suave);font-size:1.1rem;padding:.2rem;border-radius:4px;transition:color .15s}
+    .cerrar-btn:hover{color:var(--texto,#111)}
+    @media(max-width:600px){.foro-busqueda-portal{max-width:100%}}
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="#" class="sidebar-logo" title="Ir al inicio" style="text-decoration:none;display:flex;align-items:center;gap:.75rem;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
+    <div class="sidebar-logo-icono"><img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/></div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span id="vendedorNombre">Portal Vendedor</span></div>
+  </a>
+  <nav class="nav">
+    <div class="nav-titulo">Mi cuenta</div>
+    <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bento</span></span> Dashboard</a>
+    <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">package_2</span></span> Mis productos</a>
+    <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">photo_library</span></span> Exportar catálogo</a>
+    <a href="spotlight.html"><span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span> Spotlight IA</a>
+    <a href="membresia.html"><span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span> Mi membresía</a>
+    <div class="nav-titulo">Comunidad</div>
+    <a href="#" class="activo"><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+    <div class="nav-titulo">Sitio</div>
+    <a href="perfil.html"><span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span> Mi perfil</a>
+    <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">article_person</span></span> Ver catálogo</a>
+  </nav>
+  <div class="sidebar-pie">
+    <button class="btn-salir" id="btnSalir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>💬 Foro de la comunidad</h1>
+      <p class="fecha" id="fechaHoy"></p>
+    </div>
+    <div class="topbar-der">
+      <a href="../../page/foro.html" target="_blank" class="btn btn-secundario" style="font-size:.82rem;padding:.4rem .85rem">Ver foro público →</a>
+    </div>
+  </div>
+
+  <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
+  <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Hilos del foro</h2>
+      <button class="btn btn-primary btn-sm" id="btnNuevaPregunta">+ Nueva pregunta</button>
+    </div>
+    <div style="padding:1.25rem 1.5rem">
+      <div style="margin-bottom:1rem">
+        <div class="foro-busqueda-portal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="busqForo" placeholder="Buscar en el foro…" autocomplete="off"/>
+        </div>
+      </div>
+      <div id="listaHilos"><p class="cargando-txt">Cargando foro…</p></div>
+      <div class="foro-paginado-p" id="foroPaginado"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal hilo -->
+<div class="modal-foro-overlay" id="modalHilo">
+  <div class="modal-foro">
+    <div class="modal-foro-head">
+      <h2 id="modalHiloTitulo">Cargando…</h2>
+      <button class="cerrar-btn" id="btnCerrarHilo">✕</button>
+    </div>
+    <div class="modal-foro-body" id="modalHiloCuerpo"></div>
+    <div class="modal-foro-foot" id="modalHiloFooter"></div>
+  </div>
+</div>
+
+<!-- Modal nueva pregunta -->
+<div class="modal-preg-overlay" id="modalPregunta">
+  <div class="modal-preg">
+    <h3>💬 Nueva pregunta</h3>
+    <div class="campo-preg">
+      <label>Título *</label>
+      <input type="text" id="fForoTitulo" placeholder="¿En qué puedes ayudar a la comunidad?" maxlength="140"/>
+    </div>
+    <div class="campo-preg">
+      <label>Descripción (opcional)</label>
+      <textarea id="fForoCuerpo" placeholder="Agrega más contexto o detalles…" maxlength="1200"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.65rem">
+      <button class="btn btn-secundario btn-sm" id="btnCancelarPregunta">Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btnPublicarPregunta">
+        <span class="btn-texto">Publicar</span><div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="../js/foro-vendedor.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var btnH=document.getElementById("btnHamburguesa"),sidebar=document.querySelector(".sidebar"),overlay=document.getElementById("sidebarOverlay");
+    if(!btnH||!sidebar||!overlay)return;
+    function abrir(){sidebar.classList.add("abierto");overlay.classList.add("visible");btnH.classList.add("abierto");}
+    function cerrar(){sidebar.classList.remove("abierto");overlay.classList.remove("visible");btnH.classList.remove("abierto");}
+    btnH.addEventListener("click",()=>sidebar.classList.contains("abierto")?cerrar():abrir());
+    overlay.addEventListener("click",cerrar);
+    document.querySelectorAll(".nav a").forEach(a=>a.addEventListener("click",()=>{if(window.innerWidth<=700)cerrar();}));
+  });
+</script>
+</body>
+</html>

@@ -452,6 +452,129 @@ async function incrementarImpresion(pubId) {
   await setDoc(ref, { count: increment(1) }, { merge: true });
 }
 
+// ════════════════════════════════════════════════════════════
+//  FORO (moderación desde el admin)
+//  El admin puede eliminar cualquier hilo o respuesta.
+//  También puede ver todos los hilos para moderar.
+// ════════════════════════════════════════════════════════════
+
+async function obtenerTodosHilosForo() {
+  try {
+    const q    = query(collection(db, "foro_hilos"), orderBy("creado_en", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(collection(db, "foro_hilos"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.creado_en || "").localeCompare(a.creado_en || ""));
+  }
+}
+
+async function obtenerRespuestasPorHilo(hiloId) {
+  try {
+    const q = query(
+      collection(db, "foro_respuestas"),
+      where("hilo_id", "==", hiloId),
+      orderBy("creado_en", "asc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(
+      query(collection(db, "foro_respuestas"), where("hilo_id", "==", hiloId))
+    );
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.creado_en || "").localeCompare(b.creado_en || ""));
+  }
+}
+
+async function eliminarHiloForo(hiloId) {
+  // Eliminar todas las respuestas del hilo
+  const q    = query(collection(db, "foro_respuestas"), where("hilo_id", "==", hiloId));
+  const snap = await getDocs(q);
+  await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "foro_respuestas", d.id))));
+  // Eliminar el hilo
+  await deleteDoc(doc(db, "foro_hilos", hiloId));
+}
+
+async function eliminarRespuestaForoAdmin(respId, hiloId) {
+  await deleteDoc(doc(db, "foro_respuestas", respId));
+  const hiloRef  = doc(db, "foro_hilos", hiloId);
+  const hiloSnap = await getDoc(hiloRef);
+  if (hiloSnap.exists()) {
+    await updateDoc(hiloRef, {
+      respuestas: Math.max(0, (hiloSnap.data().respuestas || 0) - 1),
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  CLAVES API
+//  Colección: "api_claves"
+//
+//  Estructura de cada documento:
+//    servicio    string   — identificador único, ej: "openrouter"
+//    nombre      string   — nombre legible, ej: "OpenRouter IA"
+//    origen_url  string   — URL base de la API, ej: "https://openrouter.ai/api/v1"
+//    clave       string   — API key (sensible)
+//    modelos     string[] — lista de modelos disponibles (para IA)
+//    activo      boolean  — si false, no se usa
+//    nota        string   — descripción interna
+//    creado_en   string   — ISO timestamp
+//    actualizado_en string
+//
+//  Solo el admin puede leer/escribir esta colección (ver reglas Firestore).
+//  Los vendedores autenticados pueden leer (para usar la clave en sus módulos).
+// ════════════════════════════════════════════════════════════
+
+async function obtenerClavesApi() {
+  try {
+    const q    = query(collection(db, "api_claves"), orderBy("servicio"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch {
+    const snap = await getDocs(collection(db, "api_claves"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+}
+
+async function obtenerClaveApiPorServicio(servicio) {
+  const q    = query(
+    collection(db, "api_claves"),
+    where("servicio", "==", servicio),
+    where("activo",   "==", true)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) throw new Error(`Clave API "${servicio}" no encontrada o inactiva.`);
+  return { id: snap.docs[0].id, ...snap.docs[0].data() };
+}
+
+async function crearClaveApi(datos) {
+  const ref = await addDoc(collection(db, "api_claves"), {
+    servicio:       datos.servicio       || "",
+    nombre:         datos.nombre         || "",
+    origen_url:     datos.origen_url     || "",
+    clave:          datos.clave          || "",
+    modelos:        datos.modelos        || [],
+    activo:         datos.activo         ?? true,
+    nota:           datos.nota           || "",
+    creado_en:      new Date().toISOString(),
+    actualizado_en: new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+async function actualizarClaveApi(id, datos) {
+  await updateDoc(doc(db, "api_claves", id), {
+    ...datos,
+    actualizado_en: new Date().toISOString(),
+  });
+}
+
+async function eliminarClaveApi(id) {
+  await deleteDoc(doc(db, "api_claves", id));
+}
+
 export {
   obtenerVendedores, obtenerVendedor, obtenerVendedoresDesactivados,
   crearVendedor, actualizarVendedor, desactivarVendedor, reactivarVendedor,
@@ -469,4 +592,10 @@ export {
   obtenerPublicidades, obtenerPublicidadesActivas,
   crearPublicidad, actualizarPublicidad, eliminarPublicidad,
   leerImpresionesHoy, incrementarImpresion,
+  // Foro
+  obtenerTodosHilosForo, obtenerRespuestasPorHilo,
+  eliminarHiloForo, eliminarRespuestaForoAdmin,
+  // Claves API
+  obtenerClavesApi, obtenerClaveApiPorServicio,
+  crearClaveApi, actualizarClaveApi, eliminarClaveApi,
 };
