@@ -309,7 +309,7 @@ function renderPub(pub) {
   const tituloHtml = pub.titulo
     ? `<div id="pub-float-pub-nombre">${pub.titulo}</div>`
     : "";
-
+pub.imagen_url= pub.imagen_url?.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
   body.innerHTML = (pub.imagen_url
     ? `<img id="pub-float-img" src="${pub.imagen_url}" alt="${pub.titulo || 'Publicidad'}"
            loading="lazy" onerror="this.style.display='none'">`
