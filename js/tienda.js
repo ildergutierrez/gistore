@@ -613,16 +613,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.getElementById("overlay")
           .addEventListener("click", e => { if (e.target.id === "overlay") cerrarModal(); });
-  document.getElementById("btn-cerrar-modal").addEventListener("click", cerrarModal);
+  document.getElementById("btn-cerrar-modal")?.addEventListener("click", cerrarModal);
   document.getElementById("btn-seleccionar-modal")
           .addEventListener("click", () => { if (productoModal) toggleSel(productoModal.id); });
-  document.getElementById("btn-limpiar").addEventListener("click", limpiarSel);
-  document.getElementById("btn-whatsapp-panel").addEventListener("click", abrirCarrito);
-  document.getElementById("cart-btn").addEventListener("click", abrirCarrito);
-  document.getElementById("carrito-overlay").addEventListener("click", cerrarCarrito);
-  document.getElementById("btn-cerrar-carrito").addEventListener("click", cerrarCarrito);
-  document.getElementById("btn-carrito-limpiar").addEventListener("click", limpiarSel);
-  document.getElementById("btn-carrito-whatsapp").addEventListener("click", enviarWaCarrito);
+  document.getElementById("btn-limpiar")?.addEventListener("click", limpiarSel);
+  document.getElementById("btn-whatsapp-panel")?.addEventListener("click", abrirCarrito);
+  document.getElementById("cart-btn")?.addEventListener("click", abrirCarrito);
+  document.getElementById("carrito-overlay")?.addEventListener("click", cerrarCarrito);
+  document.getElementById("btn-cerrar-carrito")?.addEventListener("click", cerrarCarrito);
+  document.getElementById("btn-carrito-limpiar")?.addEventListener("click", limpiarSel);
+  document.getElementById("btn-carrito-whatsapp")?.addEventListener("click", enviarWaCarrito);
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") carritoAbierto ? cerrarCarrito() : cerrarModal();
   });

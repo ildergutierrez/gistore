@@ -137,29 +137,53 @@ html, body { height: 100%; }
 body { display: flex; flex-direction: column; min-height: 100vh; }
 .stores-main { flex: 1; }
   </style>
+  <link rel="stylesheet" href="../css/nav.css"/>
 </head>
 <body>
 
 <!-- HEADER -->
 <header>
   <div class="header-inner">
+
+    <!-- Logo -->
     <div class="logo">
       <a href="../index.html">
         <img src="../img/favicon/favicon.svg" alt="GI Store"/>
       </a>
     </div>
-    <nav class="header-nav">
+
+    <!-- Nav desktop -->
+    <nav class="header-nav" aria-label="Navegación principal">
       <a href="../index.html">Catálogo</a>
       <a href="nosotros.html">Nosotros</a>
       <a href="info.html">Ayuda</a>
-        <a href="foro.html">Foro</a>
-      <a href="#" class="activo">Stores</a>
+      <a href="foro.html">Foro</a>
+      <a href="stores.html" class="activo">Stores</a>
       <a href="../user/index.html" class="btn-login-header" title="Portal vendedores">
         <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
       </a>
     </nav>
+
+    <!-- Hamburguesa (solo móvil) -->
+    <button class="nav-hamburger" id="nav-hamburger"
+            aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu-movil">
+      <span></span><span></span><span></span>
+    </button>
+
   </div>
 </header>
+
+<!-- Menú móvil -->
+<div class="nav-menu-movil" id="nav-menu-movil" role="navigation" aria-label="Menú móvil">
+  <a href="../index.html">🏪  Catálogo</a>
+  <a href="nosotros.html">👥  Nosotros</a>
+  <a href="info.html">❓  Ayuda</a>
+  <a href="foro.html">💬  Foro</a>
+  <a href="stores.html" class="activo">🏬  Stores</a>
+  <a href="../user/index.html" class="btn-login-movil">
+    <span class="material-symbols-outlined">real_estate_agent</span> Portal Vendedores
+  </a>
+</div>
 
 <!-- HERO -->
 <div class="stores-hero">
@@ -198,5 +222,6 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     iniciarBannerPublicidad();
   </script>
    <script type="module" src="../js/accesoadmin.js"></script>
+  <script src="../js/nav.js" defer></script>
 </body>
 </html>

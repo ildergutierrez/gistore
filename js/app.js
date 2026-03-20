@@ -754,19 +754,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("overlay")
           .addEventListener("click", e => { if (e.target.id === "overlay") cerrarModal(); });
-  document.getElementById("btn-cerrar-modal").addEventListener("click", cerrarModal);
+  document.getElementById("btn-cerrar-modal")?.addEventListener("click", cerrarModal);
 
   // Exponer para que banner-pub.js abra el modal directamente al hacer clic
   window._abrirModalProducto = abrirModal;
   document.getElementById("btn-seleccionar-modal")
           .addEventListener("click", () => { if (productoModal) toggleSeleccion(productoModal.id); });
-  document.getElementById("btn-limpiar").addEventListener("click", limpiarSeleccion);
-  document.getElementById("btn-whatsapp-panel").addEventListener("click", abrirCarrito);
-  document.getElementById("cart-btn").addEventListener("click", abrirCarrito);
-  document.getElementById("carrito-overlay").addEventListener("click", cerrarCarrito);
-  document.getElementById("btn-cerrar-carrito").addEventListener("click", cerrarCarrito);
-  document.getElementById("btn-carrito-limpiar").addEventListener("click", limpiarSeleccion);
-  document.getElementById("btn-carrito-whatsapp").addEventListener("click", enviarWhatsappCarrito);
+  document.getElementById("btn-limpiar")?.addEventListener("click", limpiarSeleccion);
+  document.getElementById("btn-whatsapp-panel")?.addEventListener("click", abrirCarrito);
+  document.getElementById("cart-btn")?.addEventListener("click", abrirCarrito);
+  document.getElementById("carrito-overlay")?.addEventListener("click", cerrarCarrito);
+  document.getElementById("btn-cerrar-carrito")?.addEventListener("click", cerrarCarrito);
+  document.getElementById("btn-carrito-limpiar")?.addEventListener("click", limpiarSeleccion);
+  document.getElementById("btn-carrito-whatsapp")?.addEventListener("click", enviarWhatsappCarrito);
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") carritoAbierto ? cerrarCarrito() : cerrarModal();
   });

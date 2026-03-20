@@ -29,78 +29,6 @@ html { scroll-behavior: smooth; }
 body { font-family: 'DM Sans', sans-serif; background: var(--crema); color: var(--negro); min-height: 100vh; }
 
 /* ============================================================
-   HEADER
-   ============================================================ */
-header {
-  background: var(--verde);
-  color: var(--blanco);
-  padding: 0 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 20px rgba(0,0,0,.2);
-}
-.header-inner {
-  max-width: 1300px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 72px;
-  gap: 1.5rem;
-}
-.logo img { height: 48px; width: auto; display: block; }
-.btn-login-header {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
-      border-radius: 8px;
-      padding: 0.35rem 0.75rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #fff !important;
-      text-decoration: none;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-login-header:hover {
-      background: rgba(255, 255, 255, 0.28) !important;
-      color: #fff !important;
-    }
-.cart-btn {
-  position: relative;
-  background: rgba(255,255,255,.15);
-  border: 2px solid rgba(255,255,255,.3);
-  color: var(--blanco);
-  border-radius: 50px;
-  padding: .5rem 1.2rem;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  font-size: .9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  transition: var(--transicion);
-  white-space: nowrap;
-}
-.cart-btn:hover { background: var(--dorado); border-color: var(--dorado); }
-.cart-count {
-  background: var(--dorado-claro);
-  color: var(--negro);
-  border-radius: 50%;
-  width: 22px; height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .75rem;
-  font-weight: 700;
-}
-
-/* ============================================================
    HERO
    ============================================================ */
 .hero {
@@ -120,7 +48,7 @@ header {
   border-bottom: 1px solid var(--gris-300);
   padding: .75rem 1.5rem;
   position: sticky;
-  top: 72px;
+  top: 68px;
   z-index: 90;
   box-shadow: var(--sombra-sm);
 }
@@ -614,98 +542,15 @@ footer span { color: var(--dorado-claro); }
   border-color: var(--verde-claro);
 }
 
-/* ── Buscador en header ───────────────────────────────────── */
-.header-inner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.busqueda-header-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1;
-  max-width: 380px;
-  margin: 0 auto;
-}
-
-.busqueda-header-input {
-  width: 100%;
-  padding: .55rem 2.6rem .55rem 2.4rem;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.18);
-  color: #fff;
-  font-size: .92rem;
-  font-family: inherit;
-  outline: none;
-  transition: background .2s;
-  backdrop-filter: blur(4px);
-}
-.busqueda-header-input::placeholder { color: rgba(255,255,255,0.65); }
-.busqueda-header-input:focus {
-  background: rgba(255,255,255,0.28);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.35);
-}
-
-.busqueda-icono {
-  position: absolute;
-  left: .75rem;
-  color: rgba(255,255,255,0.75);
-  pointer-events: none;
-}
-
-.busqueda-limpiar {
-  position: absolute;
-  right: .6rem;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  color: #fff;
-  font-size: .75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .15s;
-}
-.busqueda-limpiar:hover { background: rgba(255,255,255,0.35); }
-
-@media (max-width: 600px) {
-  header { padding: 0 .9rem; }
-
-  .header-inner {
-    flex-wrap: wrap;
-    height: auto;
-    padding: .55rem 0;
-    gap: 0;
-    row-gap: .4rem;
-  }
-
-  /* Fila 1: logo + nav en la misma línea */
+/* Fila 1: logo + nav en la misma línea */
   .logo img { height: 38px; }
 
-  .header-nav {
-    margin-left: auto;
-    gap: 2px;
-  }
-  .header-nav a {
-    font-size: .76rem;
-    padding: .3rem .55rem;
-    border-radius: 999px;
-  }
+  
+  
 
   /* Fila 2: buscador al 100% */
-  .busqueda-header-wrap {
-    order: 3;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-}
+  
+
 
 /* ── Modal acciones rediseño ──────────────────────────────── */
 .modal-acciones {
@@ -788,25 +633,6 @@ footer span { color: var(--dorado-claro); }
 .tarjeta-body {
   cursor: pointer;
 }
-
-/* ── Nav links en header ────────────────────────────────── */
-.header-nav {
-  margin-left: auto;
-  display: flex;
-  gap: .4rem;
-}
-.header-nav a {
-  color: rgba(255,255,255,.82);
-  text-decoration: none;
-  font-size: .88rem;
-  font-weight: 500;
-  padding: .4rem .85rem;
-  border-radius: 999px;
-  transition: background .15s, color .15s;
-  white-space: nowrap;
-}
-.header-nav a:hover { background: rgba(255,255,255,.15); color: #fff; }
-.header-nav a.activo { background: rgba(255,255,255,.22); color: #fff; font-weight: 600; }
 
 /* ============================================================
    CHIP DE VENDEDOR — en la tarjeta, debajo del precio
