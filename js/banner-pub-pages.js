@@ -57,7 +57,7 @@ function resolverImgProducto(url) {
   const isGH     = window.location.hostname.includes("github.io");
   const base     = isGH ? "/gistore" : "";
   const isInPage = window.location.pathname.includes("/page/");
-  const prefix   = isInPage ? "../../" : "";
+  const prefix   = isInPage ? "../" : "";
   return `${window.location.origin}${base}/${prefix}${url}`;
 }
 
