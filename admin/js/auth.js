@@ -11,12 +11,12 @@ import { collection, query, where, getDocs }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 // Correo del administrador (único autorizado en este panel)
-const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
+const EXTROR = atob("YXBsaWNhdGl2b3Nhd2Vic0BnbWFpbC5jb20=");
 
 async function iniciarSesion(correo, contrasena) {
   const cred = await signInWithEmailAndPassword(auth, correo, contrasena);
   // Verificar que sea el admin — si no, cerrar sesión inmediatamente
-  if (cred.user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+  if (cred.user.email.toLowerCase() !== EXTROR.toLowerCase()) {
     await signOut(auth);
     const err = new Error("No autorizado");
     err.code = "auth/not-admin";
@@ -37,7 +37,7 @@ function protegerPagina(rutaLogin = "../index.html") {
       return;
     }
     // Si el usuario logueado NO es el admin → redirigir
-    if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    if (user.email.toLowerCase() !== EXTROR.toLowerCase()) {
       await signOut(auth);
       window.location.href = rutaLogin;
       return;
@@ -48,7 +48,7 @@ function protegerPagina(rutaLogin = "../index.html") {
 
 function redirigirSiSesion(rutaDashboard = "pages/dashboard.html") {
   onAuthStateChanged(auth, async user => {
-    if (user && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    if (user && user.email.toLowerCase() === EXTROR.toLowerCase()) {
       window.location.href = rutaDashboard;
     }
   });

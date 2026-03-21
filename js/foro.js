@@ -59,7 +59,7 @@ let paginaActual   = 1;
 const POR_PAGINA   = 10;
 let hiloAbierto    = null;
 
-const ADMIN_EMAIL  = "aplicativosawebs@gmail.com";
+const EXTROR = atob("YXBsaWNhdGl2b3Nhd2Vic0BnbWFpbC5jb20=");
 
 // ── DOM ───────────────────────────────────────────────────
 const elId = id => document.getElementById(id);
@@ -79,7 +79,7 @@ function fmtFecha(iso) {
 // ── Auth observer ─────────────────────────────────────────
 onAuthStateChanged(_auth, async user => {
   if (user) {
-    const esAdmin = user.email === ADMIN_EMAIL;
+    const esAdmin = user.email === EXTROR;
     // Intentar obtener datos del vendedor
     let nombre = user.displayName || user.email.split("@")[0];
     let foto   = user.photoURL || "";

@@ -24,10 +24,10 @@ document.getElementById("btnSalir").addEventListener("click", async () => {
   });
 });
 
-const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
+const EXTROR = atob("YXBsaWNhdGl2b3Nhd2Vic0BnbWFpbC5jb20=");
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user || user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+  if (!user || user.email.toLowerCase() !== EXTROR.toLowerCase()) {
     window.location.href = "../index.html";
     return;
   }

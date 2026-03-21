@@ -1,5 +1,5 @@
 document.addEventListener("keydown", (e) => {
-  if (e.ctrlKey && e.shiftKey && e.key === "E" || e.key === "e") {// Ctrl + Shift + E pero la letra E puede ser minuscula
+  if (e.ctrlKey && e.shiftKey && e.key === "E" || e.ctrlKey && e.shiftKey && e.key === "e") {// Ctrl + Shift + E pero la letra E puede ser minuscula
     //si esta en la carperpeta raiz al oprimir la tecla se muestar la rura admin/index.html
     if (window.location.pathname === "/" ) {// Si estás en la carpeta raíz
       window.location.href = "admin/index.html";

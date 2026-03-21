@@ -133,7 +133,7 @@ btnEnviarRecup.addEventListener("click", async () => {
 });
 
 // ── Modal solicitar reactivación ─────────────────────────
-const DESTINO_ADMIN = "aplicativosawebs+gistore@gmail.com";
+const DESTINO_REACTIVAR = "atencionalcliente@gistore.com.co";
 
 document.getElementById("btnSolicitarReactivacion").addEventListener("click", () => {
   // Pre-llenar correo si ya está escrito
@@ -197,7 +197,7 @@ document.getElementById("btnEnviarReactivacion").addEventListener("click", async
   );
 
   await new Promise(r => setTimeout(r, 600));
-  window.location.href = `mailto:${DESTINO_ADMIN}?subject=${asunto}&body=${cuerpo}`;
+  window.location.href = `mailto:${DESTINO_REACTIVAR}?subject=${asunto}&body=${cuerpo}`;
 
   // Mostrar confirmación dentro del modal
   document.getElementById("modalReacForm").style.display  = "none";

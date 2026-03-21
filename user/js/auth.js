@@ -11,12 +11,11 @@ import {
   collection, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-// Correo del admin — bloqueado en este portal
-const ADMIN_EMAIL = "aplicativosawebs@gmail.com";
+const EXTROR = atob("YXBsaWNhdGl2b3Nhd2Vic0BnbWFpbC5jb20=");
 
 async function iniciarSesion(correo, contrasena) {
   // Bloquear al admin
-  if (correo.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+  if (correo.toLowerCase() === EXTROR.toLowerCase()) {
     const err = new Error("No autorizado");
     err.code = "auth/is-admin";
     throw err;
@@ -64,7 +63,7 @@ function protegerPagina(rutaLogin = "../index.html") {
       return;
     }
     // Admin intentando entrar al portal de vendedores → bloquear
-    if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+    if (user.email.toLowerCase() === EXTROR.toLowerCase()) {
       await signOut(auth);
       window.location.href = rutaLogin;
       return;
@@ -76,7 +75,7 @@ function protegerPagina(rutaLogin = "../index.html") {
 
 function redirigirSiSesion(rutaDashboard = "pages/dashboard.html") {
   onAuthStateChanged(auth, user => {
-    if (user && user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    if (user && user.email.toLowerCase() !== EXTROR.toLowerCase()) {
       window.location.href = rutaDashboard;
     }
   });

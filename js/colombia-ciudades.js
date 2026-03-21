@@ -1437,7 +1437,7 @@ const ColombiaCiudades = (() => {
 ══════════════════════════════════════════════════════════════ */
 (() => {
 
-  const DESTINO = "aplicativosawebs+gistore@gmail.com";
+  const DESTINO = "registro@gistore.com.co";
 
   const $  = id => document.getElementById(id);
 

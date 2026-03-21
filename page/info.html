@@ -70,30 +70,94 @@
     .membresia-cta button:hover { transform: translateY(-2px); }
     .membresia-cta p { color: rgba(255,255,255,.6); font-size: .82rem; margin-top: .8rem; }
 
+    /* ── SECCIÓN PUBLICIDAD ── */
+    .pub-bg { background: #f0fdf4; }
+    .pub-bg .seccion-tag { background: #dcfce7; color: #166534; }
+
+    .planes-tabla-wrap {
+      background: #fff; border-radius: 16px;
+      border: 1.5px solid var(--verde-medio);
+      overflow: hidden; margin-bottom: 2rem;
+      box-shadow: var(--sombra);
+    }
+    .planes-tabla-nota {
+      font-size: .82rem; color: var(--gris-500);
+      padding: .8rem 1.2rem;
+      border-top: 1px solid var(--verde-medio);
+      background: #fafdfb;
+    }
+    .planes-table { width: 100%; border-collapse: collapse; }
+    .planes-table thead tr { background: var(--verde-oscuro); color: #fff; }
+    .planes-table thead th {
+      padding: .85rem 1rem; font-size: .78rem;
+      font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; text-align: left;
+    }
+    .planes-table thead th:not(:first-child) { text-align: center; }
+    .planes-table tbody tr {
+      border-bottom: 1px solid var(--verde-medio);
+      cursor: pointer; transition: background .15s;
+    }
+    .planes-table tbody tr:last-child { border-bottom: none; }
+    .planes-table tbody tr:hover { background: var(--verde-suave); }
+    .planes-table tbody tr.plan-seleccionado { background: #d1ead9; }
+    .planes-table tbody tr.plan-premium { font-weight: 700; color: var(--verde-oscuro); }
+    .planes-table tbody td { padding: .85rem 1rem; font-size: .9rem; color: var(--gris-700); }
+    .planes-table tbody td:first-child { color: var(--texto); font-weight: 600; }
+    .planes-table tbody td:not(:first-child) { text-align: center; }
+    .planes-table .precio-col { font-weight: 700; color: var(--verde-oscuro); }
+    .plan-badge-premium {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: #fef9c3; color: #854d0e;
+      border-radius: 999px; padding: .15rem .55rem;
+      font-size: .78rem; font-weight: 700;
+    }
+    .plan-radio { width: 17px; height: 17px; accent-color: var(--verde-oscuro); cursor: pointer; }
+
+    .aviso-contenido {
+      background: #fef2f2; border: 1.5px solid #fecaca;
+      border-radius: 12px; padding: 1rem 1.2rem;
+      display: flex; gap: .75rem; align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+    .aviso-contenido-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .aviso-contenido p { font-size: .87rem; color: #991b1b; line-height: 1.6; }
+    .aviso-contenido strong { color: #7f1d1d; }
+
+    .pub-cta { text-align: center; margin-top: 1rem; }
+    .pub-cta button {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--verde-oscuro); color: #fff;
+      font-weight: 700; font-size: .97rem;
+      padding: .9rem 2.2rem; border-radius: 999px;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(26,107,60,.25);
+      transition: background .15s, transform .15s;
+      font-family: inherit;
+    }
+    .pub-cta button:hover { background: var(--verde-claro); transform: translateY(-2px); }
+    .pub-cta p { color: var(--gris-500); font-size: .82rem; margin-top: .75rem; }
+
     footer { background: var(--verde-oscuro); color: rgba(255,255,255,.7); text-align: center; padding: 1.8rem 1rem; font-size: .88rem; line-height: 1.8; }
     footer span { color: #fff; font-weight: 600; }
     footer a { color: rgba(255,255,255,.75); text-decoration: none; }
     footer a:hover { color: #fff; }
 
-    /* ── MODAL ── */
+    /* ── MODALES ── */
     .modal-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(10, 30, 18, 0.65);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      align-items: center; justify-content: center;
-      padding: 1rem;
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,30,18,0.65);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      align-items: flex-start; justify-content: center;
+      padding: 2rem 1rem; overflow-y: auto;
     }
     .modal-overlay.abierto { display: flex; }
 
     .modal {
-      background: #fff;
-      border-radius: 20px;
-      padding: 2.2rem 2rem;
-      width: 100%; max-width: 460px;
+      background: #fff; border-radius: 20px;
+      padding: 2.2rem 2rem; width: 100%; max-width: 480px;
       box-shadow: 0 24px 60px rgba(0,0,0,.22);
-      position: relative;
+      position: relative; margin: auto;
       animation: modalIn .25s cubic-bezier(.34,1.56,.64,1) both;
     }
     @keyframes modalIn {
@@ -118,31 +182,72 @@
       font-size: 1.6rem; margin-bottom: 1rem;
     }
     .modal h2 { font-size: 1.25rem; font-weight: 800; color: var(--texto); margin-bottom: .3rem; letter-spacing: -.02em; }
-    .modal-subtitulo { font-size: .88rem; color: var(--gris-500); margin-bottom: 1.6rem; }
+    .modal-subtitulo { font-size: .88rem; color: var(--gris-500); margin-bottom: 1.4rem; }
 
-    .campo { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1.1rem; }
-    .campo label { font-size: .82rem; font-weight: 700; color: var(--gris-700); letter-spacing: .04em; text-transform: uppercase; }
-    .campo input {
+    .campo { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+    .campo label {
+      font-size: .82rem; font-weight: 700; color: var(--gris-700);
+      letter-spacing: .04em; text-transform: uppercase;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    .campo label .req { color: #dc2626; }
+    .campo input, .campo select {
       border: 1.5px solid #d1d5db; border-radius: 10px;
       padding: .7rem .95rem; font-size: .95rem;
       font-family: inherit; color: var(--texto);
       outline: none; transition: border-color .15s, box-shadow .15s;
       background: #fafafa;
     }
-    .campo input:focus {
+    .campo input:focus, .campo select:focus {
       border-color: var(--verde-claro);
       box-shadow: 0 0 0 3px rgba(45,158,95,.15);
       background: #fff;
     }
     .campo input::placeholder { color: #b0b8c1; }
+    .campo input.invalido, .campo select.invalido {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220,38,38,.1);
+    }
+    .campo-nota { font-size: .78rem; color: var(--gris-500); margin-top: .2rem; }
 
     .campo-telefono { position: relative; }
     .campo-telefono span {
       position: absolute; left: .95rem; top: 50%; transform: translateY(-50%);
-      font-size: .95rem; color: var(--gris-500); pointer-events: none;
-      font-weight: 600;
+      font-size: .95rem; color: var(--gris-500); pointer-events: none; font-weight: 600;
     }
     .campo-telefono input { padding-left: 2.8rem; }
+
+    /* Plan resumen */
+    .plan-resumen {
+      background: var(--verde-suave); border: 1.5px solid var(--verde-medio);
+      border-radius: 12px; padding: .9rem 1.1rem; margin-bottom: 1rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: .4rem .8rem;
+    }
+    .plan-resumen-titulo {
+      grid-column: 1/-1; font-size: .78rem; font-weight: 700;
+      color: var(--verde-oscuro); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: .2rem;
+    }
+    .plan-resumen-dato { font-size: .85rem; color: var(--gris-700); }
+    .plan-resumen-dato strong { color: var(--verde-oscuro); display: block; font-size: .9rem; }
+
+    /* Upload */
+
+
+    .aviso-prohibicion {
+      background: #fff7ed; border: 1px solid #fed7aa;
+      border-radius: 10px; padding: .75rem 1rem;
+      font-size: .82rem; color: #92400e;
+      margin-bottom: 1rem; line-height: 1.6;
+    }
+    .aviso-prohibicion strong { color: #78350f; }
+
+    .campo select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right .8rem center;
+      padding-right: 2.4rem;
+    }
 
     .modal-enviar {
       width: 100%; margin-top: .5rem;
@@ -157,12 +262,10 @@
     .modal-enviar:active { transform: translateY(0); }
     .modal-enviar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-    /* Estado de éxito */
     .modal-exito {
-      display: none;
-      flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 1rem 0 .5rem;
-      gap: .6rem;
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 1rem 0 .5rem; gap: .6rem;
     }
     .modal-exito .exito-check {
       width: 64px; height: 64px; border-radius: 50%;
@@ -171,15 +274,11 @@
       font-size: 2rem; margin-bottom: .4rem;
       animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both;
     }
-    @keyframes popIn {
-      from { transform: scale(0); opacity: 0; }
-      to   { transform: scale(1); opacity: 1; }
-    }
+    @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
     .modal-exito h3 { font-size: 1.15rem; font-weight: 800; color: var(--texto); }
-    .modal-exito p { font-size: .88rem; color: var(--gris-500); max-width: 280px; line-height: 1.6; }
+    .modal-exito p { font-size: .88rem; color: var(--gris-500); max-width: 300px; line-height: 1.6; }
     .modal-exito button {
-      margin-top: .8rem;
-      background: var(--verde-suave); color: var(--verde-oscuro);
+      margin-top: .8rem; background: var(--verde-suave); color: var(--verde-oscuro);
       border: none; border-radius: 8px; padding: .6rem 1.4rem;
       font-size: .88rem; font-weight: 700; cursor: pointer;
       font-family: inherit; transition: background .15s;
@@ -187,10 +286,9 @@
     .modal-exito button:hover { background: var(--verde-medio); }
 
     .modal-error-msg {
-      display: none;
-      background: #fef2f2; border: 1px solid #fecaca;
-      border-radius: 8px; padding: .7rem 1rem;
-      font-size: .84rem; color: #b91c1c;
+      display: none; background: #fef2f2;
+      border: 1px solid #fecaca; border-radius: 8px;
+      padding: .7rem 1rem; font-size: .84rem; color: #b91c1c;
       margin-bottom: 1rem;
     }
     .modal-error-msg.visible { display: block; }
@@ -198,12 +296,89 @@
     .spinner {
       width: 18px; height: 18px;
       border: 2.5px solid rgba(255,255,255,.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      display: none;
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite; display: none;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Aviso imagen en modal publicidad */
+    .aviso-imagen {
+      background: #fffbeb;
+      border: 1.5px solid #fde68a;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      font-size: .87rem;
+      color: #78350f;
+    }
+    .aviso-imagen strong { color: #78350f; display: block; margin-bottom: .2rem; font-size: .9rem; }
+    .aviso-imagen u { color: #92400e; }
+    .aviso-imagen-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+
+    /* ── Pasos de éxito en modales ── */
+    .exito-pasos {
+      display: flex;
+      gap: .5rem;
+      margin: .8rem 0 .4rem;
+      width: 100%;
+      justify-content: center;
+    }
+    .exito-paso {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+      flex: 1;
+      max-width: 110px;
+      font-size: .75rem;
+      color: #9ca3af;
+      text-align: center;
+      line-height: 1.3;
+      transition: color .4s;
+    }
+    .exito-paso.activo { color: var(--verde-oscuro); font-weight: 600; }
+    .exito-paso.hecho  { color: var(--verde-claro); }
+    .paso-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #9ca3af;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700;
+      transition: background .4s, color .4s;
+    }
+    .exito-paso.activo .paso-num {
+      background: var(--verde-suave);
+      color: var(--verde-oscuro);
+    }
+    .exito-paso.hecho .paso-num {
+      background: var(--verde-claro);
+      color: #fff;
+    }
+    /* Línea conectora entre pasos */
+    .exito-pasos::before {
+      display: none;
+    }
+    /* Pulso animado en el paso activo */
+    @keyframes pulso {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.12); }
+    }
+    .exito-paso.activo .paso-num {
+      animation: pulso 1.2s ease-in-out infinite;
+    }
+    .exito-paso.hecho .paso-num { animation: none; }
+
+    @media (max-width: 640px) {
+      .planes-table thead th { font-size: .68rem; padding: .6rem .5rem; }
+      .planes-table tbody td { font-size: .8rem; padding: .65rem .5rem; }
+      .modal { padding: 1.5rem 1.1rem; }
+      .plan-resumen { grid-template-columns: 1fr; }
+    }
   </style>
   <link rel="stylesheet" href="../css/nav.css"/>
 </head>
@@ -211,47 +386,39 @@
 
   <!-- HEADER -->
   <header>
-  <div class="header-inner">
-
-    <!-- Logo -->
-    <div class="logo">
-      <a href="../index.html">
-        <img src="../img/favicon/favicon.svg" alt="GI Store"/>
-      </a>
+    <div class="header-inner">
+      <div class="logo">
+        <a href="../index.html">
+          <img src="../img/favicon/favicon.svg" alt="GI Store"/>
+        </a>
+      </div>
+      <nav class="header-nav" aria-label="Navegación principal">
+        <a href="../index.html">Catálogo</a>
+        <a href="nosotros.html">Nosotros</a>
+        <a href="info.html" class="activo">Ayuda</a>
+        <a href="foro.html">Foro</a>
+        <a href="stores.html">Stores</a>
+        <a href="../user/index.html" class="btn-login-header" title="Portal vendedores">
+          <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
+        </a>
+      </nav>
+      <button class="nav-hamburger" id="nav-hamburger"
+              aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu-movil">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </header>
 
-    <!-- Nav desktop -->
-    <nav class="header-nav" aria-label="Navegación principal">
-      <a href="../index.html">Catálogo</a>
-      <a href="nosotros.html">Nosotros</a>
-      <a href="info.html" class="activo">Ayuda</a>
-      <a href="foro.html">Foro</a>
-      <a href="stores.html">Stores</a>
-      <a href="../user/index.html" class="btn-login-header" title="Portal vendedores">
-        <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
-      </a>
-    </nav>
-
-    <!-- Hamburguesa (solo móvil) -->
-    <button class="nav-hamburger" id="nav-hamburger"
-            aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu-movil">
-      <span></span><span></span><span></span>
-    </button>
-
+  <div class="nav-menu-movil" id="nav-menu-movil" role="navigation" aria-label="Menú móvil">
+    <a href="../index.html">🏪  Catálogo</a>
+    <a href="nosotros.html">👥  Nosotros</a>
+    <a href="info.html" class="activo">❓  Ayuda</a>
+    <a href="foro.html">💬  Foro</a>
+    <a href="stores.html">🏬  Stores</a>
+    <a href="../user/index.html" class="btn-login-movil">
+      <span class="material-symbols-outlined">real_estate_agent</span> Portal Vendedores
+    </a>
   </div>
-</header>
-
-<!-- Menú móvil -->
-<div class="nav-menu-movil" id="nav-menu-movil" role="navigation" aria-label="Menú móvil">
-  <a href="../index.html">🏪  Catálogo</a>
-  <a href="nosotros.html">👥  Nosotros</a>
-  <a href="info.html" class="activo">❓  Ayuda</a>
-  <a href="foro.html">💬  Foro</a>
-  <a href="stores.html">🏬  Stores</a>
-  <a href="../user/index.html" class="btn-login-movil">
-    <span class="material-symbols-outlined">real_estate_agent</span> Portal Vendedores
-  </a>
-</div>
 
   <!-- HERO -->
   <section class="info-hero">
@@ -265,49 +432,30 @@
     <span class="seccion-tag">Antes de comprar</span>
     <h2>Lo que debes saber</h2>
     <p class="seccion-lead">Para que tu experiencia sea clara y sin sorpresas, aquí explicamos cómo funciona cada parte del proceso.</p>
-
     <div class="avisos-grid">
       <div class="aviso aviso-info">
         <div class="aviso-icon">💬</div>
-        <div>
-          <h4>El pedido se cierra por WhatsApp</h4>
-          <p>Al tocar "Comprar por WhatsApp" o "Enviar pedido", se abre un chat directo con el vendedor. Él confirmará disponibilidad, precio final, forma de pago y opciones de envío.</p>
-        </div>
+        <div><h4>El pedido se cierra por WhatsApp</h4><p>Al tocar "Comprar por WhatsApp" o "Enviar pedido", se abre un chat directo con el vendedor. Él confirmará disponibilidad, precio final, forma de pago y opciones de envío.</p></div>
       </div>
       <div class="aviso aviso-warn">
         <div class="aviso-icon">⚠️</div>
-        <div>
-          <h4>El carrito no se guarda</h4>
-          <p>Al cerrar o recargar la página tu selección se borra. El catálogo no usa cuentas ni sesiones. Te recomendamos armar tu pedido en una sola sesión y enviarlo antes de cerrar.</p>
-        </div>
+        <div><h4>El carrito no se guarda</h4><p>Al cerrar o recargar la página tu selección se borra. El catálogo no usa cuentas ni sesiones. Te recomendamos armar tu pedido en una sola sesión y enviarlo antes de cerrar.</p></div>
       </div>
       <div class="aviso aviso-info">
         <div class="aviso-icon">🚚</div>
-        <div>
-          <h4>Envíos: el vendedor coordina</h4>
-          <p>GI Store tiene cobertura nacional, pero los detalles de despacho (transportadora, costo de envío, tiempo de entrega) los define directamente el vendedor por WhatsApp.</p>
-        </div>
+        <div><h4>Envíos: el vendedor coordina</h4><p>GI Store tiene cobertura nacional, pero los detalles de despacho (transportadora, costo de envío, tiempo de entrega) los define directamente el vendedor por WhatsApp.</p></div>
       </div>
       <div class="aviso aviso-warn">
         <div class="aviso-icon">💳</div>
-        <div>
-          <h4>No procesamos pagos</h4>
-          <p>GI Store no recibe ni gestiona ningún pago. Toda transacción económica se hace directamente entre el cliente y el vendedor. No tenemos pasarela de pagos.</p>
-        </div>
+        <div><h4>No procesamos pagos</h4><p>GI Store no recibe ni gestiona ningún pago. Toda transacción económica se hace directamente entre el cliente y el vendedor. No tenemos pasarela de pagos.</p></div>
       </div>
       <div class="aviso aviso-success">
         <div class="aviso-icon">🔗</div>
-        <div>
-          <h4>Puedes compartir productos</h4>
-          <p>Cada producto tiene un enlace único que puedes compartir por WhatsApp, redes o donde quieras. Al abrirlo, el producto aparece directamente en el catálogo.</p>
-        </div>
+        <div><h4>Puedes compartir productos</h4><p>Cada producto tiene un enlace único que puedes compartir por WhatsApp, redes o donde quieras. Al abrirlo, el producto aparece directamente en el catálogo.</p></div>
       </div>
       <div class="aviso aviso-neutral">
         <div class="aviso-icon">📋</div>
-        <div>
-          <h4>Somos un catálogo, no una tienda</h4>
-          <p>GI Store no es responsable de los productos, precios ni condiciones de venta de cada vendedor. Somos el escaparate digital; la relación comercial es entre comprador y vendedor.</p>
-        </div>
+        <div><h4>Somos un catálogo, no una tienda</h4><p>GI Store no es responsable de los productos, precios ni condiciones de venta de cada vendedor. Somos el escaparate digital; la relación comercial es entre comprador y vendedor.</p></div>
       </div>
     </div>
   </section>
@@ -320,41 +468,89 @@
       <span class="seccion-tag">Para vendedores</span>
       <h2>¿Quieres publicar tus productos?</h2>
       <p class="seccion-lead">Con una membresía activa, tus productos aparecen visibles en el catálogo para todos los visitantes de GI Store.</p>
-
       <div class="membresia-cards">
-        <div class="membresia-card">
-          <div class="icono">📱</div>
-          <h3>Presencia digital inmediata</h3>
-          <p>Tu producto se muestra en el catálogo con imagen, descripción, precio y botón de contacto directo a tu WhatsApp.</p>
-        </div>
-        <div class="membresia-card">
-          <div class="icono">🔗</div>
-          <h3>Enlace compartible por producto</h3>
-          <p>Cada producto tiene su propio enlace único que puedes compartir en grupos, estados o redes sociales.</p>
-        </div>
-        <div class="membresia-card">
-          <div class="icono">⚡</div>
-          <h3>Activación y baja inmediata</h3>
-          <p>Tus productos se activan o desactivan según el estado de tu membresía, sin trámites ni esperas.</p>
-        </div>
-        <div class="membresia-card">
-          <div class="icono">💰</div>
-          <h3>Sin comisiones por venta</h3>
-          <p>GI Store cobra solo la membresía de publicación. No te cobramos nada por cada venta que realices.</p>
-        </div>
+        <div class="membresia-card"><div class="icono">📱</div><h3>Presencia digital inmediata</h3><p>Tu producto se muestra en el catálogo con imagen, descripción, precio y botón de contacto directo a tu WhatsApp.</p></div>
+        <div class="membresia-card"><div class="icono">🔗</div><h3>Enlace compartible por producto</h3><p>Cada producto tiene su propio enlace único que puedes compartir en grupos, estados o redes sociales.</p></div>
+        <div class="membresia-card"><div class="icono">⚡</div><h3>Activación y baja inmediata</h3><p>Tus productos se activan o desactivan según el estado de tu membresía, sin trámites ni esperas.</p></div>
+        <div class="membresia-card"><div class="icono">💰</div><h3>Sin comisiones por venta</h3><p>GI Store cobra solo la membresía de publicación. No te cobramos nada por cada venta que realices.</p></div>
       </div>
-
       <div class="membresia-cta">
         <button id="btnSolicitarRegistro">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
           Solicitar registro
         </button>
         <p>Te respondemos a la brevedad</p>
+      </div>
+    </section>
+  </div>
+
+  <hr class="divisor" />
+
+  <!-- PUBLICIDAD -->
+  <div class="pub-bg">
+    <section class="seccion">
+      <span class="seccion-tag">📣 Publicidad</span>
+      <h2>Anúnciate en GI Store</h2>
+      <p class="seccion-lead">Tu banner aparece como un recuadro flotante en el catálogo. Selecciona el plan que más te convenga y llega a todos nuestros visitantes.</p>
+
+      <div class="aviso-contenido">
+        <div class="aviso-contenido-icon">🚫</div>
+        <p><strong>Contenido no permitido:</strong> GI Store no publica publicidad de contenido para adultos, pornografía, material sexual explícito, ni ningún contenido que vaya en contra de la ley colombiana o las normas de convivencia digital. Las solicitudes con este tipo de contenido serán rechazadas automáticamente.</p>
+      </div>
+
+      <div class="planes-tabla-wrap">
+        <table class="planes-table" id="tablaPlanes">
+          <thead>
+            <tr>
+              <th>Plan</th>
+              <th>Impresiones / día</th>
+              <th>Duración</th>
+              <th>Total impresiones</th>
+              <th>Precio COP</th>
+              <th>Por impresión</th>
+              <th>Elegir</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-plan="Prueba" data-imp="45" data-dur="7 días" data-total="315" data-precio="$5.000" data-unit="$16">
+              <td>Prueba</td><td>45</td><td>7 días</td><td>315</td>
+              <td class="precio-col">$5.000</td><td>$16</td>
+              <td><input type="radio" name="planPub" class="plan-radio" value="Prueba"></td>
+            </tr>
+            <tr data-plan="Básico" data-imp="75" data-dur="15 días" data-total="1.125" data-precio="$12.000" data-unit="$11">
+              <td>Básico</td><td>75</td><td>15 días</td><td>1.125</td>
+              <td class="precio-col">$12.000</td><td>$11</td>
+              <td><input type="radio" name="planPub" class="plan-radio" value="Básico"></td>
+            </tr>
+            <tr data-plan="Estándar" data-imp="100" data-dur="15 días" data-total="1.500" data-precio="$20.000" data-unit="$13">
+              <td>Estándar</td><td>100</td><td>15 días</td><td>1.500</td>
+              <td class="precio-col">$20.000</td><td>$13</td>
+              <td><input type="radio" name="planPub" class="plan-radio" value="Estándar"></td>
+            </tr>
+            <tr data-plan="Pro" data-imp="150" data-dur="30 días" data-total="4.500" data-precio="$40.000" data-unit="$9">
+              <td>Pro</td><td>150</td><td>30 días</td><td>4.500</td>
+              <td class="precio-col">$40.000</td><td>$9</td>
+              <td><input type="radio" name="planPub" class="plan-radio" value="Pro"></td>
+            </tr>
+            <tr class="plan-premium" data-plan="Premium" data-imp="250" data-dur="30 días" data-total="7.500" data-precio="$65.000" data-unit="$9">
+              <td><span class="plan-badge-premium">⭐ Premium</span></td><td>250</td><td>30 días</td><td>7.500</td>
+              <td class="precio-col">$65.000</td><td>$9</td>
+              <td><input type="radio" name="planPub" class="plan-radio" value="Premium"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="planes-tabla-nota">
+          * Precios sugeridos en COP. &nbsp;·&nbsp; * Al crear la campaña, configura <strong>Fecha inicio/fin</strong> y <strong>Límite de impresiones/día</strong> según el plan contratado.
+        </div>
+      </div>
+
+      <div class="pub-cta">
+        <button id="btnSolicitarPublicidad">📣 Solicitar publicidad</button>
+        <p>Haz clic en una fila de la tabla para pre-seleccionar el plan</p>
       </div>
     </section>
   </div>
@@ -366,46 +562,37 @@
   </footer>
 
 
-  <!-- ══════════════════════════════════════
-       MODAL — SOLICITAR REGISTRO
-  ══════════════════════════════════════ -->
+  <!-- MODAL REGISTRO -->
   <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
-    <div class="modal" id="modal">
-
+    <div class="modal">
       <button class="modal-cerrar" id="btnCerrar" aria-label="Cerrar">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
         </svg>
       </button>
-
-      <!-- Formulario -->
       <div id="modalFormulario">
         <div class="modal-icono">🏪</div>
         <h2 id="modalTitulo">Solicitar registro</h2>
-        <p class="modal-subtitulo">Déjanos tus datos y nos comunicamos contigo para activar tu membresía.</p>
-
-        <div class="modal-error-msg" id="modalError">Por favor completa todos los campos correctamente.</div>
+        <p class="modal-subtitulo">Déjanos tus datos y nos comunicamos contigo. <strong>Todos los campos son obligatorios.</strong></p>
+        <div class="modal-error-msg" id="modalError"></div>
 
         <div class="campo">
-          <label for="campo-tienda">Nombre de la tienda o tu nombre</label>
+          <label for="campo-tienda">Nombre de la tienda o tu nombre <span class="req">*</span></label>
           <input type="text" id="campo-tienda" placeholder="Ej: Tienda Sofía / Juan Pérez" autocomplete="off" />
         </div>
-
         <div class="campo">
-          <label for="campo-ciudad">Ciudad o municipio</label>
-          <input type="text" id="campo-ciudad" autocomplete="off" />
+          <label for="campo-ciudad">Ciudad o municipio <span class="req">*</span></label>
+          <input type="text" id="campo-ciudad" placeholder="Ej: Valledupar, Barranquilla..." autocomplete="off" />
         </div>
-
         <div class="campo">
-          <label for="campo-correo">Correo electrónico</label>
+          <label for="campo-correo">Correo electrónico <span class="req">*</span></label>
           <input type="email" id="campo-correo" placeholder="tu@correo.com" autocomplete="email" />
         </div>
-
         <div class="campo">
-          <label for="campo-whatsapp">WhatsApp</label>
+          <label for="campo-whatsapp">WhatsApp <span class="req">*</span></label>
           <div class="campo-telefono">
             <span>+57</span>
-            <input type="tel" id="campo-whatsapp" placeholder="300 000 0000" autocomplete="tel" maxlength="15" />
+            <input type="tel" id="campo-whatsapp" placeholder="300 000 0000" maxlength="15" />
           </div>
         </div>
 
@@ -414,26 +601,159 @@
           <div class="spinner" id="spinner"></div>
         </button>
       </div>
-
-      <!-- Estado éxito -->
       <div class="modal-exito" id="modalExito">
-        <div class="exito-check">✅</div>
-        <h3>¡Solicitud enviada!</h3>
-        <p>Recibimos tu información. Nos pondremos en contacto contigo pronto para activar tu membresía.</p>
+        <div class="exito-check" id="exitoCheckReg">📨</div>
+        <h3 id="exitoTituloReg">Abriendo tu correo…</h3>
+        <p id="exitoMsgReg">
+          Tu solicitud está lista. Se está abriendo tu cliente de correo con los datos escritos.
+          <strong>Solo presiona Enviar</strong> en el correo que se abrió.
+        </p>
+        <div class="exito-pasos">
+          <div class="exito-paso activo" id="pasoReg1">
+            <span class="paso-num">1</span>
+            <span>Datos listos ✓</span>
+          </div>
+          <div class="exito-paso" id="pasoReg2">
+            <span class="paso-num">2</span>
+            <span>Abriendo correo…</span>
+          </div>
+          <div class="exito-paso" id="pasoReg3">
+            <span class="paso-num">3</span>
+            <span>Envía el correo</span>
+          </div>
+        </div>
         <button id="btnExitoCerrar">Cerrar</button>
       </div>
-
     </div>
   </div>
 
 
+  <!-- MODAL PUBLICIDAD -->
+  <div class="modal-overlay" id="modalPubOverlay" role="dialog" aria-modal="true" aria-labelledby="modalPubTitulo">
+    <div class="modal" style="max-width:520px;">
+      <button class="modal-cerrar" id="btnCerrarPub" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
+      <div id="modalPubFormulario">
+        <div class="modal-icono">📣</div>
+        <h2 id="modalPubTitulo">Solicitar publicidad</h2>
+        <p class="modal-subtitulo">Completa los datos de tu campaña. <strong>Todos los campos son obligatorios.</strong></p>
+        <div class="modal-error-msg" id="modalPubError"></div>
+
+        <!-- Plan (pre-seleccionado desde tabla, editable) -->
+        <div class="campo">
+          <label for="pub-plan">Plan seleccionado <span class="req">*</span></label>
+          <select id="pub-plan">
+            <option value="">— Elige un plan —</option>
+            <option value="Prueba">Prueba — 45 imp/día · 7 días · $5.000</option>
+            <option value="Básico">Básico — 75 imp/día · 15 días · $12.000</option>
+            <option value="Estándar">Estándar — 100 imp/día · 15 días · $20.000</option>
+            <option value="Pro">Pro — 150 imp/día · 30 días · $40.000</option>
+            <option value="Premium">⭐ Premium — 250 imp/día · 30 días · $65.000</option>
+          </select>
+        </div>
+
+        <!-- Resumen automático del plan -->
+        <div class="plan-resumen" id="pubPlanResumen" style="display:none">
+          <div class="plan-resumen-titulo">📊 Detalles del plan</div>
+          <div class="plan-resumen-dato"><strong id="prImp">—</strong> Impresiones/día</div>
+          <div class="plan-resumen-dato"><strong id="prDur">—</strong> Duración</div>
+          <div class="plan-resumen-dato"><strong id="prTotal">—</strong> Total impresiones</div>
+          <div class="plan-resumen-dato"><strong id="prPrecio">—</strong> Precio COP</div>
+        </div>
+
+        <!-- Título campaña (llena el usuario) -->
+        <div class="campo">
+          <label for="pub-titulo">Título de la campaña <span class="req">*</span></label>
+          <input type="text" id="pub-titulo" placeholder="Ej: Oferta de temporada — Tienda Sofía" maxlength="80" />
+        </div>
+
+        <!-- Nota imagen -->
+        <div class="aviso-imagen">
+          <span class="aviso-imagen-icon">🖼️</span>
+          <div>
+            <strong>Recuerda adjuntar la imagen de tu banner</strong><br>
+            Al hacer clic en "Enviar solicitud", se abrirá tu cliente de correo con todos los datos ya escritos.
+            <u>Es obligatorio adjuntar la imagen del banner</u> (JPG, PNG o WEBP · recomendado 800 × 400 px)
+            antes de enviar el correo.
+          </div>
+        </div>
+
+        <!-- URL destino (llena el usuario) -->
+        <div class="campo">
+          <label for="pub-url">URL de destino <span class="req">*</span></label>
+          <input type="url" id="pub-url" placeholder="https://wa.me/57300000000 o tu enlace" />
+          <div class="campo-nota">¿A dónde llevas al usuario cuando hace clic en tu banner?</div>
+        </div>
+
+        <!-- WhatsApp (llena el usuario) -->
+        <div class="campo">
+          <label for="pub-whatsapp">Tu WhatsApp de contacto <span class="req">*</span></label>
+          <div class="campo-telefono">
+            <span>+57</span>
+            <input type="tel" id="pub-whatsapp" placeholder="300 000 0000" maxlength="15" />
+          </div>
+        </div>
+
+        <!-- Nombre empresa (llena el usuario) -->
+        <div class="campo">
+          <label for="pub-nombre">Nombre o empresa <span class="req">*</span></label>
+          <input type="text" id="pub-nombre" placeholder="Ej: Tienda Sofía / Juan Pérez" />
+        </div>
+
+        <!-- Correo (llena el usuario) -->
+        <div class="campo">
+          <label for="pub-correo">Correo de contacto <span class="req">*</span></label>
+          <input type="email" id="pub-correo" placeholder="tu@correo.com" />
+        </div>
+
+        <div class="aviso-prohibicion">
+          🚫 <strong>Recuerda:</strong> No publicamos contenido para adultos, pornografía, ni material ilegal. Las solicitudes con este tipo de contenido serán rechazadas sin excepción.
+        </div>
+
+        <button class="modal-enviar" id="btnEnviarPub">
+          <span id="btnPubTexto">Enviar solicitud de pauta</span>
+          <div class="spinner" id="spinnerPub"></div>
+        </button>
+      </div>
+
+      <div class="modal-exito" id="modalPubExito">
+        <div class="exito-check" id="exitoCheckPub">📨</div>
+        <h3 id="exitoTituloPub">Abriendo tu correo…</h3>
+        <p id="msgExitoPub">
+          Tu solicitud está lista. Se está abriendo tu cliente de correo con todos los datos escritos.
+          <strong>Adjunta la imagen del banner y presiona Enviar.</strong>
+        </p>
+        <div class="exito-pasos">
+          <div class="exito-paso activo" id="pasoPub1">
+            <span class="paso-num">1</span>
+            <span>Datos listos ✓</span>
+          </div>
+          <div class="exito-paso" id="pasoPub2">
+            <span class="paso-num">2</span>
+            <span>Abriendo correo…</span>
+          </div>
+          <div class="exito-paso" id="pasoPub3">
+            <span class="paso-num">3</span>
+            <span>Adjunta imagen y envía</span>
+          </div>
+        </div>
+        <button id="btnPubExitoCerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SCRIPTS -->
   <script src="../js/colombia-ciudades.js"></script>
-  <!-- Banner publicidad flotante -->
+  <script src="../js/impulsogis.js"></script>
   <script type="module">
     import { iniciarBannerPublicidad } from "../js/banner-pub-pages.js";
     iniciarBannerPublicidad();
   </script>
- <script type="module" src="../js/accesoadmin.js"></script>
+  <script type="module" src="../js/accesoadmin.js"></script>
   <script src="../js/nav.js" defer></script>
 </body>
 </html>
