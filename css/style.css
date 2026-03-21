@@ -679,7 +679,49 @@ footer span { color: var(--dorado-claro); }
   font-size: .68rem; color: var(--gris-500);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
+/* ── SEO section ──────────────────────────── */
+.seo-texto {
+  background: var(--gris-100);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+.seo-texto h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  font-weight: 700; color: var(--negro);
+  margin: 0 0 .6rem;
+}
+.seo-lugar {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--gris-500); margin: 0 0 .4rem;
+}
+.seo-intro {
+  font-size: .95rem; color: var(--gris-500); max-width: 580px;
+  margin: 0 auto 1.8rem; line-height: 1.65;
+}
+.seo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem; max-width: 960px; margin: 0 auto 1.25rem;
+  text-align: left;
+}
+.seo-card {
+  background: var(--blanco);
+  border: 1px solid var(--gris-300);
+  border-radius: 14px; padding: 1.1rem 1.2rem;
+}
+.seo-card strong {
+  display: block; font-size: .95rem;
+  color: var(--negro); margin-bottom: .4rem;
+}
+.seo-card p {
+  font-size: .84rem; color: var(--gris-500);
+  margin: 0; line-height: 1.6;
+}
+.seo-keywords {
+  font-size: .75rem; color: var(--gris-500);
+  max-width: 700px; margin: 0 auto; line-height: 1.9;
+}
 /* ============================================================
    BLOQUE VENDEDOR — en el modal (debajo del precio)
    Diseño tipo "tarjeta de vendedor" visualmente atractivo

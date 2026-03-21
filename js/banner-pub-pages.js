@@ -4,7 +4,7 @@
 //  Comportamiento:
 //  · Aparece 15 s después de cargar la página
 //  · Visible 20 s, luego se oculta con animación
-//  · Se repite cada 3 min
+//  · Se repite cada 1 min
 //  · Posición: fijo, lateral IZQUIERDO, ~200 px de ancho
 //
 //  Lógica de contenido (UMBRAL = 15 publicidades con cupo):
@@ -16,6 +16,10 @@
 //  · Todas agotaron límite diario → solo productos ese día.
 //  · Al día siguiente el conteo se reinicia automáticamente (sub-clave YYYY-MM-DD).
 //  · Sin publicidad ni productos → no muestra nada.
+//
+//  Al hacer clic en un PRODUCTO abre el modal unificado de
+//  js/modal-producto-banner.js (se inyecta automáticamente en
+//  cualquier página sin necesidad de agregar HTML manual).
 // ============================================================
 import { initializeApp, getApps }
   from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -23,6 +27,9 @@ import {
   getFirestore, collection, getDocs, doc,
   query, where, increment, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+// ── Importar modal de producto (se auto-inyecta en la página) ─────
+import { abrirModalProducto } from "./modal-producto-banner.js";
 
 // ── Firebase ──────────────────────────────────────────────
 const _fbConfig = {
@@ -54,7 +61,6 @@ function resolverImgProducto(url) {
   url = url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "");
   const isGH     = window.location.hostname.includes("github.io");
   const base     = isGH ? "/gistore" : "";
-  // Desde page/tienda.html → prefijo "../"
   const isInPage = window.location.pathname.includes("/page/");
   const prefix   = isInPage ? "../" : "";
   return `${window.location.origin}${base}/${prefix}${url}`;
@@ -91,8 +97,8 @@ function elegirPublicidad(pubsConCupo) {
 }
 
 // ── Rotación de productos sin repetir ────────────────────
-let _colaProductos  = [];
-let _cacheFallback  = null;  // productos del catálogo general (fallback)
+let _colaProductos = [];
+let _cacheFallback = null;
 
 async function _cargarFallbackProductos() {
   if (_cacheFallback !== null) return _cacheFallback;
@@ -110,14 +116,11 @@ async function _cargarFallbackProductos() {
 }
 
 function _siguienteProducto(productosExtra) {
-  // Usa el caché de la tienda (window._cacheTodos) si tiene activos,
-  // si no usa el catálogo general cargado como fallback
   const localCache = window._cacheTodos || [];
   const activos    = localCache.filter(p => p.activo !== false);
   const fuente     = activos.length >= 3 ? activos : (productosExtra || activos);
   if (!fuente.length) return null;
 
-  // Reconstruir cola si cambió la fuente o está vacía
   if (!_colaProductos.length || _colaProductos._fuente !== fuente) {
     _colaProductos = fuente.map((_, i) => i);
     _colaProductos._fuente = fuente;
@@ -255,7 +258,10 @@ function renderPub(pub) {
   const tituloHtml = pub.titulo
     ? `<div id="pub-float-pub-nombre">${pub.titulo}</div>`
     : "";
-    pub.imagen_url = pub.imagen_url ? pub.imagen_url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "") : "";
+  pub.imagen_url = pub.imagen_url
+    ? pub.imagen_url.replace(/\\/g, "/").replace(/^[A-Za-z]:\/.*?\/gistore\//, "").replace(/^\//, "")
+    : "";
+
   body.innerHTML = (pub.imagen_url
     ? `<img id="pub-float-img" src="${pub.imagen_url}" alt="${pub.titulo || 'Publicidad'}"
            loading="lazy" onerror="this.style.display='none'">`
@@ -273,6 +279,7 @@ function renderPub(pub) {
 }
 
 // ── Renderizar producto ───────────────────────────────────
+// Al hacer clic → abre el modal del módulo modal-producto-banner.js
 function renderProducto(productosExtra) {
   const prod = _siguienteProducto(productosExtra);
   if (!prod) return false;
@@ -301,15 +308,16 @@ function renderProducto(productosExtra) {
     </div>`;
 
   panel.style.cursor = "pointer";
+
+  // ── CLIC EN PRODUCTO: abre el modal ──────────────────────────────
   body.onclick = () => {
     ocultarPanel();
-    if (typeof window._abrirModalProducto === "function") {
-      window._abrirModalProducto(prod); return;
-    }
-    const inp = document.getElementById("busqueda-input");
-    if (inp) { inp.value = prod.nombre; inp.dispatchEvent(new Event("input")); }
-    document.getElementById("grilla")?.scrollIntoView({ behavior: "smooth" });
+    // modal-producto-banner.js ya registró window._abrirModalProducto
+    // via el import al inicio del módulo, pero llamamos directamente
+    // a la función importada para mayor seguridad:
+    abrirModalProducto(prod);
   };
+
   return true;
 }
 
@@ -324,21 +332,16 @@ async function ejecutarCiclo() {
     const pubs       = await cargarPublicidadesActivas();
     const contadores = await Promise.all(pubs.map(p => leerContadorHoy(p.id)));
 
-    // Separar con cupo vs agotadas
     const pubsConCupo = pubs
       .map((p, i) => ({ p, count: contadores[i] }))
       .filter(({ p, count }) => count < (p.limite_diario ?? Infinity))
-      .sort((a, b) => a.count - b.count); // menor impresiones primero
+      .sort((a, b) => a.count - b.count);
 
-    // ── Pre-cargar fallback de productos si el caché local tiene pocos ──
-    // En page/tienda.html, _cacheTodos solo tiene productos del vendedor.
-    // Si tiene menos de 3, cargamos el catálogo general como respaldo.
     const localActivos = (window._cacheTodos || []).filter(p => p.activo !== false);
     const fallback = localActivos.length >= 3
       ? localActivos
       : await _cargarFallbackProductos();
 
-    // ── Sin cupo disponible hoy → solo productos ──────────
     if (!pubsConCupo.length) {
       const ok = renderProducto(fallback);
       if (ok) mostrarPanel();
@@ -347,15 +350,12 @@ async function ejecutarCiclo() {
 
     const pocasPubs = pubsConCupo.length < UMBRAL_PUBS;
 
-    // ── Modo mixto (< 15 pubs con cupo) ──────────────────
     if (pocasPubs) {
       const mostrarProductoAhora = Math.random() < 0.5;
-
       if (mostrarProductoAhora) {
         const ok = renderProducto(fallback);
         if (ok) { mostrarPanel(); return; }
       }
-
       const elegida = elegirPublicidad(pubsConCupo);
       if (elegida) {
         renderPub(elegida.p);
@@ -363,13 +363,11 @@ async function ejecutarCiclo() {
         mostrarPanel();
         return;
       }
-
       const ok = renderProducto(fallback);
       if (ok) mostrarPanel();
       return;
     }
 
-    // ── Modo publicidad dominante (≥ 15 pubs con cupo) ───
     const esCicloProducto = (_contadorCiclo % FRECUENCIA_PRODUCTO) === 0;
     if (esCicloProducto) {
       const ok = renderProducto(fallback);
