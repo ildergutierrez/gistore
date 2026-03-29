@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resultado de Pago — GI Store</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <style>
+      .resultado-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--fondo);
+      }
+      .resultado-card {
+        background: var(--fondo-2);
+        border: 1.5px solid var(--borde);
+        border-radius: var(--radio-lg);
+        padding: 2.5rem 2rem;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: var(--sombra-md);
+      }
+      .resultado-icono { font-size: 3.5rem; margin-bottom: 1rem; }
+      .resultado-titulo {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        margin-bottom: .5rem;
+      }
+      .resultado-sub {
+        font-size: .9rem;
+        color: var(--texto-suave);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+      .resultado-ref {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        padding: .75rem 1rem;
+        font-size: .82rem;
+        color: var(--texto-suave);
+        margin-bottom: 1.5rem;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="resultado-wrap">
+      <div class="resultado-card" id="cardResultado">
+        <div class="resultado-icono">⏳</div>
+        <div class="resultado-titulo">Verificando pago...</div>
+        <div class="resultado-sub">Espera un momento mientras confirmamos tu transacción.</div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { db, auth } from "../js/firebase.js";
+      import {
+        collection, query, where, orderBy, limit,
+        getDocs, addDoc, updateDoc, doc
+      import { onAuthStateChanged }
+
+      const params = new URLSearchParams(location.search);
+      const txId   = params.get("id")  || "";   // ID transacción Wompi
+      const ref    = params.get("ref") || "";   // nuestra referencia
+      const card   = document.getElementById("cardResultado");
+
+      // Sin id de transacción → cancelación o error
+      if (!txId) {
+        mostrarError("El pago fue cancelado o no se completó. No se realizó ningún cobro.");
+      } else {
+        // Esperar sesión activa para activar membresía
+        fetch('/api/auth/sesion', {credentials:'include'}).then(r=>r.json()).then(async data => { const user = data.ok ? data.datos : null; if(true) {
+          if (!user) { location.href = "../index.html"; return; }
+          await procesarPago(user, txId, ref);
+        });
+      }
+
+      // ── Consultar Wompi y activar membresía ──────────────
+      async function procesarPago(user, txId, ref) {
+        try {
+          // 1. Consultar estado en API Wompi sandbox
+          const resp = await fetch(`https://sandbox.wompi.co/v1/transactions/${txId}`);
+          if (!resp.ok) throw new Error("Error consultando Wompi: " + resp.status);
+          const data = await resp.json();
+          const tx   = data?.data;
+          if (!tx) throw new Error("Transacción no encontrada");
+
+          if (tx.status === "APPROVED") {
+            // 2. Buscar documento de vendedor por uid_auth
+            const vendSnap = await getDocs(query(
+              collection(db, "vendedores"),
+              where("uid_auth", "==", user.uid)
+            ));
+            if (vendSnap.empty) throw new Error("Perfil de vendedor no encontrado");
+
+            const vendedorId = vendSnap.docs[0].id;
+            const monto      = (tx.amount_in_cents || 0) / 100;
+
+            // 3. Idempotencia: no activar dos veces la misma transacción
+            const pagoExiste = await getDocs(query(
+              collection(db, "pagos"),
+              where("transaccion_id", "==", txId),
+              limit(1)
+            ));
+
+            if (pagoExiste.empty) {
+              await activarMembresia(vendedorId, txId, tx.reference || ref, monto);
+            }
+
+            card.innerHTML = `
+              <div class="resultado-icono">🎉</div>
+              <div class="resultado-titulo" style="color:var(--ok)">¡Pago aprobado!</div>
+              <div class="resultado-sub">
+                Tu membresía fue activada por <strong>30 días</strong>.<br>
+                Ya apareces en el catálogo de GI Store.
+              </div>
+              <div class="resultado-ref">Referencia: <strong>${tx.reference || ref}</strong></div>
+              <a href="membresia.html" class="btn btn-primary"
+                 style="display:inline-flex;text-decoration:none;margin-top:.5rem">
+                Ver mi membresía
+              </a>`;
+
+          } else if (tx.status === "PENDING") {
+            card.innerHTML = `
+              <div class="resultado-icono">⏳</div>
+              <div class="resultado-titulo" style="color:#92400e">Pago en proceso</div>
+              <div class="resultado-sub">
+                Tu pago está siendo procesado por la entidad bancaria.<br>
+                Tu membresía se activará automáticamente al confirmarse. Puede tardar unos minutos.
+              </div>
+              <div class="resultado-ref">Referencia: <strong>${tx.reference || ref}</strong></div>
+              <a href="dashboard.html" class="btn btn-secundario"
+                 style="display:inline-flex;text-decoration:none;margin-top:.5rem">
+                Ir al dashboard
+              </a>`;
+
+          } else {
+            // DECLINED o VOIDED
+            mostrarError(
+              tx.status === "VOIDED"
+                ? "La transacción fue anulada. No se realizó ningún cobro."
+                : "El pago fue rechazado. Verifica los datos e intenta de nuevo."
+            );
+          }
+
+        } catch (err) {
+          console.error(err);
+          card.innerHTML = `
+            <div class="resultado-icono">⚠️</div>
+            <div class="resultado-titulo" style="color:var(--error)">Error al verificar</div>
+            <div class="resultado-sub">
+              No pudimos confirmar tu pago automáticamente.<br>
+              Si se realizó el cobro, contáctanos con el ID de transacción y te activamos de inmediato.
+            </div>
+            <div class="resultado-ref">ID transacción: <strong>${txId}</strong></div>
+            <a href="https://wa.me/573145891108?text=${encodeURIComponent("Hola, pagué en GI Store. ID transacción: " + txId + ". Por favor activen mi membresía.")}"
+               target="_blank" class="btn btn-primary"
+               style="display:inline-flex;text-decoration:none;margin-top:.5rem">
+              💬 Contactar soporte
+            </a>`;
+        }
+      }
+
+      // ── Activar membresía en Firestore ────────────────────
+      async function activarMembresia(vendedorId, txId, referencia, monto) {
+        const hoy      = new Date();
+        const fInicio  = hoy.toISOString().split("T")[0];
+        const fechaFin = new Date(hoy);
+        fechaFin.setDate(fechaFin.getDate() + 30);
+        const fFin     = fechaFin.toISOString().split("T")[0];
+
+        // Registrar el pago
+        await addDoc(collection(db, "pagos"), {
+          vendedor_id:    vendedorId,
+          transaccion_id: txId,
+          referencia,
+          monto,
+          plan:        monto <= 15000 ? "Fundador" : "Estándar",
+          fecha_pago:  fInicio,
+          estado:      "aprobado",
+          fuente:      "wompi_redirect",
+          creado_en:   new Date().toISOString(),
+        });
+
+        // Intentar extender membresía activa vigente
+        let extendida = false;
+        try {
+          const memSnap = await getDocs(query(
+            collection(db, "membresias"),
+            where("vendedor_id", "==", vendedorId),
+            where("estado", "==", "activa"),
+            orderBy("fecha_fin", "desc"),
+            limit(1)
+          ));
+          if (!memSnap.empty) {
+            const m            = memSnap.docs[0];
+            const fechaActual  = m.data().fecha_fin;
+            const base         = fechaActual >= fInicio ? new Date(fechaActual) : new Date(fInicio);
+            base.setDate(base.getDate() + 30);
+            await updateDoc(doc(db, "membresias", m.id), {
+              fecha_fin:      base.toISOString().split("T")[0],
+              actualizado_en: new Date().toISOString(),
+            });
+            extendida = true;
+          }
+        } catch { /* fallback si no hay índice compuesto */ }
+
+        // Si no había membresía activa, crear una nueva
+        if (!extendida) {
+          await addDoc(collection(db, "membresias"), {
+            vendedor_id:  vendedorId,
+            fecha_inicio: fInicio,
+            fecha_fin:    fFin,
+            estado:       "activa",
+            plan:         monto <= 15000 ? "Fundador" : "Estándar",
+            notas:        "Activada automáticamente · Wompi · Ref: " + referencia,
+            creado_en:    new Date().toISOString(),
+          });
+        }
+
+        // Activar vendedor
+        await updateDoc(doc(db, "vendedores", vendedorId), {
+          estado:         "activo",
+          actualizado_en: new Date().toISOString(),
+        });
+
+        // Activar todos los productos del vendedor
+        const prodSnap = await getDocs(query(
+          collection(db, "productos"),
+          where("vendedor_id", "==", vendedorId)
+        ));
+        await Promise.all(prodSnap.docs.map(d =>
+          updateDoc(doc(db, "productos", d.id), {
+            activo:         true,
+            actualizado_en: new Date().toISOString(),
+          })
+        ));
+      }
+
+      function mostrarError(msg) {
+        card.innerHTML = `
+          <div class="resultado-icono">❌</div>
+          <div class="resultado-titulo" style="color:var(--error)">Pago no completado</div>
+          <div class="resultado-sub">${msg}</div>
+          <a href="membresia.html" class="btn btn-secundario"
+             style="display:inline-flex;text-decoration:none;margin-top:.5rem">
+            Volver e intentar de nuevo
+          </a>`;
+      }
+    </script>
+  </body>
+</html>

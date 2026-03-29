@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendedores — GI Store Admin</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link
+      rel="icon"
+      href="../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+    <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <style>
+    /* ── Buscador vendedores ── */
+    .filtro-barra {
+      display: flex;
+      gap: .6rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filtro-campo {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      flex: 1;
+      min-width: 180px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: .5rem .85rem;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .filtro-campo:focus-within {
+      border-color: var(--verde, #1a6b3c);
+      box-shadow: 0 0 0 3px rgba(26,107,60,.1);
+      background: #fff;
+    }
+    .filtro-campo svg { flex-shrink: 0; color: #94a3b8; }
+    .filtro-campo input {
+      flex: 1; border: none; outline: none;
+      background: transparent; font-family: inherit;
+      font-size: .88rem; color: #1a2e22;
+    }
+    .filtro-campo input::placeholder { color: #b0b8c1; }
+    .filtro-clear {
+      background: none; border: none; cursor: pointer;
+      color: #94a3b8; font-size: .95rem; line-height: 1;
+      padding: 0 2px; display: none;
+    }
+    .filtro-clear:hover { color: #475569; }
+    .filtro-sin-resultados {
+      text-align: center; padding: 1.5rem 0;
+      color: #94a3b8; font-size: .88rem;
+    }
+
+    /* ── Tabla vendedores: columnas sin saltos de línea ── */
+    #tablaWrap table {
+      min-width: 780px; /* fuerza scroll horizontal antes de romper */
+    }
+    /* WhatsApp y correo: nunca parten */
+    #tablaWrap td:nth-child(4),
+    #tablaWrap td:nth-child(5) {
+      white-space: nowrap;
+    }
+    /* Nombre: mínimo 110px para que no parta tan rápido */
+    #tablaWrap td:nth-child(2) {
+      min-width: 110px;
+      white-space: nowrap;
+    }
+    /* Ciudad */
+    #tablaWrap td:nth-child(3) {
+      white-space: nowrap;
+    }
+    /* Acceso y estado: compactos */
+    #tablaWrap td:nth-child(6),
+    #tablaWrap td:nth-child(7) {
+      white-space: nowrap;
+    }
+    /* Botones de acción en columna vertical compacta */
+    #tablaWrap .td-acciones {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      align-items: flex-start;
+    }
+  </style>
+  </head>
+  <body>
+    <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar">
+        <a href="dashboard.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none;display:flex;align-items:center;gap:.75rem;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
+    <div class="sidebar-logo-icono"><img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/></div>
+    <div class="sidebar-logo-txt">
+      <strong>GI Store</strong>
+      <span>Admin Panel</span>
+    </div>
+  </a>
+      <nav class="nav">
+        <div class="nav-titulo">General</div>
+        <a href="dashboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a
+        >
+        <div class="nav-titulo">Gestión</div>
+        <a href="#" class="activo"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">point_of_sale</span></span
+          >
+          Vendedores</a
+        >
+        <a href="vendedores-inactivos.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">person_off</span></span
+          >
+          Desactivados</a
+        >
+        <a href="membresias.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">id_card</span></span
+          >
+          Membresías</a
+        >
+        <a href="productos.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">shopping_bag</span></span
+          >
+          Productos</a
+        >
+        <a href="categorias.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">article_person</span></span
+          >
+          Categorías</a
+        >
+        <div class="nav-titulo">Admin</div>
+        <a href="catalogo.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">export_notes</span></span
+          >
+          Exportar catálogo</a
+        >
+        <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span> Publicidad</a>
+        <a href="foro-admin.html"><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+    <a href="api-claves.html" ><span class="icono"><span class="material-symbols-outlined">key</span></span> Claves API</a>
+        <a href="perfil.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined"
+              >contacts_product</span
+            ></span
+          >
+          Mi perfil</a
+        >
+        <div class="nav-titulo">Sitio</div>
+        <a href="../../index.html" target="_blank"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">trolley</span></span
+          >
+          Ver catálogo</a
+        >
+      </nav>
+      <div class="sidebar-pie">
+        <button class="btn-salir" id="btnSalir">
+          <span class="material-symbols-outlined">logout</span> Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-izq">
+          <h1>Vendedores</h1>
+          <p class="fecha" id="fechaHoy"></p>
+        </div>
+        <div class="topbar-der">
+          <button class="btn btn-primary" id="btnNuevo">
+            + Nuevo vendedor
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>👥 Lista de vendedores</h2>
+          <span
+            id="totalVendedores"
+            style="font-size: 0.8rem; color: var(--texto-suave)"
+          ></span>
+        </div>
+        <!-- Buscador por número y correo -->
+        <div class="filtro-barra">
+          <div class="filtro-campo">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M2 2h2l.4 2m0 0L6 10h8l1.5-6H4.4z"/>
+            </svg>
+            <input type="tel" id="filtroTelefono"
+                   placeholder="Buscar por celular…" autocomplete="off" maxlength="20"/>
+            <button class="filtro-clear" id="clearTelefono" title="Limpiar">✕</button>
+          </div>
+          <div class="filtro-campo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input type="email" id="filtroCorreo"
+                   placeholder="Buscar por correo…" autocomplete="off"/>
+            <button class="filtro-clear" id="clearCorreo" title="Limpiar">✕</button>
+          </div>
+        </div>
+
+        <div id="tablaWrap"><p class="cargando-txt">Cargando...</p></div>
+      </div>
+    </main>
+
+    <!-- ── Modal Crear / Editar ── -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <div class="modal-titulo" id="modalTitulo">Nuevo vendedor</div>
+
+        <div class="msg-error" id="msgError">
+          <span>⚠&nbsp;</span><span id="textoError"></span>
+        </div>
+        <div class="msg-ok" id="msgOk">
+          <span>✓&nbsp;</span><span id="textoOk"></span>
+        </div>
+
+        <input type="hidden" id="vendedorId" />
+
+        <div class="campo">
+          <label>Nombre</label>
+          <input type="text" id="fNombre" placeholder="Ej: Juan Pérez" />
+        </div>
+        <div class="campo">
+          <label>Ciudad</label>
+          <input type="text" id="fCiudad" placeholder="Ej: Aguachica" />
+        </div>
+        <div class="campo">
+          <label>Correo</label>
+          <input type="email" id="fCorreo" placeholder="vendedor@correo.com" />
+        </div>
+        <div class="campo" id="campoPassword">
+          <label>Contraseña de acceso</label>
+          <div style="position: relative">
+            <input
+              type="password"
+              id="fPassword"
+              placeholder="Mínimo 6 caracteres"
+              style="padding-right: 2.8rem"
+            />
+            <button
+              type="button"
+              id="btnVerPass"
+              style="
+                position: absolute;
+                right: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                color: var(--texto-suave);
+                padding: 0;
+                line-height: 1;
+              "
+            >
+              👁
+            </button>
+          </div>
+          <p
+            style="
+              font-size: 0.73rem;
+              color: var(--texto-suave);
+              margin-top: 0.3rem;
+            "
+          >
+            🔐 Esta contraseña se usará para que el vendedor ingrese al portal.
+          </p>
+        </div>
+        <div class="campo">
+          <label>WhatsApp (con código país)</label>
+          <input type="text" id="fWhatsapp" placeholder="573145891108" />
+        </div>
+        <div class="campo">
+          <label>Color del vendedor</label>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem">
+            <!-- Paleta de colores predefinidos -->
+            <div
+              id="colorFila"
+              style="
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 6px;
+              "
+            ></div>
+            <!-- Separador -->
+            <div style="display: flex; align-items: center; gap: 0.75rem">
+              <div style="flex: 1; height: 1px; background: var(--borde)"></div>
+              <span
+                style="
+                  font-size: 0.72rem;
+                  color: var(--texto-suave);
+                  white-space: nowrap;
+                "
+                >o elige un color personalizado</span
+              >
+              <div style="flex: 1; height: 1px; background: var(--borde)"></div>
+            </div>
+            <!-- Selector personalizado -->
+            <div style="display: flex; align-items: center; gap: 0.75rem">
+              <input
+                type="color"
+                id="colorPicker"
+                value="#1a6b3c"
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border: 2px solid var(--borde);
+                  border-radius: 10px;
+                  cursor: pointer;
+                  padding: 2px;
+                  background: var(--fondo-2);
+                "
+              />
+              <div
+                id="colorPreview"
+                style="
+                  flex: 1;
+                  height: 44px;
+                  border-radius: 10px;
+                  border: 2px solid var(--borde);
+                  transition: background 0.2s;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <span
+                  id="colorHex"
+                  style="
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    color: #fff;
+                    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+                    letter-spacing: 0.05em;
+                  "
+                  >#1A6B3C</span
+                >
+              </div>
+            </div>
+          </div>
+          <input type="hidden" id="fColor" value="#1a6b3c" />
+        </div>
+        <div class="campo">
+          <label>Estado</label>
+          <select id="fEstado">
+            <option value="activo">Activo</option>
+
+          </select>
+        </div>
+
+        <div class="modal-acciones">
+          <button class="btn btn-secundario" id="btnCancelar">Cancelar</button>
+          <button class="btn btn-primary" id="btnGuardar">
+            <span class="btn-texto">Guardar</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Modal Vincular Acceso ── -->
+    <div class="modal-overlay" id="modalVincular">
+      <div class="modal" style="max-width: 420px">
+        <div class="modal-titulo">🔑 Vincular acceso al portal</div>
+        <p
+          style="
+            color: var(--texto-medio);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+          "
+        >
+          Crea las credenciales de acceso para este vendedor.<br />
+          Se creará un usuario en Firebase Authentication.
+        </p>
+        <div class="msg-error" id="msgErrorV">
+          <span>⚠&nbsp;</span><span id="textoErrorV"></span>
+        </div>
+        <div class="msg-ok" id="msgOkV">
+          <span>✓&nbsp;</span><span id="textoOkV"></span>
+        </div>
+        <div class="campo">
+          <label>Correo electrónico</label>
+          <input type="email" id="vCorreo" placeholder="vendedor@correo.com" />
+        </div>
+        <div class="campo">
+          <label>Contraseña de acceso</label>
+          <div style="position: relative">
+            <input
+              type="password"
+              id="vPassword"
+              placeholder="Mínimo 6 caracteres"
+              style="padding-right: 2.8rem"
+            />
+            <button
+              type="button"
+              id="btnVerPassV"
+              style="
+                position: absolute;
+                right: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                color: var(--texto-suave);
+                padding: 0;
+                line-height: 1;
+              "
+            >
+              👁
+            </button>
+          </div>
+          <p
+            style="
+              font-size: 0.73rem;
+              color: var(--texto-suave);
+              margin-top: 0.3rem;
+            "
+          >
+            🔐 Envía estas credenciales al vendedor para que ingrese al portal.
+          </p>
+        </div>
+        <div class="modal-acciones">
+          <button class="btn btn-secundario" id="btnCancelarVincular">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" id="btnConfirmarVincular">
+            <span class="btn-texto">🔑 Crear acceso</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Modal Confirmar Eliminar ── -->
+    <div class="modal-overlay" id="modalEliminar">
+      <div class="modal" style="max-width: 400px">
+        <div class="modal-titulo">🚫 Desactivar vendedor</div>
+        <p
+          style="
+            color: var(--texto-medio);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+          "
+        >
+          ¿Estás seguro? Esta acción eliminará al vendedor y no se puede
+          deshacer.<br />
+          <strong style="color: var(--error)" id="nombreEliminar"></strong>
+        </p>
+        <div class="modal-acciones">
+          <button class="btn btn-secundario" id="btnCancelarEliminar">
+            Cancelar
+          </button>
+          <button class="btn btn-peligro" id="btnConfirmarEliminar">
+            <span class="btn-texto">Sí, desactivar</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+     <script src="../js/auth.js"></script>
+    <script type="module" src="../js/vendedores.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnH = document.getElementById("btnHamburguesa");
+        var sidebar = document.querySelector(".sidebar");
+        var overlay = document.getElementById("sidebarOverlay");
+        if (!btnH || !sidebar || !overlay) return;
+
+        function abrir() {
+          sidebar.classList.add("abierto");
+          overlay.classList.add("visible");
+          btnH.classList.add("abierto");
+        }
+        function cerrar() {
+          sidebar.classList.remove("abierto");
+          overlay.classList.remove("visible");
+          btnH.classList.remove("abierto");
+        }
+
+        btnH.addEventListener("click", function () {
+          sidebar.classList.contains("abierto") ? cerrar() : abrir();
+        });
+        overlay.addEventListener("click", cerrar);
+
+        document.querySelectorAll(".nav a").forEach(function (a) {
+          a.addEventListener("click", function () {
+            if (window.innerWidth <= 700) cerrar();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

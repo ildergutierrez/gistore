@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editor de Tarjeta — GI Store</title>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700;900&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde: #1a6b3c;
+      --verde-medio: #2d8a56;
+      --fondo: #0f172a;
+      --panel: #1e293b;
+      --panel-borde: #334155;
+      --panel-hover: #273548;
+      --texto: #f1f5f9;
+      --texto-suave: #94a3b8;
+      --acento: #22c55e;
+      --acento2: #6366f1;
+      --radio: 10px;
+    }
+
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--fondo); color: var(--texto); overflow: hidden; }
+
+    /* ═══════════════ LAYOUT ═══════════════ */
+    #app { display: flex; height: 100vh; width: 100vw; }
+
+    /* ── Sidebar izquierdo (herramientas) ── */
+    #sidebar {
+      width: 300px; min-width: 280px; background: var(--panel);
+      border-right: 1px solid var(--panel-borde);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sb-header {
+      padding: 1rem 1.1rem .75rem;
+      border-bottom: 1px solid var(--panel-borde);
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .sb-header .logo { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; color: var(--acento); }
+    .sb-header .sub { font-size: .72rem; color: var(--texto-suave); }
+    .sb-back {
+      margin-left: auto; background: none; border: 1px solid var(--panel-borde);
+      color: var(--texto-suave); border-radius: 6px; padding: .3rem .65rem;
+      font-size: .75rem; cursor: pointer; display: flex; align-items: center; gap: .3rem;
+      transition: background .15s;
+    }
+    .sb-back:hover { background: var(--panel-hover); color: var(--texto); }
+
+    /* tabs de secciones */
+    .sb-tabs {
+      display: flex; border-bottom: 1px solid var(--panel-borde);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .sb-tabs::-webkit-scrollbar { display: none; }
+    .sb-tab {
+      flex: 1; padding: .55rem .3rem; font-size: .72rem; font-weight: 600;
+      text-align: center; cursor: pointer; color: var(--texto-suave);
+      border-bottom: 2px solid transparent; transition: all .15s;
+      white-space: nowrap;
+    }
+    .sb-tab.activo { color: var(--acento); border-color: var(--acento); }
+    .sb-tab:hover:not(.activo) { color: var(--texto); }
+
+    /* paneles */
+    .sb-body { flex: 1; overflow-y: auto; padding: .85rem; }
+    .sb-body::-webkit-scrollbar { width: 5px; }
+    .sb-body::-webkit-scrollbar-thumb { background: var(--panel-borde); border-radius: 3px; }
+
+    .sb-section { display: none; flex-direction: column; gap: .65rem; }
+    .sb-section.activo { display: flex; }
+
+    .sb-label {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--texto-suave); margin-bottom: -.2rem;
+    }
+    .sb-input {
+      width: 100%; padding: .55rem .75rem;
+      background: #0f172a; border: 1px solid var(--panel-borde);
+      border-radius: var(--radio); color: var(--texto); font-family: inherit;
+      font-size: .85rem; transition: border-color .15s;
+    }
+    .sb-input:focus { outline: none; border-color: var(--acento); }
+    textarea.sb-input { resize: vertical; min-height: 70px; line-height: 1.5; }
+
+    .sb-row { display: flex; gap: .5rem; align-items: center; }
+    .sb-color {
+      width: 38px; height: 32px; border-radius: 6px; border: 1px solid var(--panel-borde);
+      cursor: pointer; padding: 2px; background: none;
+    }
+
+    /* range slider */
+    .sb-range { width: 100%; accent-color: var(--acento); cursor: pointer; }
+
+    /* select */
+    .sb-select {
+      width: 100%; padding: .5rem .7rem;
+      background: #0f172a; border: 1px solid var(--panel-borde);
+      border-radius: var(--radio); color: var(--texto); font-family: inherit;
+      font-size: .84rem; cursor: pointer;
+    }
+    .sb-select:focus { outline: none; border-color: var(--acento); }
+
+    /* toggle switch */
+    .sb-toggle-row { display: flex; align-items: center; justify-content: space-between; }
+    .sb-toggle { position: relative; width: 38px; height: 20px; }
+    .sb-toggle input { display: none; }
+    .sb-toggle-track {
+      position: absolute; inset: 0; border-radius: 10px;
+      background: var(--panel-borde); transition: background .2s; cursor: pointer;
+    }
+    .sb-toggle input:checked + .sb-toggle-track { background: var(--acento); }
+    .sb-toggle-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; transition: transform .2s;
+    }
+    .sb-toggle input:checked + .sb-toggle-track::after { transform: translateX(18px); }
+
+    /* paletas de color */
+    .color-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .35rem; }
+    .color-swatch {
+      width: 100%; aspect-ratio: 1; border-radius: 4px; cursor: pointer;
+      border: 2px solid transparent; transition: transform .1s, border-color .15s;
+    }
+    .color-swatch:hover { transform: scale(1.12); }
+    .color-swatch.activo { border-color: #fff; }
+
+    /* gradientes preset */
+    .grad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+    .grad-swatch {
+      height: 36px; border-radius: 6px; cursor: pointer;
+      border: 2px solid transparent; transition: border-color .15s, transform .1s;
+    }
+    .grad-swatch:hover { transform: scale(1.04); }
+    .grad-swatch.activo { border-color: #fff; }
+
+    /* botones de acción sidebar */
+    .btn-sb {
+      width: 100%; padding: .6rem; border-radius: var(--radio);
+      font-family: inherit; font-size: .85rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: .45rem; border: none; transition: opacity .15s, transform .1s;
+    }
+    .btn-sb:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-sb-verde { background: var(--acento); color: #0f172a; }
+    .btn-sb-indigo { background: var(--acento2); color: #fff; }
+    .btn-sb-outline { background: none; border: 1px solid var(--panel-borde); color: var(--texto-suave); }
+    .btn-sb-libre {
+      background: linear-gradient(135deg,#0f766e,#0d9488);
+      color: #fff; border: none;
+    }
+    .btn-sb-outline:hover { color: var(--texto); border-color: var(--acento); }
+
+    /* separador */
+    .sb-sep { height: 1px; background: var(--panel-borde); margin: .15rem 0; }
+
+    /* mini valor del range */
+    .range-val { font-size: .78rem; color: var(--acento); font-weight: 600; min-width: 30px; text-align: right; }
+
+    /* ── Canvas central ── */
+    #canvas-area {
+      flex: 1; display: flex; flex-direction: column;
+      background: #080f1c; overflow: hidden;
+    }
+    .canvas-toolbar {
+      height: 44px; background: var(--panel);
+      border-bottom: 1px solid var(--panel-borde);
+      display: flex; align-items: center; gap: .75rem; padding: 0 1rem;
+      flex-shrink: 0;
+    }
+    .canvas-toolbar span { font-size: .8rem; color: var(--texto-suave); }
+    .canvas-toolbar .zoom-val { font-weight: 700; color: var(--texto); min-width: 38px; text-align: center; }
+    .ct-btn {
+      background: none; border: 1px solid var(--panel-borde); color: var(--texto-suave);
+      border-radius: 6px; width: 28px; height: 28px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; transition: all .15s;
+    }
+    .ct-btn:hover { background: var(--panel-hover); color: var(--texto); }
+    .ct-btn .material-symbols-outlined { font-size: 1rem; }
+    .canvas-toolbar .ml-auto { margin-left: auto; }
+
+    #canvas-scroll {
+      flex: 1; overflow: auto; display: flex;
+      align-items: flex-start; justify-content: center;
+      padding: 2rem;
+    }
+    #canvas-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    #canvas-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+
+    /* ── LA TARJETA ── */
+    #card-wrapper {
+      transform-origin: top center;
+      transition: transform .18s;
+    }
+#ed-img-col {
+  overflow: hidden;
+  position: relative;
+}
+    #ed-card {
+      width: 780px;
+      background: #fff;
+      color: #111827; /* color base de contraste sobre blanco */
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 12px 60px rgba(0,0,0,.5);
+      font-family: 'Inter', sans-serif;
+      position: relative;
+      user-select: none;
+    }
+
+    #ed-topbar { height: 7px; }
+
+    #ed-inner {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 460px;
+    }
+
+    /* imagen */
+    #ed-img-col {
+      position: relative; overflow: hidden;
+      background: #e8f5ee;
+      cursor: crosshair;
+    }
+    #ed-img-el {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transform-origin: center center;
+    }
+    #ed-img-overlay {
+      position: absolute; inset: 0; pointer-events: none;
+    }
+    #ed-cat-badge {
+      position: absolute; top: 14px; left: 14px;
+      font-size: .72rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; padding: .28rem .7rem;
+      border-radius: 20px;
+    }
+
+    /* info */
+    #ed-info-col {
+      padding: 2rem 1.75rem 1.5rem;
+      display: flex; flex-direction: column; gap: .8rem;
+    }
+    /* ── Colores de contraste sobre fondo blanco de la tarjeta ── */
+    #ed-card, #ed-card * { color: inherit; }
+
+    #ed-marca   { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+                  color: #1a6b3c; /* sobreescrito por aplicarColorPrimario */ }
+    #ed-nombre  { font-size: 1.7rem; font-weight: 800; line-height: 1.2; color: #111827; }
+    #ed-divider { height: 3px; width: 48px; border-radius: 2px; background: linear-gradient(90deg,#1a6b3c,#1a6b3c88); }
+    #ed-precio-wrap { display: flex; align-items: baseline; gap: .35rem; }
+    #ed-precio  { font-size: 2.3rem; font-weight: 900; line-height: 1; color: #1a6b3c; }
+    #ed-moneda  { font-size: .95rem; font-weight: 600; color: #6b7280; }
+    #ed-desc    { font-size: .87rem; line-height: 1.7; flex: 1; color: #374151; }
+    #ed-bens    { display: flex; flex-direction: column; gap: .4rem; }
+    .ed-ben-titulo { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+                     color: #6b7280; margin-bottom: .1rem; }
+    .ed-ben-item   { display: flex; align-items: center; gap: .45rem; font-size: .82rem; color: #1f2937; }
+    .ed-ben-bullet { font-size: .7rem; flex-shrink: 0; color: #1a6b3c; }
+    #ed-reco {
+      font-size: .81rem; font-style: italic; line-height: 1.5; color: #166534;
+      background: #f0fdf4; border-left: 3px solid #22c55e; padding: .55rem .8rem;
+      border-radius: 0 7px 7px 0;
+    }
+    #ed-ia-txt {
+      font-size: .81rem; font-style: italic; line-height: 1.65; color: #374151;
+      border-top: 1px solid #e5e7eb; padding-top: .65rem; margin-top: .1rem;
+    }
+    #ed-footer {
+      padding: .8rem 1.75rem; border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #ed-footer-marca { font-size: .78rem; font-weight: 700; color: #1a6b3c; }
+    #ed-footer-ia    { font-size: .7rem; color: #9ca3af; }
+    #ed-moneda       { color: #6b7280; }
+    #ed-cat-badge    { background: rgba(255,255,255,.92); color: #1a6b3c; }
+
+    /* drag imagen */
+    #ed-img-col.dragging { cursor: grabbing; }
+    #img-drag-hint {
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.55); color: #fff; font-size: .72rem;
+      padding: .25rem .65rem; border-radius: 12px; pointer-events: none;
+      opacity: 0; transition: opacity .3s;
+    }
+    #ed-img-col:hover #img-drag-hint { opacity: 1; }
+
+    /* elemento seleccionado (ring) */
+    .ed-sel-ring {
+      outline: 2px dashed #6366f1 !important;
+      outline-offset: 2px;
+      cursor: text !important;
+    }
+
+    /* overlay de carga */
+    #edLoading {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6);
+      z-index: 9999; flex-direction: column; align-items: center;
+      justify-content: center; gap: 1rem;
+    }
+    #edLoading.vis { display: flex; }
+    .ed-spinner {
+      width: 48px; height: 48px;
+      border: 5px solid rgba(255,255,255,.2); border-top-color: var(--acento);
+      border-radius: 50%; animation: spin2 .75s linear infinite;
+    }
+    @keyframes spin2 { to { transform: rotate(360deg); } }
+    #edLoading p { color: #fff; font-size: .95rem; font-weight: 600; }
+
+    /* toast */
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+      padding: .65rem 1.2rem; border-radius: 30px; font-size: .84rem;
+      font-weight: 600; z-index: 9998; transition: transform .3s ease;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    #toast.vis { transform: translateX(-50%) translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      #sidebar { width: 260px; min-width: 240px; }
+      #ed-card { width: 600px; }
+      #ed-inner { grid-template-columns: 240px 1fr; }
+    }
+    @media (max-width: 640px) {
+      #sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 100; transition: left .25s; }
+      #sidebar.mob-open { left: 0; }
+      #mob-sidebar-btn { display: flex !important; }
+      #ed-card { width: 95vw; }
+      #ed-inner { grid-template-columns: 1fr; }
+      #ed-img-col { height: 200px; }
+    }
+    #mob-sidebar-btn {
+      display: none; background: var(--acento2); border: none; color: #fff;
+      border-radius: 8px; padding: .45rem .7rem; cursor: pointer;
+      align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="edLoading">
+  <div class="ed-spinner"></div>
+  <p id="edLoadingMsg">Exportando…</p>
+</div>
+
+<!-- Toast -->
+<div id="toast">✅ Exportado correctamente</div>
+
+<div id="app">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <div id="sidebar">
+    <div class="sb-header">
+      <div>
+        <div class="logo">✨ Editor</div>
+        <div class="sub">GI Store Spotlight</div>
+      </div>
+      <button class="sb-back" onclick="history.back()">
+        <span class="material-symbols-outlined" style="font-size:.9rem">arrow_back</span>
+        Volver
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <!-- Botón añadir texto libre -->
+    <div style="padding:.5rem .85rem;border-bottom:1px solid var(--panel-borde);background:rgba(99,102,241,.08)">
+      <button onclick="añadirTextoLibre()"
+        style="width:100%;padding:.55rem;border-radius:8px;
+               background:linear-gradient(135deg,#6366f1,#4f46e5);
+               color:#fff;border:none;font-family:inherit;font-size:.88rem;
+               font-weight:700;cursor:pointer;display:flex;align-items:center;
+               justify-content:center;gap:.45rem">
+        <span class="material-symbols-outlined" style="font-size:1.1rem">text_fields</span>
+        + Añadir texto libre
+      </button>
+    </div>
+
+    <div class="sb-tabs">
+      <div class="sb-tab activo" data-tab="texto">📝 Texto</div>
+      <div class="sb-tab" data-tab="imagen">🖼 Imagen</div>
+      <div class="sb-tab" data-tab="diseno">🎨 Diseño</div>
+      <div class="sb-tab" data-tab="layout">📐 Layout</div>
+    </div>
+
+    <!-- ── TEXTO ── -->
+    <div class="sb-body">
+      <div class="sb-section activo" id="tab-texto">
+        <span class="sb-label">Nombre del producto</span>
+        <input class="sb-input" id="inp-nombre" type="text" placeholder="Nombre…"/>
+
+        <span class="sb-label">Precio (solo números)</span>
+        <input class="sb-input" id="inp-precio" type="text" placeholder="0"/>
+
+        <span class="sb-label">Categoría / Etiqueta</span>
+        <input class="sb-input" id="inp-cat" type="text" placeholder="Ej: Salud & Bienestar"/>
+
+        <span class="sb-label">Marca / Vendedor</span>
+        <input class="sb-input" id="inp-marca" type="text" placeholder="Nombre de tu tienda"/>
+
+        <span class="sb-label">Descripción</span>
+        <textarea class="sb-input" id="inp-desc" placeholder="Descripción del producto…"></textarea>
+
+        <span class="sb-label">Texto IA / Eslogan</span>
+        <textarea class="sb-input" id="inp-ia" placeholder="Texto generado por IA o escribe tu propio copy…"></textarea>
+
+        <span class="sb-label">Recomendación de uso</span>
+        <input class="sb-input" id="inp-reco" type="text" placeholder="Ej: Ideal en ayunas…"/>
+
+        <span class="sb-label">Beneficios (uno por línea)</span>
+        <textarea class="sb-input" id="inp-bens" placeholder="Beneficio 1&#10;Beneficio 2&#10;Beneficio 3" style="min-height:80px"></textarea>
+
+        <span class="sb-label">Pie de tarjeta</span>
+        <input class="sb-input" id="inp-footer" type="text" placeholder="🌿 GI Store"/>
+
+        <div class="sb-sep"></div>
+        <div class="sb-toggle-row">
+          <span style="font-size:.84rem">Mostrar recomendación</span>
+          <label class="sb-toggle"><input type="checkbox" id="tog-reco" checked/><div class="sb-toggle-track"></div></label>
+        </div>
+        <div class="sb-toggle-row">
+          <span style="font-size:.84rem">Mostrar beneficios</span>
+          <label class="sb-toggle"><input type="checkbox" id="tog-bens" checked/><div class="sb-toggle-track"></div></label>
+        </div>
+        <div class="sb-toggle-row">
+          <span style="font-size:.84rem">Mostrar texto IA</span>
+          <label class="sb-toggle"><input type="checkbox" id="tog-ia" checked/><div class="sb-toggle-track"></div></label>
+        </div>
+      </div>
+
+      <!-- ── IMAGEN ── -->
+      <div class="sb-section" id="tab-imagen">
+        <!-- 
+  ══════════════════════════════════════════════════════
+  AGREGAR en editor.html, dentro de la sección "Imagen"
+  (tab-imagen), ANTES del input de URL existente.
+  
+  También: cambiar el atributo min/max del rng-zoom:
+    ANTES: min="80" max="200"  (o similar)
+    AHORA: min="100" max="300"
+    
+  Y el rng-imgx / rng-imgy deben estar en 0–100:
+    min="0" max="100" value="50"
+  ══════════════════════════════════════════════════════
+-->
+
+<!-- Subir imagen desde el dispositivo -->
+<div class="sb-label" style="margin-bottom:.35rem">📁 Subir imagen</div>
+<label for="inp-img-file" style="
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.55rem .75rem;border:2px dashed var(--panel-borde,#3f3f46);
+  border-radius:8px;cursor:pointer;font-size:.82rem;
+  color:var(--texto-suave);transition:border-color .2s;
+  background:var(--fondo-2,rgba(255,255,255,.03));
+" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor=''">
+  <span class="material-symbols-outlined" style="font-size:1.1rem">upload</span>
+  Elegir archivo de imagen
+</label>
+<input type="file" id="inp-img-file" accept="image/*"
+  style="display:none">
+<div style="font-size:.72rem;color:var(--texto-suave);margin-top:.25rem">
+  JPG, PNG, WebP, GIF — desde tu dispositivo
+</div>
+
+<!-- Separador -->
+<div style="margin:.75rem 0;border-top:1px solid var(--panel-borde,#3f3f46);opacity:.4"></div>
+
+<!-- URL de imagen (existente — déjalo igual) -->
+<div class="sb-label" style="margin-bottom:.35rem">🔗 O pega una URL</div>
+<!-- (aquí va el inp-img-url + botón Aplicar que ya tienes) -->
+
+
+<!--
+  ══════════════════════════════════════════════════════
+  NOTA SOBRE LOS SLIDERS DE IMAGEN:
+  
+  El slider "Zoom" (rng-zoom) ahora va de 100 a 300:
+    · 100 = imagen completa (object-fit: contain, sin recorte)
+    · >100 = zoom in con encuadre libre (object-fit: cover)
+  
+  Los sliders X (rng-imgx) e Y (rng-imgy) van de 0 a 100:
+    · 0 = izquierda/arriba
+    · 50 = centro (default)
+    · 100 = derecha/abajo
+  Solo tienen efecto cuando zoom > 100.
+  
+  VALORES RECOMENDADOS PARA LOS INPUTS HTML:
+    <input type="range" id="rng-zoom" min="100" max="300" value="100" step="1">
+    <input type="range" id="rng-imgx" min="0"   max="100" value="50"  step="1">
+    <input type="range" id="rng-imgy" min="0"   max="100" value="50"  step="1">
+  ══════════════════════════════════════════════════════
+-->
+        <span class="sb-label">URL de imagen</span>
+        <div class="sb-row">
+          <input class="sb-input" id="inp-img-url" type="text" placeholder="https://…" style="flex:1"/>
+          <button class="btn-sb btn-sb-verde" style="width:auto;padding:.55rem .75rem" onclick="aplicarUrlImagen()">
+            <span class="material-symbols-outlined" style="font-size:1rem">check</span>
+          </button>
+        </div>
+
+        <span class="sb-label">Zoom imagen</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-zoom" min="80" max="200" value="100"/>
+          <span class="range-val" id="val-zoom">100%</span>
+        </div>
+
+        <span class="sb-label">Posición horizontal</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-imgx" min="-100" max="100" value="0"/>
+          <span class="range-val" id="val-imgx">0</span>
+        </div>
+
+        <span class="sb-label">Posición vertical</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-imgy" min="-100" max="100" value="0"/>
+          <span class="range-val" id="val-imgy">0</span>
+        </div>
+
+        <span class="sb-label">Filtro de imagen</span>
+        <select class="sb-select" id="sel-filter">
+          <option value="none">Sin filtro</option>
+          <option value="brightness(1.15)">Más brillante</option>
+          <option value="brightness(0.85)">Más oscura</option>
+          <option value="contrast(1.25)">Más contraste</option>
+          <option value="saturate(1.5)">Más saturación</option>
+          <option value="saturate(0.3)">Escala de grises parcial</option>
+          <option value="grayscale(1)">Blanco y negro</option>
+          <option value="sepia(0.6)">Sepia</option>
+          <option value="hue-rotate(180deg)">Invertir tono</option>
+        </select>
+
+        <span class="sb-label">Overlay de color</span>
+        <div class="sb-row">
+          <input type="color" class="sb-color" id="clr-overlay" value="#1a6b3c"/>
+          <span style="font-size:.8rem;color:var(--texto-suave)">Opacidad</span>
+          <input class="sb-range" type="range" id="rng-overlay" min="0" max="80" value="12" style="flex:1"/>
+          <span class="range-val" id="val-overlay">12%</span>
+        </div>
+
+        <span class="sb-label">Altura columna imagen</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-imgH" min="300" max="700" value="460"/>
+          <span class="range-val" id="val-imgH">460px</span>
+        </div>
+      </div>
+
+      <!-- ── DISEÑO ── -->
+      <div class="sb-section" id="tab-diseno">
+        <span class="sb-label">Paleta de colores</span>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.25rem">
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('verde')">🌿 Verde Natural</button>
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('indigo')">💜 Índigo Premium</button>
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('rojo')">❤️ Rojo Pasión</button>
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('dorado')">✨ Dorado Lujo</button>
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('oscuro')">🌙 Oscuro Elegante</button>
+          <button class="btn-sb btn-sb-outline" style="font-size:.78rem" onclick="aplicarPaletaPreset('rosa')">🌸 Rosa Vibrante</button>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label">Barra superior (degradado)</span>
+        <div class="grad-grid" id="grad-presets"></div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label">Color primario (precio, iconos)</span>
+        <input type="color" class="sb-color" id="clr-primary" value="#1a6b3c" style="width:100%;height:34px"/>
+
+        <span class="sb-label">Color de fondo de tarjeta</span>
+        <input type="color" class="sb-color" id="clr-bg" value="#ffffff" style="width:100%;height:34px"/>
+
+        <span class="sb-label">Color fondo columna imagen</span>
+        <input type="color" class="sb-color" id="clr-imgbg" value="#e8f5ee" style="width:100%;height:34px"/>
+
+        <span class="sb-label">Borde redondeado (tarjeta)</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-radius" min="0" max="32" value="20"/>
+          <span class="range-val" id="val-radius">20px</span>
+        </div>
+
+        <span class="sb-label">Color badge categoría</span>
+        <div class="sb-row">
+          <input type="color" class="sb-color" id="clr-badge-bg" value="#ffffff"/>
+          <input type="color" class="sb-color" id="clr-badge-txt" value="#1a6b3c"/>
+        </div>
+      </div>
+
+      <!-- ── LAYOUT / TIPOGRAFÍA ── -->
+      <div class="sb-section" id="tab-layout">
+        <span class="sb-label">Fuente título</span>
+        <select class="sb-select" id="sel-font-titulo">
+          <option value="Nunito">Nunito (por defecto)</option>
+          <option value="Playfair Display">Playfair Display</option>
+          <option value="Oswald">Oswald</option>
+          <option value="Montserrat">Montserrat</option>
+          <option value="Inter">Inter</option>
+        </select>
+
+        <span class="sb-label">Tamaño título</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-titulo-sz" min="18" max="48" value="27"/>
+          <span class="range-val" id="val-titulo-sz">27px</span>
+        </div>
+
+        <span class="sb-label">Tamaño precio</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-precio-sz" min="20" max="60" value="37"/>
+          <span class="range-val" id="val-precio-sz">37px</span>
+        </div>
+
+        <span class="sb-label">Tamaño descripción</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-desc-sz" min="10" max="18" value="14"/>
+          <span class="range-val" id="val-desc-sz">14px</span>
+        </div>
+
+        <span class="sb-label">Ancho columna imagen</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-img-col" min="150" max="450" value="300"/>
+          <span class="range-val" id="val-img-col">300px</span>
+        </div>
+
+        <span class="sb-label">Ancho total tarjeta</span>
+        <div class="sb-row">
+          <input class="sb-range" type="range" id="rng-card-w" min="400" max="900" value="780"/>
+          <span class="range-val" id="val-card-w">780px</span>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label">Alineación texto</span>
+        <div class="sb-row" style="gap:.5rem">
+          <button class="btn-sb btn-sb-outline" style="flex:1;padding:.45rem" onclick="setAlign('left')">◀ Izq</button>
+          <button class="btn-sb btn-sb-outline" style="flex:1;padding:.45rem" onclick="setAlign('center')">◉ Cen</button>
+          <button class="btn-sb btn-sb-outline" style="flex:1;padding:.45rem" onclick="setAlign('right')">▶ Der</button>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label">Bala de beneficios</span>
+        <select class="sb-select" id="sel-bullet">
+          <option value="✦">✦ Estrella</option>
+          <option value="✓">✓ Check</option>
+          <option value="→">→ Flecha</option>
+          <option value="•">• Punto</option>
+          <option value="★">★ Estrella llena</option>
+          <option value="🌿">🌿 Hoja</option>
+          <option value="💎">💎 Diamante</option>
+        </select>
+      </div>
+    </div><!-- /sb-body -->
+
+    <!-- Botones de exportar -->
+    <div style="padding:.85rem;border-top:1px solid var(--panel-borde);display:flex;flex-direction:column;gap:.5rem">
+      <button class="btn-sb btn-sb-verde" onclick="exportarPNG()">
+        <span class="material-symbols-outlined" style="font-size:1rem">download</span>
+        Exportar PNG
+      </button>
+      <button class="btn-sb btn-sb-indigo" onclick="resetear()">
+        <span class="material-symbols-outlined" style="font-size:1rem">restart_alt</span>
+        Restablecer datos
+      </button>
+      <button class="btn-sb btn-sb-libre" onclick="abrirEdicionLibre()">
+        <span class="material-symbols-outlined" style="font-size:1rem">edit_note</span>
+        ✏️ Edición libre
+      </button>
+    </div>
+  </div><!-- /sidebar -->
+
+  <!-- ══════════════ CANVAS ══════════════ -->
+  <div id="canvas-area">
+    <div class="canvas-toolbar">
+      <button id="mob-sidebar-btn" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined" style="font-size:1rem">tune</span> Herramientas
+      </button>
+      <span>Zoom</span>
+      <button class="ct-btn" onclick="zoom(-10)"><span class="material-symbols-outlined">remove</span></button>
+      <span class="zoom-val" id="zoom-val">100%</span>
+      <button class="ct-btn" onclick="zoom(10)"><span class="material-symbols-outlined">add</span></button>
+      <button class="ct-btn" onclick="zoom(0)" title="Ajustar a ventana"><span class="material-symbols-outlined">fit_screen</span></button>
+      <span class="ml-auto" style="font-size:.76rem;color:#475569">Haz clic en cualquier texto para editarlo directamente</span>
+    </div>
+    <div id="canvas-scroll">
+      <div id="card-wrapper">
+
+        <!-- ═══ TARJETA EDITABLE ═══ -->
+        <div id="ed-card">
+          <div id="ed-topbar"></div>
+          <div id="ed-inner">
+
+            <!-- columna imagen -->
+            <div id="ed-img-col">
+              <img id="ed-img-el" src="" alt="Producto"/>
+              <div id="ed-img-overlay"></div>
+              <span id="ed-cat-badge">Categoría</span>
+              <div id="img-drag-hint">Arrastra para mover</div>
+            </div>
+
+            <!-- columna info -->
+            <div id="ed-info-col">
+              <div id="ed-marca" contenteditable="true" spellcheck="false">Mi Tienda</div>
+              <div id="ed-nombre" contenteditable="true" spellcheck="false">Nombre del producto</div>
+              <div id="ed-divider"></div>
+              <div id="ed-precio-wrap">
+                <span id="ed-precio" contenteditable="true" spellcheck="false">0</span>
+                <span id="ed-moneda" contenteditable="true" spellcheck="false">COP</span>
+              </div>
+              <div id="ed-desc" contenteditable="true" spellcheck="false">Descripción del producto…</div>
+              <div id="ed-bens">
+                <div class="ed-ben-titulo">Beneficios</div>
+              </div>
+              <div id="ed-reco" contenteditable="true" spellcheck="false">💡 Recomendación de uso</div>
+              <div id="ed-ia-txt" contenteditable="true" spellcheck="false">Texto generado por IA…</div>
+            </div>
+
+          </div>
+          <div id="ed-footer">
+            <span id="ed-footer-marca" contenteditable="true" spellcheck="false">🌿 GI Store</span>
+            <span id="ed-footer-ia">✨ Diseño con IA · GI Store</span>
+          </div>
+        </div>
+        <!-- /tarjeta -->
+
+      </div>
+    </div>
+  </div><!-- /canvas-area -->
+</div><!-- /app -->
+  <script src="../js/editor.js"></script>
+</body>
+</html>

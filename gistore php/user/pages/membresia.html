@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Membresía — GI Store</title>
+
+  <!-- Hoja de estilos global del portal vendedor -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+  <style>
+    /* ════════════════════════════════════════════════════════
+       VARIABLES — heredadas del sistema de diseño GI Store
+       ════════════════════════════════════════════════════════ */
+    :root {
+      --verde:        #1a6b3c;
+      --verde-medio:  #2a855a;
+      --verde-claro:  #f0faf4;
+      --verde-borde:  #b6dfc8;
+      --acento:       #34d399;
+      --fondo:        #f8fafc;
+      --fondo-2:      #ffffff;
+      --borde:        #e2e8f0;
+      --texto:        #0f172a;
+      --texto-medio:  #475569;
+      --texto-suave:  #94a3b8;
+      --radio:        10px;
+      --radio-lg:     14px;
+      --radio-sm:     7px;
+      --sombra:       0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --sombra-md:    0 4px 12px rgba(0,0,0,.08);
+      --ok:           #166534;
+      --ok-bg:        #dcfce7;
+      --ok-borde:     #86efac;
+      --advertencia:  #92400e;
+      --adv-bg:       #fef3c7;
+      --adv-borde:    #fcd34d;
+      --error:        #991b1b;
+      --error-bg:     #fee2e2;
+      --error-borde:  #fca5a5;
+      --sidebar-w:    220px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* El cuerpo comienza invisible; membresia.js lo revela
+       tras verificar la sesión para evitar un flash de contenido. */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      visibility: hidden;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       LAYOUT DE DOS COLUMNAS
+       ════════════════════════════════════════════════════════ */
+    .membresia-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       TARJETA BASE
+       ════════════════════════════════════════════════════════ */
+    .card-estado {
+      background: var(--fondo-2);
+      border: 1.5px solid var(--borde);
+      border-radius: var(--radio-lg);
+      padding: 1.5rem;
+      box-shadow: var(--sombra);
+    }
+
+    .card-estado-header {
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .card-estado-icono { font-size: 1.6rem; flex-shrink: 0; }
+
+    .card-estado-titulo {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .card-estado-sub {
+      font-size: .78rem;
+      color: var(--texto-suave);
+      margin-top: .1rem;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       FILAS DE ESTADO (plan activo, fechas, etc.)
+       ════════════════════════════════════════════════════════ */
+    .estado-fila {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--borde);
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .estado-fila:last-child { border-bottom: none; }
+
+    .estado-fila-label {
+      font-size: .82rem;
+      color: var(--texto-suave);
+      flex-shrink: 0;
+    }
+
+    .estado-fila-valor {
+      font-size: .85rem;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       BADGE DE DÍAS RESTANTES
+       ════════════════════════════════════════════════════════ */
+    .dias-restantes {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .3rem .8rem;
+      border-radius: 99px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .dias-restantes.ok   { background: var(--ok-bg);    color: var(--ok);          border: 1px solid var(--ok-borde); }
+    .dias-restantes.warn { background: var(--adv-bg);   color: var(--advertencia); border: 1px solid var(--adv-borde); }
+    .dias-restantes.venc { background: var(--error-bg); color: var(--error);       border: 1px solid var(--error-borde); }
+
+    /* ════════════════════════════════════════════════════════
+       BARRA DE PROGRESO DE LA MEMBRESÍA
+       ════════════════════════════════════════════════════════ */
+    .progreso-wrap { margin-top: .5rem; }
+
+    .progreso-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .76rem;
+      color: var(--texto-suave);
+      margin-bottom: .4rem;
+    }
+
+    .progreso-barra {
+      height: 8px;
+      border-radius: 99px;
+      background: var(--verde-claro);
+      overflow: hidden;
+    }
+
+    .progreso-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--verde-medio), var(--acento));
+      transition: width .6s ease;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       ALERTA SUPERIOR (estado de membresía)
+       ════════════════════════════════════════════════════════ */
+    #alertaMembresia { margin-bottom: 1.25rem; }
+
+    .alerta-membresia {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      padding: .75rem 1rem;
+      border-radius: var(--radio);
+      font-size: .83rem;
+      font-weight: 500;
+    }
+    .alerta-membresia.ok    { background: var(--ok-bg);    color: var(--ok);          border: 1px solid var(--ok-borde); }
+    .alerta-membresia.warn  { background: var(--adv-bg);   color: var(--advertencia); border: 1px solid var(--adv-borde); }
+    .alerta-membresia.error { background: var(--error-bg); color: var(--error);       border: 1px solid var(--error-borde); }
+
+    /* ════════════════════════════════════════════════════════
+       TARJETAS DE PLAN
+       Los planes se renderizan dinámicamente en #planesWrap
+       ════════════════════════════════════════════════════════ */
+    .planes-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .plan-card {
+      border: 2px solid var(--borde);
+      border-radius: var(--radio-lg);
+      padding: 1.1rem 1.25rem;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      position: relative;
+      background: var(--fondo-2);
+    }
+    .plan-card:hover            { border-color: var(--verde-medio); box-shadow: var(--sombra-md); }
+    .plan-card.seleccionado     { border-color: var(--verde); background: var(--verde-claro); box-shadow: 0 0 0 3px rgba(26,107,60,.12); }
+
+    .plan-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    .plan-nombre {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: .95rem;
+    }
+
+    .plan-precio {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--verde);
+      white-space: nowrap;
+    }
+    .plan-precio span { font-size: .76rem; font-weight: 500; color: var(--texto-suave); }
+
+    .plan-desc { font-size: .8rem; color: var(--texto-suave); margin-top: .3rem; }
+
+    /* Badge "Fundador" sobre la tarjeta */
+    .plan-badge {
+      position: absolute;
+      top: -10px;
+      right: 1rem;
+      background: var(--verde);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .2rem .65rem;
+      border-radius: 99px;
+    }
+
+    /* Indicador circular de selección */
+    .plan-radio {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--verde-borde);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      transition: border-color .2s;
+    }
+    .plan-card.seleccionado .plan-radio            { border-color: var(--verde); background: var(--verde); }
+    .plan-card.seleccionado .plan-radio::after     { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+
+    /* ════════════════════════════════════════════════════════
+       SECCIÓN DE PAGO (info de seguridad + resumen + botón)
+       ════════════════════════════════════════════════════════ */
+    #wompi-container { margin-top: 1.25rem; }
+
+    .wompi-info {
+      background: var(--verde-claro);
+      border: 1px solid var(--verde-borde);
+      border-radius: var(--radio);
+      padding: .9rem 1.1rem;
+      font-size: .82rem;
+      color: var(--texto-medio);
+      margin-bottom: 1rem;
+      display: flex;
+      gap: .6rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .wompi-resumen {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .9rem;
+      padding: .7rem 1rem;
+      background: var(--fondo);
+      border-radius: var(--radio);
+      border: 1px solid var(--borde);
+    }
+
+    /* Contenedor del iframe del widget de Wompi */
+    #wompi-btn-wrap {
+      min-height: 52px;
+    }
+    #wompi-btn-wrap iframe {
+      width: 100%;
+      border: none;
+      min-height: 52px;
+      overflow: hidden;
+      display: block;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       HISTORIAL DE PAGOS
+       ════════════════════════════════════════════════════════ */
+    .historial-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .7rem 0;
+      border-bottom: 1px solid var(--borde);
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .historial-item:last-child { border-bottom: none; }
+
+    .historial-fecha { font-size: .76rem; color: var(--texto-suave); margin-top: .15rem; }
+
+    .historial-monto {
+      font-weight: 700;
+      color: var(--verde);
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       BADGES GENÉRICOS
+       ════════════════════════════════════════════════════════ */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: .25rem .7rem;
+      border-radius: 99px;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+    .badge-activo   { background: var(--ok-bg);    color: var(--ok);    border: 1px solid var(--ok-borde); }
+    .badge-inactivo { background: var(--error-bg); color: var(--error); border: 1px solid var(--error-borde); }
+    .badge-vencida  { background: #f1f5f9;         color: #64748b;      border: 1px solid #cbd5e1; }
+
+    /* ════════════════════════════════════════════════════════
+       SKELETON DE CARGA
+       ════════════════════════════════════════════════════════ */
+    .skeleton {
+      height: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ════════════════════════════════════════════════════════
+       RESPONSIVE
+       ════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .membresia-grid                   { grid-template-columns: 1fr; }
+      /* El historial ocupa ancho completo en escritorio; en móvil ya lo hace */
+      .card-estado[style*="grid-column"] { grid-column: 1 !important; }
+    }
+
+    @media (max-width: 600px) {
+      .card-estado  { padding: 1.1rem; }
+      .plan-card    { padding: .9rem 1rem; }
+      .plan-precio  { font-size: 1.1rem; }
+    }
+  </style>
+<!-- SDK de Wompi — debe estar en el <head>, sin atributos adicionales -->
+  <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+</head>
+
+<body>
+  <!-- ── Botón hamburguesa (solo visible en móvil) ── -->
+  <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       SIDEBAR DE NAVEGACIÓN
+       ════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <a href="../index.html" class="sidebar-logo" title="Ir al inicio 🏠"
+       style="text-decoration:none">
+      <div class="sidebar-logo-icono">
+        <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store"
+             style="width:22px;height:22px;object-fit:contain" />
+      </div>
+      <div class="sidebar-logo-txt">
+        <strong>GI Store</strong>
+        <span id="vendedorNombre">Mi Portal</span>
+      </div>
+    </a>
+
+    <nav class="nav">
+      <div class="nav-titulo">Mi cuenta</div>
+      <a href="dashboard.html">
+        <span class="icono"><span class="material-symbols-outlined">bento</span></span>
+        Dashboard
+      </a>
+      <a href="productos.html">
+        <span class="icono"><span class="material-symbols-outlined">package_2</span></span>
+        Mis productos
+      </a>
+      <a href="catalogo.html">
+        <span class="icono"><span class="material-symbols-outlined">photo_library</span></span>
+        Exportar catálogo
+      </a>
+      <a href="spotlight.html">
+        <span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span>
+        Spotlight IA
+      </a>
+      <a href="membresia.html" class="activo">
+        <span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>
+        Mi membresía
+      </a>
+      <div class="nav-titulo">Comunidad</div>
+    <a href="foro.html" ><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+      <div class="nav-titulo">Sitio</div>
+      <a href="perfil.html">
+        <span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span>
+        Mi perfil
+      </a>
+      <a href="../../index.html" target="_blank">
+        <span class="icono"><span class="material-symbols-outlined">article_person</span></span>
+        Ver catálogo
+      </a>
+    </nav>
+
+    <div class="sidebar-pie">
+      <button class="btn-salir" id="btnSalir">
+        <span class="material-symbols-outlined">logout</span>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════════════════════════
+       CONTENIDO PRINCIPAL
+       ════════════════════════════════════════════════════════ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-izq">
+        <h1>Mi Membresía</h1>
+        <p class="fecha" id="fechaHoy"></p>
+      </div>
+    </div>
+
+    <!-- Alerta de estado de membresía (activa / por vencer / vencida) -->
+    <div id="alertaMembresia" style="display:none"></div>
+
+    <div class="membresia-grid">
+
+      <!-- ── Columna izquierda: estado actual ── -->
+      <div class="card-estado">
+        <div class="card-estado-header">
+          <div class="card-estado-icono">🏅</div>
+          <div>
+            <div class="card-estado-titulo">Estado de tu membresía</div>
+            <div class="card-estado-sub">Acceso activo a GI Store</div>
+          </div>
+        </div>
+
+        <!-- membresia.js inyecta las filas de estado aquí -->
+        <div id="estadoContenido">
+          <div class="skeleton" style="width:60%;margin-bottom:.6rem"></div>
+          <div class="skeleton" style="width:80%;margin-bottom:.6rem"></div>
+          <div class="skeleton" style="width:50%"></div>
+        </div>
+      </div>
+
+      <!-- ── Columna derecha: renovar membresía ── -->
+      <div class="card-estado">
+        <div class="card-estado-header">
+          <div class="card-estado-icono">💳</div>
+          <div>
+            <div class="card-estado-titulo">Renovar membresía</div>
+            <div class="card-estado-sub">Elige tu plan y paga en línea</div>
+          </div>
+        </div>
+
+        <!--
+          IMPORTANTE: id="planesWrap" es el contenedor dinámico.
+          membresia.js renderiza aquí las tarjetas de plan leídas
+          desde la colección "planes_membresia" de Firestore.
+          NO agregar tarjetas estáticas aquí.
+        -->
+        <div class="planes-wrap" id="planesWrap">
+          <!-- Skeletons mientras cargan los planes desde Firestore -->
+          <div class="skeleton" style="height:88px;border-radius:14px;margin-bottom:.5rem"></div>
+          <div class="skeleton" style="height:88px;border-radius:14px"></div>
+        </div>
+
+        <!-- Sección de pago: info de seguridad, resumen y botón Wompi -->
+        <div id="wompi-container" style="margin-top:1.25rem">
+          <div class="wompi-info">
+            <span>🔒</span>
+            <span>
+              Pago seguro procesado por <strong>Wompi</strong> (Bancolombia).
+              Acepta PSE, Nequi y tarjetas.
+            </span>
+          </div>
+
+          <!-- Resumen dinámico del plan seleccionado -->
+          <div class="wompi-resumen">
+            <span style="font-size:.83rem;color:var(--texto-medio)" id="resumenLabel">
+              Cargando plan…
+            </span>
+            <span style="font-weight:700;color:var(--verde);font-family:'Nunito',sans-serif"
+                  id="resumenMonto"></span>
+          </div>
+
+          <!--
+            membresia.js inyecta aquí un iframe con el widget de Wompi.
+            El iframe garantiza que el script del widget se re-renderice
+            correctamente cada vez que el vendedor cambia de plan.
+          -->
+          <div id="wompi-btn-wrap"></div>
+        </div>
+      </div>
+
+      <!-- ── Historial de pagos (ocupa el ancho completo) ── -->
+        <!--
+      <div class="card-estado" style="grid-column:1/-1">
+        <div class="card-estado-header">
+          <div class="card-estado-icono">📋</div>
+          <div>
+            <div class="card-estado-titulo">Historial de pagos</div>
+            <div class="card-estado-sub">Tus últimas transacciones</div>
+          </div>
+        </div>
+        <div id="historialContenido">
+          <div class="skeleton" style="width:100%;margin-bottom:.5rem"></div>
+          <div class="skeleton" style="width:80%"></div>
+        </div>
+      </div>
+-->
+    </div><!-- /membresia-grid -->
+  </main>
+<script  src="../js/auth.js"></script>
+  <!-- Módulo principal de la página -->
+  <script type="module" src="../js/membresia.js"></script>
+
+  <script>
+    /* ── Lógica del botón hamburguesa para el sidebar en móvil ── */
+    document.addEventListener("DOMContentLoaded", function () {
+      var btnH    = document.getElementById("btnHamburguesa");
+      var sidebar = document.querySelector(".sidebar");
+      var overlay = document.getElementById("sidebarOverlay");
+      if (!btnH || !sidebar || !overlay) return;
+
+      function abrir()  { sidebar.classList.add("abierto");    overlay.classList.add("visible");    btnH.classList.add("abierto"); }
+      function cerrar() { sidebar.classList.remove("abierto"); overlay.classList.remove("visible"); btnH.classList.remove("abierto"); }
+
+      btnH.addEventListener("click", function () {
+        sidebar.classList.contains("abierto") ? cerrar() : abrir();
+      });
+      overlay.addEventListener("click", cerrar);
+
+      /* Cerrar sidebar al navegar (solo en móvil) */
+      document.querySelectorAll(".nav a").forEach(function (a) {
+        a.addEventListener("click", function () {
+          if (window.innerWidth <= 700) cerrar();
+        });
+      });
+    });
+  </script>
+</body>
+</html>

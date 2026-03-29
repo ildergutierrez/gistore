@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manual de Usuario — Vendedor · GI Store</title>
+  <link rel="icon" href="../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --verde:       #1a6b3c;
+      --verde-m:     #2d8a56;
+      --verde-cl:    #e8f5ee;
+      --acento:      #22c55e;
+      --indigo:      #6366f1;
+      --indigo-cl:   #eef2ff;
+      --cyan:        #0891b2;
+      --cyan-cl:     #f0f9ff;
+      --bg:          #f4f9f6;
+      --white:       #ffffff;
+      --borde:       #d4e8dc;
+      --texto:       #1a2e22;
+      --texto-m:     #3d5a45;
+      --texto-s:     #6b8c76;
+      --warn:        #d97706;
+      --warn-bg:     #fffbeb;
+      --info:        #0891b2;
+      --info-bg:     #f0f9ff;
+      --tip-bg:      #f0fdf4;
+      --sidebar-w:   265px;
+      --radio:       12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--verde);
+      overflow-y: auto;
+      z-index: 100;
+      padding-bottom: 2rem;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+
+    .sb-brand {
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .sb-brand-icon {
+      width: 40px; height: 40px; background: rgba(255,255,255,.15);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .sb-brand-txt { color: #fff; }
+    .sb-brand-txt strong { display: block; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; }
+    .sb-brand-txt span { font-size: .73rem; opacity: .75; }
+
+    .sb-section { padding: .85rem 1rem .35rem; }
+    .sb-section-title {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.55);
+      padding: 0 .25rem; margin-bottom: .35rem;
+    }
+    .sb-link {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .48rem .75rem; border-radius: 8px;
+      color: rgba(255,255,255,.82); text-decoration: none;
+      font-size: .84rem; font-weight: 500;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .sb-link:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .sb-link.activo { background: rgba(255,255,255,.18); color: #fff; font-weight: 600; }
+    .sb-num {
+      margin-left: auto; background: rgba(255,255,255,.18);
+      border-radius: 10px; padding: .1rem .45rem;
+      font-size: .7rem; font-weight: 700;
+    }
+
+    /* ── MAIN ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      padding: 0 0 4rem;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0f4026 0%, var(--verde) 50%, #1a4f6b 100%);
+      padding: 3.5rem 3rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 75% 30%, rgba(99,102,241,.2), transparent);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.9); font-size: .75rem; font-weight: 600;
+      padding: .3rem .8rem; border-radius: 20px; margin-bottom: 1rem;
+      letter-spacing: .03em;
+    }
+    .hero h1 {
+      font-family: 'Nunito', sans-serif; font-size: 2.4rem; font-weight: 900;
+      color: #fff; line-height: 1.15; margin-bottom: .75rem; position: relative;
+    }
+    .hero p { color: rgba(255,255,255,.78); font-size: 1rem; max-width: 560px; position: relative; }
+    .hero-meta {
+      display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative;
+    }
+    .hero-meta span {
+      color: rgba(255,255,255,.7); font-size: .82rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .hero-meta strong { color: #fff; }
+
+    /* TOC */
+    .toc-bar {
+      background: var(--white); border-bottom: 1px solid var(--borde);
+      padding: .75rem 3rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+    }
+    .toc-bar span { font-size: .78rem; color: var(--texto-s); margin-right: .25rem; }
+    .toc-pill {
+      background: var(--verde-cl); color: var(--verde);
+      border-radius: 20px; padding: .28rem .75rem;
+      font-size: .78rem; font-weight: 600; text-decoration: none;
+      transition: background .15s;
+    }
+    .toc-pill:hover { background: var(--acento); color: #fff; }
+    .toc-pill.ia { background: var(--indigo-cl); color: var(--indigo); }
+    .toc-pill.ia:hover { background: var(--indigo); color: #fff; }
+
+    /* Content area */
+    .content { padding: 2.5rem 3rem; }
+
+    /* Module section */
+    .modulo {
+      background: var(--white);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .modulo-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--borde);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .modulo-header.verde { background: linear-gradient(135deg, var(--verde-cl), var(--white)); }
+    .modulo-header.indigo { background: linear-gradient(135deg, var(--indigo-cl), var(--white)); }
+    .modulo-header.cyan { background: linear-gradient(135deg, var(--cyan-cl), var(--white)); }
+
+    .modulo-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .modulo-icon.verde  { background: var(--verde); }
+    .modulo-icon.indigo { background: var(--indigo); }
+    .modulo-icon.cyan   { background: var(--cyan); }
+
+    .modulo-header-txt h2 {
+      font-family: 'Nunito', sans-serif; font-size: 1.25rem;
+      font-weight: 800; margin-bottom: .15rem;
+    }
+    .modulo-header-txt h2.verde  { color: var(--verde); }
+    .modulo-header-txt h2.indigo { color: var(--indigo); }
+    .modulo-header-txt h2.cyan   { color: var(--cyan); }
+    .modulo-header-txt p { font-size: .84rem; color: var(--texto-m); }
+    .modulo-body { padding: 1.75rem 2rem; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 1rem; }
+    .step { display: flex; gap: 1rem; align-items: flex-start; }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--verde); color: #fff;
+      font-size: .82rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: .05rem;
+    }
+    .step-num.indigo { background: var(--indigo); }
+    .step-body { flex: 1; }
+    .step-body strong { display: block; font-size: .95rem; color: var(--texto); margin-bottom: .2rem; }
+    .step-body p, .step-body li { font-size: .88rem; color: var(--texto-m); }
+    .step-body ul { padding-left: 1.1rem; margin-top: .3rem; }
+    .step-body ul li { margin-bottom: .2rem; }
+
+    /* Feature grid */
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem; margin-top: .5rem;
+    }
+    .feat-card {
+      background: var(--bg); border: 1px solid var(--borde);
+      border-radius: var(--radio); padding: 1rem 1.1rem;
+    }
+    .feat-card .feat-icon { font-size: 1.5rem; margin-bottom: .4rem; }
+    .feat-card strong { display: block; font-size: .9rem; color: var(--texto); margin-bottom: .25rem; }
+    .feat-card p { font-size: .82rem; color: var(--texto-m); line-height: 1.5; }
+
+    /* Callout */
+    .callout {
+      border-radius: var(--radio); padding: .9rem 1.1rem;
+      display: flex; gap: .7rem; align-items: flex-start;
+      margin: .75rem 0; font-size: .86rem;
+    }
+    .callout.warn { background: var(--warn-bg); border-left: 3px solid var(--warn); color: #78350f; }
+    .callout.info { background: var(--info-bg); border-left: 3px solid var(--info); color: #0c4a6e; }
+    .callout.tip  { background: var(--tip-bg);  border-left: 3px solid var(--acento); color: #14532d; }
+    .callout.ia   { background: var(--indigo-cl); border-left: 3px solid var(--indigo); color: #312e81; }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .callout div strong { display: block; font-weight: 700; margin-bottom: .1rem; }
+
+    /* Table */
+    .manual-table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .86rem; }
+    .manual-table th {
+      background: var(--verde-cl); color: var(--verde);
+      font-weight: 700; text-align: left; padding: .6rem .9rem;
+      border-bottom: 2px solid var(--borde);
+    }
+    .manual-table.indigo th { background: var(--indigo-cl); color: var(--indigo); }
+    .manual-table td { padding: .55rem .9rem; border-bottom: 1px solid var(--borde); color: var(--texto-m); }
+    .manual-table tr:last-child td { border-bottom: none; }
+    .manual-table tr:hover td { background: var(--verde-cl); }
+
+    /* Badge */
+    .badge {
+      display: inline-block; padding: .18rem .55rem; border-radius: 20px;
+      font-size: .72rem; font-weight: 700;
+    }
+    .badge-verde  { background: #dcfce7; color: #15803d; }
+    .badge-rojo   { background: #fee2e2; color: #dc2626; }
+    .badge-gris   { background: #f1f5f9; color: #475569; }
+    .badge-ambar  { background: #fef3c7; color: #d97706; }
+    .badge-indigo { background: var(--indigo-cl); color: var(--indigo); }
+
+    /* Divider */
+    .section-divider {
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+      color: var(--verde); padding: .5rem 0 1rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-divider.indigo { color: var(--indigo); }
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--borde);
+    }
+
+    /* Sub-section */
+    .sub-section {
+      font-size: .82rem; font-weight: 700; color: var(--verde-m);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 1.25rem 0 .6rem;
+    }
+
+    /* IA pill */
+    .ia-pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: var(--indigo); color: #fff;
+      font-size: .72rem; font-weight: 700; padding: .18rem .6rem;
+      border-radius: 12px; letter-spacing: .02em;
+    }
+
+    /* Back to top */
+    .back-top {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--verde-m); font-size: .8rem; font-weight: 600;
+      text-decoration: none; margin-top: .5rem;
+      transition: color .15s;
+    }
+    .back-top:hover { color: var(--verde); }
+
+    /* Print */
+    @media print {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      #sidebar { position: relative; width: 100%; height: auto; }
+      #main { margin-left: 0; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.8rem; }
+      .content { padding: 1.5rem; }
+      .toc-bar { padding: .75rem 1.5rem; }
+      .modulo-body { padding: 1.25rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+ <div class="sb-brand">
+     <a
+        href="index.html"
+        class="sidebar-logo"
+        title="Ir al inicio 🏠"
+        style="
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1.25rem 1.25rem 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);        "
+      >
+        <div class="sidebar-logo-icono">
+          <img
+            src="../img/favicon/gi-icono-blanco.svg"
+            alt="GI Store"
+            style="width: 22px; height: 22px; object-fit: contain"
+          />
+        </div>
+        <div class="sb-brand-txt">
+          <strong>GI Store</strong>
+          <span>Volver al panel</span>
+        </div>
+      </a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Introducción</div>
+    <a class="sb-link activo" href="#intro">📖 Bienvenida</a>
+    <a class="sb-link" href="#acceso">🔐 Acceso al portal</a>
+  </div>
+
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HERO -->
+  <div class="hero" id="intro">
+    <div class="hero-badge">🌿 Portal del Vendedor</div>
+    <h1>Manual de Accesos<br>GI Store · Vendedor</h1>
+    <p>En esta sección encontrarás toda la información necesaria para acceder a tu cuenta de vendedor en GI Store, gestionar tus productos y aprovechar al máximo las herramientas disponibles.</p>
+  </div>
+
+
+
+  <div class="content">
+
+    <!-- ACCESO -->
+    <div id="acceso" class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">🔐</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Acceso al portal del vendedor</h2>
+          <p>Cómo iniciar sesión y qué protecciones tiene tu cuenta</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Navega al portal</strong>
+              <p>Accede a <code>gistore/user/</code>. Verás la pantalla de inicio de sesión del vendedor.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Ingresa tu correo y contraseña</strong>
+              <p>Usa las credenciales que el administrador te proporcionó. Si es tu primer ingreso, cambia la contraseña en <strong>Mi perfil</strong>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Acceso al Dashboard</strong>
+              <p>Si tu cuenta está activa, serás redirigido al Dashboard. Si tu cuenta está desactivada, el sistema te informará y no podrás ingresar.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1.25rem">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Membresía necesaria</strong> Si tu membresía está vencida, podrás ingresar pero no podrás gestionar productos. Renueva desde el módulo <em>Mi membresía</em>.</div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+</body>
+</html>

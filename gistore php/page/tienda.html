@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tienda · GI Store</title>
+  <link rel="icon" href="../img/favicon/gi-icono.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    /* ── Hero de tienda — mismo estilo que el hero de index ── */
+    .tienda-hero {
+      background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+      color: #fff;
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+    }
+    .tienda-hero-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .8rem;
+    }
+    /* Avatar circular con borde blanco limpio */
+    .tienda-avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid rgba(255,255,255,.85);
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      background: rgba(255,255,255,.1);
+      flex-shrink: 0;
+    }
+    .tienda-avatar-inicial {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem; font-weight: 700; color: #fff;
+      border: 4px solid rgba(255,255,255,.75);
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+      flex-shrink: 0;
+    }
+    .tienda-nombre {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin: .2rem 0 0;
+    }
+    .tienda-ciudad {
+      font-size: 1rem; opacity: .9;
+      letter-spacing: .01em;
+    }
+    .tienda-stats {
+      display: flex; gap: .75rem; flex-wrap: wrap;
+      justify-content: center; margin-top: .2rem;
+    }
+    .tienda-stat {
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 50px;
+      padding: .3rem .9rem;
+      font-size: .82rem; font-weight: 600;
+      white-space: nowrap;
+    }
+    .tienda-botones {
+      display: flex; flex-wrap: wrap; gap: .75rem;
+      align-items: center; justify-content: center;
+      margin-top: .75rem;
+    }
+    .btn-wa-tienda {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: #25D366; color: #fff; border: none;
+      border-radius: 50px; padding: .6rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .15s;
+      margin-top: .5rem;
+      box-shadow: 0 4px 16px rgba(37,211,102,.35);
+    }
+    .btn-wa-tienda:hover {
+      background: #1ebe5a;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(37,211,102,.45);
+    }
+    .btn-web-tienda {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: #fff; color: #1a6b3c;
+      border: 2px solid #1a6b3c;
+      border-radius: 50px; padding: .58rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+      transition: background .2s, color .2s, transform .15s, box-shadow .15s;
+      margin-top: .5rem;
+      box-shadow: 0 4px 16px rgba(26,107,60,.12);
+    }
+    .btn-web-tienda:hover {
+      background: #1a6b3c; color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,107,60,.25);
+    }
+
+    /* ── Breadcrumb ─────────────────────────────────────── */
+    .breadcrumb {
+      max-width: 1300px; margin: .9rem auto 0;
+      padding: 0 1.5rem;
+      font-size: .82rem; color: var(--gris-500);
+    }
+    .breadcrumb a { color: var(--verde); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── Error tienda no encontrada ─────────────────────── */
+    .tienda-error {
+      text-align: center; padding: 6rem 2rem;
+      font-size: 1.1rem; color: var(--gris-500);
+    }
+    .tienda-error a { color: var(--verde); }
+
+    /* ── Responsive hero ─────────────────────────────────── */
+    @media (max-width: 480px) {
+      .tienda-hero { padding: 2rem 1rem 1.8rem; }
+      .tienda-avatar, .tienda-avatar-inicial { width: 80px; height: 80px; }
+      .tienda-avatar-inicial { font-size: 2rem; }
+    }
+
+    /* ── Redes sociales en hero ───────────────────────────── */
+    .tienda-redes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .55rem;
+      flex-wrap: wrap;
+      margin-bottom: .6rem;
+    }
+    .tienda-red-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.4);
+      color: #fff;
+      text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+    .tienda-red-btn:hover {
+      background: var(--red-color, rgba(255,255,255,.35));
+      border-color: transparent;
+      transform: translateY(-2px) scale(1.08);
+      box-shadow: 0 4px 14px rgba(0,0,0,.22);
+    }
+    @media (max-width: 380px) {
+      .tienda-red-btn { width: 34px; height: 34px; }
+      .tienda-red-btn svg { width: 16px; height: 16px; }
+    }
+  </style>
+  <link rel="stylesheet" href="../css/nav.css"/>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+
+    <!-- Logo -->
+    <div class="logo">
+      <a href="../index.html">
+        <img src="../img/favicon/favicon.svg" alt="GI Store"/>
+      </a>
+    </div>
+
+      <div class="busqueda-header-wrap">
+        <input class="busqueda-header-input" id="busqueda-input"
+               type="text" placeholder="Buscar producto..." autocomplete="off"/>
+        <svg class="busqueda-icono" width="17" height="17" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <button class="busqueda-limpiar" id="busqueda-limpiar" style="display:none">✕</button>
+      </div>
+    <!-- Nav desktop -->
+    <nav class="header-nav" aria-label="Navegación principal">
+      <a href="../index.html">Catálogo</a>
+      <a href="nosotros.html">Nosotros</a>
+      <a href="info.html">Ayuda</a>
+      <a href="foro.html">Foro</a>
+      <a href="stores.html">Stores</a>
+      <a href="../user/index.html" class="btn-login-header" title="Portal vendedores">
+        <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
+      </a>
+    </nav>
+
+    <!-- Hamburguesa (solo móvil) -->
+    <!-- Carrito -->
+    <button class="cart-btn" id="cart-btn" style="display:none">
+      🛒 <span class="cart-label">Comprar</span>
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+
+    <!-- Hamburguesa (solo móvil) -->
+    <button class="nav-hamburger" id="nav-hamburger"
+            aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu-movil">
+      <span></span><span></span><span></span>
+    </button>
+
+  </div>
+</header>
+
+<!-- Menú móvil -->
+<div class="nav-menu-movil" id="nav-menu-movil" role="navigation" aria-label="Menú móvil">
+  <a href="../index.html">🏪  Catálogo</a>
+  <a href="nosotros.html">👥  Nosotros</a>
+  <a href="info.html">❓  Ayuda</a>
+  <a href="foro.html">💬  Foro</a>
+  <a href="stores.html">🏬  Stores</a>
+  <a href="../user/index.html" class="btn-login-movil">
+    <span class="material-symbols-outlined">real_estate_agent</span> Portal Vendedores
+  </a>
+</div>
+
+<!-- HERO (se rellena por JS) -->
+<div id="tienda-hero-wrap"></div>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb" id="breadcrumb"></div>
+
+<!-- FILTROS -->
+<nav class="filtros-wrap" aria-label="Filtrar por categoría">
+  <div class="filtros-inner">
+    <span class="filtro-label">Filtrar:</span>
+    <div id="filtros"></div>
+  </div>
+</nav>
+
+<!-- CATÁLOGO -->
+<main>
+  <p class="resultados-info" id="resultados-info"></p>
+  <div class="grilla" id="grilla"></div>
+  <div class="paginado" id="paginado"></div>
+</main>
+
+<!-- MODAL DE PRODUCTO -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-img-wrap">
+      <img class="modal-img" id="modal-img" src="" alt=""/>
+      <button class="modal-cerrar" id="btn-cerrar-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-categoria" id="modal-categoria"></span>
+      <h2 class="modal-nombre" id="modal-nombre"></h2>
+      <div class="modal-precio" id="modal-precio"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <p class="modal-beneficios-titulo">✦</p>
+      <ul class="modal-beneficios" id="modal-beneficios"></ul>
+      <div id="modal-consumo-seccion" style="display:none;margin-bottom:1.6rem">
+        <p class="modal-beneficios-titulo">🌿 Recomendación</p>
+        <p id="modal-consumo-texto" class="modal-consumo-texto"></p>
+      </div>
+      <div class="modal-acciones">
+        <div class="modal-acciones-fila">
+          <button class="btn-compartir-modal" id="btn-compartir-modal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Compartir
+          </button>
+          <button class="btn-seleccionar-modal" id="btn-seleccionar-modal">🛒 Añadir</button>
+        </div>
+        <button class="btn-whatsapp-modal" id="btn-whatsapp-modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z"/>
+          </svg>
+          Comprar por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARRITO LATERAL -->
+<div id="carrito-overlay"></div>
+<aside id="carrito-panel">
+  <div class="carrito-header">
+    <span class="carrito-titulo">🛒 Mi Pedido</span>
+    <button id="btn-cerrar-carrito">✕</button>
+  </div>
+  <div id="carrito-lista"></div>
+  <div class="carrito-totales">
+    <div class="carrito-fila total">
+      <span>Total</span><span id="carrito-total">$ 0</span>
+    </div>
+  </div>
+  <div class="carrito-acciones">
+    <button id="btn-carrito-limpiar">🗑️ Vaciar pedido</button>
+    <button id="btn-carrito-whatsapp">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z"/>
+      </svg>
+      Enviar pedido por WhatsApp
+    </button>
+  </div>
+</aside>
+
+<!-- PANEL INFERIOR -->
+<div class="panel-seleccion" id="panel-seleccion">
+  <div class="panel-info"><span id="panel-info-texto"></span></div>
+  <div class="panel-acciones">
+    <button class="btn-limpiar" id="btn-limpiar">✕ Limpiar</button>
+    <button class="btn-whatsapp-panel" id="btn-whatsapp-panel">🛒 Ver pedido</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <span>GI Store</span> · Todos los derechos reservados
+    <br/>Tienda Virtual - Aguachica Cesar</p>
+
+  <!-- Banner publicidad flotante -->
+  <script type="module">
+    import { iniciarBannerPublicidad } from "../js/banner-pub-pages.js";
+    iniciarBannerPublicidad();
+  </script>
+
+</footer>
+
+<script type="module" src="../js/app.js"></script>
+<script type="module" src="../js/tienda.js"></script>
+<script type="module" src="../js/accesoadmin.js"></script>
+  <script src="../js/nav.js" defer></script>
+</body>
+</html>

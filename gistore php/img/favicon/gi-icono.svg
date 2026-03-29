@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="vg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d9458;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a6b3c;stop-opacity:1" />
+    </linearGradient>
+    <filter id="sh" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1a6b3c" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Hexágono verde -->
+  <polygon
+    points="50,4 92,27 92,73 50,96 8,73 8,27"
+    fill="url(#vg)"
+    filter="url(#sh)"
+  />
+  <!-- Borde interior sutil -->
+  <polygon
+    points="50,10 86,31 86,69 50,90 14,69 14,31"
+    fill="none"
+    stroke="rgba(255,255,255,0.2)"
+    stroke-width="1.5"
+  />
+
+  <!-- G -->
+  <text
+    x="14" y="68"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="48"
+    font-weight="700"
+    fill="#ffffff"
+    letter-spacing="-3"
+  >G</text>
+
+  <!-- I — semitransparente, superpuesta -->
+  <text
+    x="57" y="68"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="48"
+    font-weight="700"
+    fill="rgba(255,255,255,0.70)"
+  >I</text>
+</svg>

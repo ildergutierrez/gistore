@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recuperar contraseña — GI Store</title>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --verde:       #1a6b3c;
+      --verde-medio: #2a855a;
+      --verde-claro: #f0faf4;
+      --verde-borde: #b6dfc8;
+      --acento:      #34d399;
+      --fondo:       #f8fafc;
+      --borde:       #e2e8f0;
+      --texto:       #0f172a;
+      --texto-medio: #475569;
+      --texto-suave: #94a3b8;
+      --error:       #991b1b;
+      --error-bg:    #fee2e2;
+      --error-borde: #fca5a5;
+      --ok:          #166534;
+      --ok-bg:       #dcfce7;
+      --ok-borde:    #86efac;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--fondo);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      color: var(--texto);
+    }
+    .card {
+      background: #fff;
+      border: 1.5px solid var(--borde);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.08);
+    }
+    .logo {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 2rem; text-decoration: none;
+    }
+    .logo-icono {
+      width: 44px; height: 44px; border-radius: 11px;
+      background: var(--verde); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(26,107,60,.28);
+    }
+    .logo-icono img { width: 24px; }
+    .logo-txt strong {
+      display: block; font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem; font-weight: 800; color: var(--verde);
+    }
+    .logo-txt span { font-size: .74rem; color: var(--texto-suave); }
+
+    /* Pasos */
+    .pasos {
+      display: flex; gap: .4rem; margin-bottom: 1.75rem;
+    }
+    .paso-dot {
+      height: 4px; border-radius: 99px; flex: 1;
+      background: var(--borde); transition: background .3s;
+    }
+    .paso-dot.activo  { background: var(--verde); }
+    .paso-dot.hecho   { background: var(--acento); }
+
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--texto); margin-bottom: .3rem;
+    }
+    .subtitulo {
+      font-size: .84rem; color: var(--texto-medio);
+      margin-bottom: 1.5rem; line-height: 1.55;
+    }
+
+    .campo { margin-bottom: 1rem; }
+    .campo label {
+      display: block; font-size: .78rem; font-weight: 600;
+      color: var(--texto-medio);
+      text-transform: uppercase; letter-spacing: .04em;
+      margin-bottom: .35rem;
+    }
+    .campo input {
+      width: 100%; padding: .7rem .95rem;
+      border: 1.5px solid var(--borde); border-radius: 9px;
+      font-size: .92rem; font-family: inherit;
+      color: var(--texto); background: var(--fondo); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .campo input:focus {
+      border-color: var(--verde);
+      box-shadow: 0 0 0 3px rgba(26,107,60,.1);
+      background: #fff;
+    }
+    .campo-pass { position: relative; }
+    .campo-pass input { padding-right: 2.9rem; }
+    .btn-ver {
+      position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 1rem; color: var(--texto-suave);
+    }
+
+    /* Input código grande */
+    #fCodigo {
+      font-size: 2rem; font-weight: 800; letter-spacing: .5em;
+      text-align: center; font-family: monospace;
+      padding: .85rem 1rem;
+    }
+
+    .msg-error {
+      display: none; align-items: flex-start; gap: .5rem;
+      background: var(--error-bg); border: 1px solid var(--error-borde);
+      border-radius: 8px; padding: .65rem .9rem;
+      font-size: .83rem; color: var(--error); margin-bottom: 1rem;
+    }
+    .msg-error.visible { display: flex; }
+
+    .btn-primary {
+      width: 100%; background: var(--verde); color: #fff;
+      border: none; border-radius: 9px;
+      padding: .82rem 1rem; font-size: .95rem; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      transition: background .15s; margin-top: .25rem;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--verde-medio); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+    .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    .btn-primary.cargando .btn-texto { display: none; }
+    .btn-primary.cargando .spinner   { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Pantalla de éxito final */
+    .exito {
+      display: none; flex-direction: column; align-items: center;
+      text-align: center; gap: .6rem;
+    }
+    .exito.visible { display: flex; }
+    .exito-ico { font-size: 2.5rem; }
+    .exito h2 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.3rem; font-weight: 800; color: var(--ok);
+    }
+    .exito p { font-size: .84rem; color: var(--texto-medio); line-height: 1.55; }
+
+    .volver {
+      display: block; text-align: center; margin-top: 1.25rem;
+      font-size: .82rem; color: var(--texto-suave); text-decoration: none;
+    }
+    .volver:hover { color: var(--verde); }
+    .volver span { color: var(--verde); font-weight: 600; }
+
+    .resolicitar {
+      margin-top: .75rem; text-align: center;
+      font-size: .8rem; color: var(--texto-suave);
+    }
+    .resolicitar button {
+      background: none; border: none; color: var(--verde);
+      cursor: pointer; font-size: .8rem; font-weight: 600;
+      text-decoration: underline; padding: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <a href="../index.html" class="logo">
+    <div class="logo-icono">
+      <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store"/>
+    </div>
+    <div class="logo-txt">
+      <strong>GI Store</strong>
+      <span>Portal de Vendedores</span>
+    </div>
+  </a>
+
+  <!-- Indicador de pasos -->
+  <div class="pasos">
+    <div class="paso-dot activo" id="dot1"></div>
+    <div class="paso-dot"       id="dot2"></div>
+    <div class="paso-dot"       id="dot3"></div>
+  </div>
+
+  <!-- Error general -->
+  <div class="msg-error" id="msgError">
+    <span>⚠️</span><span id="textoError"></span>
+  </div>
+
+  <!-- ══ PASO 1: Ingresar correo ══ -->
+  <div id="paso1">
+    <h1>Recuperar cuenta</h1>
+    <p class="subtitulo">
+      Ingresa tu correo registrado y te enviaremos un código de 6 dígitos.
+    </p>
+    <div class="campo">
+      <label>Correo electrónico</label>
+      <input type="email" id="fCorreo" placeholder="tu@correo.com" autocomplete="email"/>
+    </div>
+    <button class="btn-primary" id="btnSolicitar">
+      <span class="btn-texto">📧 Enviar código</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
+
+  <!-- ══ PASO 2: Ingresar código ══ -->
+  <div id="paso2" style="display:none">
+    <h1>Ingresa el código</h1>
+    <p class="subtitulo" id="subtituloCodigo">
+      Enviamos un código de 6 dígitos a <strong id="correoMaskDisplay"></strong>.
+      Revisa también tu carpeta de <strong>correos no deseados (spam)</strong>.
+    </p>
+    <div class="campo">
+      <label>Código de verificación</label>
+      <input type="text" id="fCodigo" placeholder="000000"
+             maxlength="6" inputmode="numeric" autocomplete="one-time-code"/>
+    </div>
+    <button class="btn-primary" id="btnVerificar">
+      <span class="btn-texto">✅ Verificar código</span>
+      <div class="spinner"></div>
+    </button>
+    <div class="resolicitar">
+      ¿No llegó el correo?
+      <button type="button" id="btnReenviar">Reenviar código</button>
+    </div>
+  </div>
+
+  <!-- ══ PASO 3: Nueva contraseña ══ -->
+  <div id="paso3" style="display:none">
+    <h1>Nueva contraseña</h1>
+    <p class="subtitulo">Elige una contraseña segura de al menos 6 caracteres.</p>
+    <div class="campo">
+      <label>Nueva contraseña</label>
+      <div class="campo-pass">
+        <input type="password" id="fPassNueva" placeholder="Mínimo 6 caracteres"/>
+        <button type="button" class="btn-ver" id="btnVerNueva">👁</button>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Confirmar contraseña</label>
+      <div class="campo-pass">
+        <input type="password" id="fPassConf" placeholder="Repite la contraseña"/>
+        <button type="button" class="btn-ver" id="btnVerConf">👁</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="btnCambiar">
+      <span class="btn-texto">🔐 Cambiar contraseña</span>
+      <div class="spinner"></div>
+    </button>
+  </div>
+
+  <!-- ══ ÉXITO FINAL ══ -->
+  <div class="exito" id="panelExito">
+    <div class="exito-ico">✅</div>
+    <h2>¡Contraseña actualizada!</h2>
+    <p>Tu contraseña se cambió correctamente.<br/>Serás redirigido al inicio de sesión.</p>
+  </div>
+
+  <a href="../index.html" class="volver" id="volverLogin">
+    ← Volver al <span>inicio de sesión</span>
+  </a>
+
+</div>
+<script src="recuperar.js"></script>
+</body>
+</html>

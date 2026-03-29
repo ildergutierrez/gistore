@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ═══════════════════════════════════════════
+       SEO — Información básica
+       ═══════════════════════════════════════════ -->
+ <title>GI Store | Catálogo digital de productos en Colombia por WhatsApp</title>
+
+  <meta name="description"
+    content="GI Store — catálogo digital de productos en Colombia. Explora suplementos, tecnología, moda y hogar. Consulta precios, conoce a los vendedores y cierra tu compra directo por WhatsApp." />
+
+  <meta name="keywords"
+    content="catálogo digital Colombia, productos por WhatsApp, GI Store, suplementos naturales, tecnología, hogar, moda, vendedores independientes, Aguachica Cesar" />
+
+  <meta name="author" content="GI Store" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="es" />
+  <meta name="geo.region" content="CO-CES" />
+  <meta name="geo.placename" content="Aguachica, Cesar, Colombia" />
+
+  <!-- ═══════════════════════════════════════════
+       Open Graph — Vista previa en redes sociales
+       ═══════════════════════════════════════════ -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="GI Store — Catálogo digital en Colombia" />
+  <meta property="og:description"
+    content="Explora el catálogo de productos de vendedores independientes en Colombia. Suplementos, tecnología, moda, hogar y más. Consulta disponibilidad y cierra tu compra por WhatsApp." />
+  <meta property="og:image" content="https://gistore.com.co/img/favicon/gi-icono.png" />
+  <meta property="og:locale" content="es_CO" />
+  <meta property="og:site_name" content="GI Store" />
+
+  <!-- ═══════════════════════════════════════════
+       Twitter / X Card
+       ═══════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="GI Store — Catálogo digital en Colombia" />
+  <meta name="twitter:description"
+    content="Catálogo digital de vendedores independientes en Colombia. Explora productos, consulta precios y compra por WhatsApp." />
+  <meta name="twitter:image" content="img/favicon/gi-icono.svg" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "GI Store",
+  "url": "https://gistore.com.co/",
+  "description": "Catálogo digital de productos en Colombia con compra por WhatsApp",
+  "areaServed": "Colombia"
+}
+</script>
+  <link rel="canonical" href="https://gistore.com.co/" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+  <!-- ═══════════════════════════════════════════
+       Favicon e íconos
+       ═══════════════════════════════════════════ -->
+  <link rel="icon" href="img/favicon/gi-icono.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="img/favicon/gi-icono.svg" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .btn-login-admin {
+      background: rgba(0, 0, 0, 0.2) !important;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-login-admin:hover {
+      background: rgba(0, 0, 0, 0.35) !important;
+    }
+
+    /* ── Mini menú compartir (PC fallback) ───────────────────── */
+    #gi-share-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gsm-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    .gsm-box {
+      position: relative;
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem 1.25rem;
+      width: min(320px, 90vw);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      animation: gsm-in .18s ease;
+    }
+
+    @keyframes gsm-in {
+      from {
+        opacity: 0;
+        transform: scale(.94) translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .gsm-titulo {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #888;
+      margin: 0 0 .25rem;
+    }
+
+    .gsm-opcion {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-size: .92rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: filter .15s, transform .1s;
+      text-align: left;
+    }
+
+    .gsm-opcion:hover {
+      filter: brightness(.92);
+      transform: translateY(-1px);
+    }
+
+    .gsm-opcion:active {
+      transform: translateY(0);
+    }
+
+    .gsm-wa {
+      background: #25d366;
+      color: #fff;
+    }
+
+    .gsm-tg {
+      background: #229ed9;
+      color: #fff;
+    }
+
+    .gsm-copy {
+      background: #f0f0f0;
+      color: #333;
+    }
+  </style>
+  <link rel="stylesheet" href="css/nav.css"/>
+  
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+  <div class="header-inner">
+
+    <!-- Logo -->
+    <div class="logo">
+      <a href="#">
+        <img src="img/favicon/favicon.svg" alt="GI Store"/>
+      </a>
+    </div>
+
+      <div class="busqueda-header-wrap">
+        <input class="busqueda-header-input" id="busqueda-input"
+               type="text" placeholder="Buscar producto..." autocomplete="off"/>
+        <svg class="busqueda-icono" width="17" height="17" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <button class="busqueda-limpiar" id="busqueda-limpiar" style="display:none">✕</button>
+      </div>
+    <!-- Nav desktop -->
+    <nav class="header-nav" aria-label="Navegación principal">
+      <a href="#" class="activo">Catálogo</a>
+      <a href="page/nosotros.html">Nosotros</a>
+      <a href="page/info.html">Ayuda</a>
+      <a href="page/foro.html">Foro</a>
+      <a href="page/stores.html">Stores</a>
+      <a href="user/index.html" class="btn-login-header" title="Portal vendedores">
+        <span class="material-symbols-outlined">real_estate_agent</span> Vendedores
+      </a>
+    </nav>
+
+    <!-- Carrito -->
+    <button class="cart-btn" id="cart-btn" style="display:none">
+      🛒 <span class="cart-label">Comprar</span>
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+
+    <!-- Hamburguesa (solo móvil) -->
+    <button class="nav-hamburger" id="nav-hamburger"
+            aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu-movil">
+      <span></span><span></span><span></span>
+    </button>
+
+  </div>
+</header>
+
+<!-- Menú móvil -->
+<div class="nav-menu-movil" id="nav-menu-movil" role="navigation" aria-label="Menú móvil">
+  <a href="#" class="activo">🏪  Catálogo</a>
+  <a href="page/nosotros.html">👥  Nosotros</a>
+  <a href="page/info.html">❓  Ayuda</a>
+  <a href="page/foro.html">💬  Foro</a>
+  <a href="page/stores.html">🏬  Stores</a>
+  <a href="user/index.html" class="btn-login-movil">
+    <span class="material-symbols-outlined">real_estate_agent</span> Portal Vendedores
+  </a>
+</div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Descubre nuestro catálogo</h1>
+    <p>
+      Haz clic en un producto para ver detalles · Selecciona varios y consulta
+      por WhatsApp
+    </p>
+  </section>
+<section class="seo-texto">
+  <p class="seo-lugar">GI Store · Colombia</p>
+  <h2>Catálogo digital de productos en Colombia</h2>
+  <p class="seo-intro">
+    Vendedores independientes de suplementos, tecnología, moda y hogar.
+    Consulta precios y compra directo por WhatsApp — sin registro, sin intermediarios.
+  </p>
+
+  <div class="seo-cards">
+    <div class="seo-card">
+      <strong>Explora sin registrarte</strong>
+      <p>Navega el catálogo completo de productos en Colombia sin crear cuenta. Filtra por categoría: suplementos naturales, tecnología, moda y artículos para el hogar.</p>
+    </div>
+    <div class="seo-card">
+      <strong>Compra por WhatsApp</strong>
+      <p>Haz clic en cualquier producto y contáctate directo con el vendedor. Sin pagos en línea, sin comisiones — tú coordinás el pago y el envío.</p>
+    </div>
+    <div class="seo-card">
+      <strong>Vendedores independientes</strong>
+      <p>Apoya emprendedores colombianos. Cada vendedor maneja su catálogo, precios y stock. Productos únicos que no están en las grandes tiendas.</p>
+    </div>
+  </div>
+
+  <p class="seo-keywords">
+    catálogo virtual Colombia · comprar por WhatsApp Colombia ·
+    productos de todo tipo Aguachica ·
+    vendedores independientes 
+  </p>
+</section>
+  <!-- FILTROS -->
+  <nav class="filtros-wrap" aria-label="Filtrar por categoría">
+    <div class="filtros-inner">
+      <span class="filtro-label">Filtrar:</span>
+      <div id="filtros"></div>
+    </div>
+  </nav>
+
+  <!-- CATÁLOGO -->
+  <main>
+    <p class="resultados-info" id="resultados-info"></p>
+    <div class="grilla" id="grilla"></div>
+    <div class="paginado" id="paginado"></div>
+  </main>
+
+  <!-- =====================================================
+       MODAL DE PRODUCTO
+       ===================================================== -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-img-wrap">
+        <img class="modal-img" id="modal-img" src="" alt="" />
+        <button class="modal-cerrar" id="btn-cerrar-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <span class="modal-categoria" id="modal-categoria"></span>
+        <h2 class="modal-nombre" id="modal-nombre"></h2>
+        <div class="modal-precio" id="modal-precio"></div>
+        <p class="modal-desc" id="modal-desc"></p>
+
+        <!-- Beneficios -->
+        <p class="modal-beneficios-titulo">✦</p>
+        <ul class="modal-beneficios" id="modal-beneficios"></ul>
+
+        <!-- Modo de consumo (se oculta si el producto no tiene el campo) -->
+        <div id="modal-consumo-seccion" style="display: none; margin-bottom: 1.6rem">
+          <p class="modal-beneficios-titulo">🌿 Recomendación</p>
+          <p id="modal-consumo-texto" class="modal-consumo-texto"></p>
+        </div>
+
+        <div class="modal-acciones">
+          <!-- Fila superior: Compartir + Añadir -->
+          <div class="modal-acciones-fila">
+            <button class="btn-compartir-modal" id="btn-compartir-modal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Compartir
+            </button>
+            <button class="btn-seleccionar-modal" id="btn-seleccionar-modal">
+              🛒 Añadir
+            </button>
+          </div>
+          <!-- Botón principal WhatsApp -->
+          <button class="btn-whatsapp-modal" id="btn-whatsapp-modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+              <path
+                d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z" />
+            </svg>
+            Comprar por WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       CARRITO — PANEL LATERAL
+       ===================================================== -->
+  <div id="carrito-overlay"></div>
+
+  <aside id="carrito-panel">
+    <div class="carrito-header">
+      <span class="carrito-titulo">🛒 Mi Pedido</span>
+      <button id="btn-cerrar-carrito">✕</button>
+    </div>
+
+    <div id="carrito-lista"></div>
+
+    <div class="carrito-totales">
+      <div class="carrito-fila total">
+        <span>Total</span>
+        <span id="carrito-total">$ 0</span>
+      </div>
+    </div>
+
+    <div class="carrito-acciones">
+      <button id="btn-carrito-limpiar">🗑️ Vaciar pedido</button>
+      <button id="btn-carrito-whatsapp">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+          <path
+            d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.107 1.51 5.833L.057 23.571a.75.75 0 00.92.92l5.738-1.453A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a10 10 0 01-5.17-1.445l-.37-.22-3.828.97.985-3.735-.241-.386A10 10 0 1112 22z" />
+        </svg>
+        Enviar pedido por WhatsApp
+      </button>
+    </div>
+  </aside>
+
+  <!-- PANEL INFERIOR -->
+  <div class="panel-seleccion" id="panel-seleccion">
+    <div class="panel-info">
+      <span id="panel-info-texto"></span>
+    </div>
+    <div class="panel-acciones">
+      <button class="btn-limpiar" id="btn-limpiar">✕ Limpiar</button>
+      <button class="btn-whatsapp-panel" id="btn-whatsapp-panel">
+        🛒 Ver pedido
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      © 2026 <span>GI Store</span> · Todos los derechos reservados
+      <br />Tienda Virtual - Aguachica Cesar
+    </p>
+  </footer>
+
+  <!-- Banner publicidad flotante -->
+  <script type="module">
+    import { iniciarBannerPublicidad } from "./js/banner-pub.js";
+    // Espera a que app.js llene window._cacheTodos (15 s configurado en banner-pub.js)
+    iniciarBannerPublicidad();
+
+    
+  </script>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/accesoadmin.js"></script>
+  <script src="js/nav.js" defer></script>
+</body>
+
+</html>
