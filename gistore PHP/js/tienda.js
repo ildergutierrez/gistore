@@ -33,6 +33,27 @@ const params    = new URLSearchParams(window.location.search);
 const vEncoded  = params.get('v');
 const VENDEDOR_ID = vEncoded ? decId(vEncoded) : null;
 
+// ── Carrito compartido con app.js (misma clave localStorage) ─
+const CARRITO_KEY = 'gistore_carrito';
+
+function cargarCarrito() {
+  try {
+    const raw = localStorage.getItem(CARRITO_KEY);
+    if (!raw) return new Map();
+    // Normalizar todas las claves a string para consistencia con app.js
+    const parsed = JSON.parse(raw);
+    return new Map(parsed.map(([k, v]) => [String(k), v]));
+  } catch { return new Map(); }
+}
+function guardarCarrito() {
+  try {
+    localStorage.setItem(CARRITO_KEY, JSON.stringify([...seleccionados.entries()]));
+  } catch { /* cuota llena */ }
+}
+function limpiarCarritoStorage() {
+  localStorage.removeItem(CARRITO_KEY);
+}
+
 // ── Estado ─────────────────────────────────────────────────
 let VENDEDOR        = null;
 let CATEGORIAS_MAP  = {};   // { id → nombre }
@@ -43,7 +64,7 @@ let totalProductos  = 0;
 let cachePaginas    = {};
 let _cacheTodos     = null; // productos del vendedor (cache maestro)
 
-let seleccionados   = new Map();
+let seleccionados   = cargarCarrito();  // ← persiste entre páginas
 let productoModal   = null;
 let carritoAbierto  = false;
 
@@ -253,11 +274,15 @@ async function renderCatalogo() {
 
 // ── Tarjeta ────────────────────────────────────────────────
 function crearTarjeta(prod) {
-  const sel = seleccionados.has(prod.id);
-  const clr = colorV();
+  const sid = String(prod.id);
+  const sel = seleccionados.has(sid);
+  // Usar color del vendedor propio del producto (puede venir de otra tienda en carrito compartido)
+  const clr = (String(prod.vendedor_id) === String(VENDEDOR?.id))
+    ? colorV()
+    : (prod.vendedor_color || colorV());
   const div = document.createElement('div');
   div.className  = 'tarjeta' + (sel ? ' seleccionada' : '');
-  div.dataset.id = prod.id;
+  div.dataset.id = sid;
   div.innerHTML  = `
     <div class="tarjeta-check">${sel ? '✓' : ''}</div>
     <div class="tarjeta-img-wrap">
@@ -280,7 +305,7 @@ function crearTarjeta(prod) {
      .addEventListener('click', e => { e.stopPropagation(); abrirModal(prod); });
   div.addEventListener('click', e => {
     if (!e.target.closest('.tarjeta-img-wrap') && !e.target.classList.contains('btn-ver'))
-      toggleSel(prod.id);
+      toggleSel(sid);
   });
   return div;
 }
@@ -320,7 +345,10 @@ function renderPaginado(totalItems) {
 // ── Modal ──────────────────────────────────────────────────
 function abrirModal(prod) {
   productoModal = prod;
-  const clr = colorV();
+  // Usar color del vendedor dueño del producto
+  const clr = (String(prod.vendedor_id) === String(VENDEDOR?.id))
+    ? colorV()
+    : (prod.vendedor_color || colorV());
 
   document.getElementById('modal-img').src               = resolveImg(prod.imagen);
   document.getElementById('modal-img').alt               = prod.nombre;
@@ -365,55 +393,62 @@ function cerrarModal() {
 function actualizarBtnSel() {
   if (!productoModal) return;
   const btn = document.getElementById('btn-seleccionar-modal');
-  const sel = seleccionados.has(productoModal.id);
+  const sel = seleccionados.has(String(productoModal.id));
   btn.textContent = sel ? '✓ Seleccionado' : '🛒 Añadir';
   btn.className   = 'btn-seleccionar-modal' + (sel ? ' activo' : '');
 }
 
 // ── Selección / carrito ────────────────────────────────────
 function toggleSel(id) {
+  const sid = String(id);
   const clave = `${paginaActual}|${categoriaActiva}|${nor(busquedaActiva)}`;
   const pag   = cachePaginas[clave] || [];
-  if (seleccionados.has(id)) {
-    seleccionados.delete(id);
+  if (seleccionados.has(sid)) {
+    seleccionados.delete(sid);
   } else {
-    const p = pag.find(x => String(x.id) === String(id))
-           || (_cacheTodos || []).find(x => String(x.id) === String(id));
-    if (p) seleccionados.set(id, { prod: p, cantidad: 1 });
+    const p = pag.find(x => String(x.id) === sid)
+           || (_cacheTodos || []).find(x => String(x.id) === sid);
+    if (p) seleccionados.set(sid, { prod: p, cantidad: 1 });
   }
-  actualizarTarjetaSel(id);
+  guardarCarrito();
+  actualizarTarjetaSel(sid);
   actualizarPanel();
   actualizarCartBtn();
   if (carritoAbierto) renderCarrito();
-  if (productoModal?.id === id) actualizarBtnSel();
+  if (productoModal && String(productoModal.id) === sid) actualizarBtnSel();
 }
 
 function cambiarCantidad(id, delta) {
-  if (!seleccionados.has(id)) return;
-  const item = seleccionados.get(id);
+  const sid = String(id);
+  if (!seleccionados.has(sid)) return;
+  const item = seleccionados.get(sid);
   const nv   = item.cantidad + delta;
-  if (nv <= 0) { eliminar(id); return; }
+  if (nv <= 0) { eliminar(sid); return; }
   item.cantidad = nv;
+  guardarCarrito();
   actualizarPanel();
   actualizarCartBtn();
   renderCarrito();
 }
 
 function eliminar(id) {
-  seleccionados.delete(id);
-  actualizarTarjetaSel(id);
+  const sid = String(id);
+  seleccionados.delete(sid);
+  guardarCarrito();
+  actualizarTarjetaSel(sid);
   actualizarPanel();
   actualizarCartBtn();
-  if (productoModal?.id === id) actualizarBtnSel();
+  if (productoModal && String(productoModal.id) === sid) actualizarBtnSel();
   if (!seleccionados.size) { cerrarCarrito(); return; }
   renderCarrito();
 }
 
 function actualizarTarjetaSel(id) {
-  const t = document.querySelector(`.tarjeta[data-id='${id}']`);
+  const sid = String(id);
+  const t = document.querySelector(`.tarjeta[data-id='${sid}']`);
   if (!t) return;
   const ch = t.querySelector('.tarjeta-check');
-  if (seleccionados.has(id)) {
+  if (seleccionados.has(sid)) {
     t.classList.add('seleccionada');    ch.textContent = '✓';
   } else {
     t.classList.remove('seleccionada'); ch.textContent = '';
@@ -441,6 +476,7 @@ function actualizarPanel() {
 function limpiarSel() {
   const ids = [...seleccionados.keys()];
   seleccionados.clear();
+  limpiarCarritoStorage();
   ids.forEach(actualizarTarjetaSel);
   actualizarPanel();
   actualizarCartBtn();
@@ -468,13 +504,17 @@ function renderCarrito() {
   const total = items.reduce((a, { prod, cantidad }) => a + prod.valor * cantidad, 0);
   const lista = document.getElementById('carrito-lista');
 
-  lista.innerHTML = items.map(({ prod, cantidad }) => `
-    <div class="carrito-item" style="border-bottom:3px solid ${colorV()}">
+  lista.innerHTML = items.map(({ prod, cantidad }) => {
+    // Usar color del vendedor propio del producto, no el de la tienda actual
+    const clr = prod.vendedor_color || colorV();
+    const vendNombre = prod.vendedor_nombre || VENDEDOR?.nombre || '';
+    return `
+    <div class="carrito-item" style="border-bottom:3px solid ${clr}">
       <img class="carrito-item-img" src="${resolveImg(prod.imagen)}" alt="${prod.nombre}"
            onerror="this.src='https://placehold.co/80x80/e8f5ee/1a6b3c?text=Img'">
       <div class="carrito-item-info">
         <span class="carrito-item-nombre">${prod.nombre}</span>
-        <span class="carrito-item-cat">${nomCat(prod.categoria_id)}</span>
+        <span class="carrito-item-cat">${nomCat(prod.categoria_id)}${vendNombre ? ' · ' + vendNombre : ''}</span>
         <span class="carrito-item-precio">${fmt(prod.valor * cantidad)}</span>
       </div>
       <div class="carrito-item-cantidad">
@@ -483,7 +523,8 @@ function renderCarrito() {
         <button class="qty-btn" data-id="${prod.id}" data-delta="1">+</button>
       </div>
       <button class="carrito-item-eliminar" data-id="${prod.id}" title="Eliminar">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   lista.querySelectorAll('.carrito-item-eliminar')
        .forEach(b => b.addEventListener('click', () => eliminar(b.dataset.id)));
@@ -492,9 +533,165 @@ function renderCarrito() {
   document.getElementById('carrito-total').textContent = fmt(total);
 }
 
+// ── Detección de popups bloqueados ─────────────────────────
+function _popupsHabilitados() {
+  let popup = null;
+
+  try {
+    popup = window.open('', '_blank', 'width=100,height=100,left=-1000,top=-1000');
+  } catch (e) {
+    return false;
+  }
+
+  // Si no se pudo abrir → bloqueado
+  if (!popup || typeof popup.closed === 'undefined' || popup.closed) {
+    return false;
+  }
+
+  // Intentar interactuar con la ventana (evita falsos positivos)
+  try {
+    popup.document.write('<html><body>test</body></html>');
+    popup.document.close();
+  } catch (e) {
+    return false;
+  }
+
+  // Validar que tenga funciones reales
+  if (typeof popup.focus !== 'function') {
+    return false;
+  }
+
+  // Limpieza
+  popup.close();
+
+  return true;
+}
+function _mostrarAlertaPopups() {
+  document.getElementById('gi-popup-alert')?.remove();
+  const div = document.createElement('div');
+  div.id = 'gi-popup-alert';
+  div.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+      display:flex;align-items:center;justify-content:center;padding:1rem;">
+      <div style="
+        background:#fff;border-radius:16px;padding:2rem;max-width:400px;width:100%;
+        box-shadow:0 16px 48px rgba(0,0,0,.25);text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">🔒</div>
+        <h3 style="margin:0 0 .5rem;font-size:1.1rem;color:#111">Ventanas emergentes bloqueadas</h3>
+        <p style="margin:0 0 1.25rem;font-size:.92rem;color:#555;line-height:1.6">
+          Tu pedido tiene productos de <strong>varios vendedores</strong>. Para enviar
+          cada pedido por separado, el navegador necesita abrir varias pestañas.<br><br>
+          Busca el ícono 🔒 o ⚠️ en la barra de dirección y selecciona
+          <strong>"Permitir ventanas emergentes"</strong>, luego intenta de nuevo.
+        </p>
+        <button id="gi-popup-alert-cerrar" style="
+          background:#1a6b3c;color:#fff;border:none;border-radius:10px;
+          padding:.7rem 1.5rem;font-size:.95rem;font-weight:600;cursor:pointer;width:100%">
+          Entendido, lo habilitaré
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  div.querySelector('#gi-popup-alert-cerrar').addEventListener('click', () => div.remove());
+}
+
+function _mostrarConfirmacionVendedores(conWa, onConfirmar) {
+  document.getElementById('gi-confirm-pedido')?.remove();
+  const div = document.createElement('div');
+  div.id = 'gi-confirm-pedido';
+  const resumen = conWa.map(([, { nombre, lineas }]) => {
+    const total = lineas.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
+    return `<div style="display:flex;justify-content:space-between;padding:.4rem 0;
+              border-bottom:1px solid #e5e7eb;font-size:.9rem">
+              <span>🏪 ${nombre || 'Vendedor'}</span>
+              <span style="font-weight:700;color:#1a6b3c">${fmt(total)}</span>
+            </div>`;
+  }).join('');
+  div.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+      display:flex;align-items:center;justify-content:center;padding:1rem;">
+      <div style="
+        background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;
+        box-shadow:0 16px 48px rgba(0,0,0,.25);">
+        <div style="font-size:2rem;text-align:center;margin-bottom:.5rem">🛒</div>
+        <h3 style="margin:0 0 .25rem;font-size:1.05rem;color:#111;text-align:center">
+          Pedido a ${conWa.length} vendedores
+        </h3>
+        <p style="margin:0 0 1rem;font-size:.85rem;color:#777;text-align:center">
+          Se abrirá un chat de WhatsApp por cada vendedor
+        </p>
+        <div style="margin-bottom:1.25rem">${resumen}</div>
+        <div style="display:flex;gap:.6rem">
+          <button id="gi-confirm-cancelar" style="
+            flex:1;background:#f3f4f6;color:#555;border:none;border-radius:10px;
+            padding:.7rem;font-size:.9rem;font-weight:600;cursor:pointer">
+            Cancelar
+          </button>
+          <button id="gi-confirm-ok" style="
+            flex:2;background:#25D366;color:#fff;border:none;border-radius:10px;
+            padding:.7rem;font-size:.9rem;font-weight:600;cursor:pointer">
+            ✓ Enviar pedidos
+          </button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  div.querySelector('#gi-confirm-cancelar').addEventListener('click', () => div.remove());
+  div.querySelector('#gi-confirm-ok').addEventListener('click', () => {
+    div.remove();
+    onConfirmar();
+  });
+}
+
+function _abrirVentanasWa(conWa, fmtFn, urlFn, onExito) {
+  let bloqueados = 0;
+
+  conWa.forEach(([numero, { nombre, lineas }], i) => {
+    setTimeout(() => {
+      const lista = lineas.map((l, j) =>
+        `${j + 1}. *${l.prod.nombre}* x${l.cantidad} — ${fmtFn(l.prod.valor * l.cantidad)}`
+      ).join('\n');
+
+      const total = lineas.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
+
+      const encabezado = nombre
+        ? `👋 ¡Hola, ${nombre}! Quisiera hacer un pedido:`
+        : '👋 ¡Hola! Quisiera hacer un pedido:';
+
+      const win = window.open(
+        urlFn(numero,
+          `${encabezado}\n\n${lista}\n\n✅ *Total: ${fmtFn(total)}*\n\n¿Confirman disponibilidad? 🙏`
+        ),
+        '_blank'
+      );
+
+      // 🔴 DETECCIÓN REAL
+      if (!win) {
+        bloqueados++;
+      }
+
+      // Cuando termina el último intento
+      if (i === conWa.length - 1) {
+        setTimeout(() => {
+          if (bloqueados > 0) {
+            _mostrarAlertaPopups();
+          } else {
+            onExito();
+          }
+        }, 300);
+      }
+
+    }, i * 300); // ⬅️ más corto = menos bloqueos
+  });
+}
+
 // ── WhatsApp ───────────────────────────────────────────────
 function enviarWaProducto(prod) {
-  const num = waNum();
+  const num = (String(prod.vendedor_id) === String(VENDEDOR?.id))
+    ? waNum()
+    : (prod.vendedor_whatsapp || waNum());
   if (!num) { alert('Este vendedor no tiene WhatsApp registrado.'); return; }
   const img = resolveImg(prod.imagen);
   window.open(waUrl(num,
@@ -506,16 +703,43 @@ function enviarWaProducto(prod) {
 
 function enviarWaCarrito() {
   if (!seleccionados.size) return;
-  const items = [...seleccionados.values()];
-  const lista = items.map((l, j) =>
-    `${j + 1}. *${l.prod.nombre}* x${l.cantidad} — ${fmt(l.prod.valor * l.cantidad)}`
-  ).join('\n');
-  const total = items.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
-  const num   = waNum();
-  if (!num) { alert('Este vendedor no tiene WhatsApp registrado.'); return; }
-  window.open(waUrl(num,
-    `👋 ¡Hola! Quisiera hacer un pedido:\n\n${lista}\n\n✅ *Total: ${fmt(total)}*\n\n¿Confirman disponibilidad? 🙏`
-  ), '_blank');
+
+  const grupos = {};
+  [...seleccionados.values()].forEach(({ prod, cantidad }) => {
+    const num    = prod.vendedor_whatsapp || waNum();
+    const nombre = prod.vendedor_nombre   || VENDEDOR?.nombre || '';
+    if (!grupos[num]) grupos[num] = { nombre, lineas: [] };
+    grupos[num].lineas.push({ prod, cantidad });
+  });
+
+  const entradas = Object.entries(grupos);
+  const sinWa = entradas.filter(([num]) => !num);
+  if (sinWa.length) {
+    const nombres = sinWa.flatMap(([, g]) => g.lineas.map(l => l.prod.nombre)).join(', ');
+    alert(`⚠️ Algunos productos no tienen WhatsApp registrado y no se enviarán:\n${nombres}`);
+  }
+
+  const conWa = entradas.filter(([num]) => !!num);
+  if (!conWa.length) return;
+
+  // Un solo vendedor → abrir directamente
+  if (conWa.length === 1) {
+    _abrirVentanasWa(conWa, limpiarSel);
+    return;
+  }
+
+  // Múltiples vendedores:
+  // PASO 1 — verificar popups con about:blank
+  if (!_popupsHabilitados()) {
+    _mostrarAlertaPopups();
+    return; // carrito intacto
+  }
+
+  // PASO 2 — modal de confirmación con resumen por vendedor
+  _mostrarConfirmacionVendedores(conWa, () => {
+    // PASO 3 — abrir ventanas y limpiar carrito al final
+    _abrirVentanasWa(conWa, limpiarSel);
+  });
 }
 
 // ── Compartir ──────────────────────────────────────────────
@@ -624,7 +848,18 @@ async function iniciar() {
     // 5. Catálogo
     await renderCatalogo();
 
-    // 6. Abrir producto por ?p=
+    // 6. Exponer función global para el banner de productos
+    window._agregarAlCarrito = (prod) => {
+      const sid = String(prod.id);
+      if (!seleccionados.has(sid)) {
+        seleccionados.set(sid, { prod, cantidad: 1 });
+        guardarCarrito();
+        actualizarPanel();
+        actualizarCartBtn();
+      }
+    };
+
+    // 7. Abrir producto por ?p=
     const enc = new URLSearchParams(window.location.search).get('p');
     if (enc) {
       const id   = decId(enc);

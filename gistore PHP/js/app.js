@@ -157,13 +157,21 @@ function mostrarCargando(si) {
 }
 
 // ── Sincronizar carrito ────────────────────────────────────
-// Elimina del carrito productos que ya no existen en el catálogo
+// Elimina huérfanos y rehidrata prod con datos frescos del catálogo
 function sincronizarCarrito() {
   if (!_cacheTodos) return;
-  const idsValidos = new Set(_cacheTodos.map(p => String(p.id)));
+  const porId = new Map(_cacheTodos.map(p => [String(p.id), p]));
   let cambio = false;
-  for (const [id] of seleccionados) {
-    if (!idsValidos.has(String(id))) { seleccionados.delete(id); cambio = true; }
+  for (const [id, item] of seleccionados) {
+    const fresco = porId.get(String(id));
+    if (!fresco) {
+      seleccionados.delete(id);
+      cambio = true;
+    } else if (item.prod !== fresco) {
+      // Rehidratar con objeto fresco (imagen, nombre, valor actualizados)
+      item.prod = fresco;
+      cambio = true;
+    }
   }
   if (cambio) { guardarCarrito(); actualizarCartBtn(); actualizarPanelInferior(); }
 }
@@ -610,34 +618,187 @@ function enviarWhatsappProducto(prod) {
   window.open(buildWaUrl(numero, texto), '_blank');
 }
 
+// ── Detección de popups bloqueados ─────────────────────────
+// Se detecta DESPUÉS de intentar abrir, no antes (la prueba previa consume el permiso del click).
+// ── Detección de popups bloqueados ─────────────────────────
+// about:blank no navega a ningún sitio externo → nunca lo bloquea el navegador.
+// Si retorna null, los popups de URLs externas también estarán bloqueados.
+
+function _mostrarAlertaPopups() {
+  document.getElementById('gi-popup-alert')?.remove();
+  const div = document.createElement('div');
+  div.id = 'gi-popup-alert';
+  div.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+      display:flex;align-items:center;justify-content:center;padding:1rem;">
+      <div style="
+        background:#fff;border-radius:16px;padding:2rem;max-width:400px;width:100%;
+        box-shadow:0 16px 48px rgba(0,0,0,.25);text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">🔒</div>
+        <h3 style="margin:0 0 .5rem;font-size:1.1rem;color:#111">Ventanas emergentes bloqueadas</h3>
+        <p style="margin:0 0 1.25rem;font-size:.92rem;color:#555;line-height:1.6">
+          Tu pedido tiene productos de <strong>varios vendedores</strong>. Para enviar
+          cada pedido por separado, el navegador necesita abrir varias pestañas.<br><br>
+          Busca el ícono 🔒 o ⚠️ en la barra de dirección y selecciona
+          <strong>"Permitir ventanas emergentes"</strong>, luego intenta de nuevo.
+        </p>
+        <button id="gi-popup-alert-cerrar" style="
+          background:#1a6b3c;color:#fff;border:none;border-radius:10px;
+          padding:.7rem 1.5rem;font-size:.95rem;font-weight:600;cursor:pointer;width:100%">
+          Entendido, lo habilitaré
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  div.querySelector('#gi-popup-alert-cerrar').addEventListener('click', () => div.remove());
+}
+
+function _mostrarConfirmacionVendedores(conWa) {
+  document.getElementById('gi-confirm-pedido')?.remove();
+
+  const div = document.createElement('div');
+  div.id = 'gi-confirm-pedido';
+
+  const resumen = conWa.map(([, { nombre, lineas }]) => {
+    const total = lineas.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
+
+    return `
+      <div style="display:flex;justify-content:space-between;padding:.4rem 0;
+           border-bottom:1px solid #e5e7eb;font-size:.9rem">
+        <span>🏪 ${nombre || 'Vendedor'}</span>
+        <span style="font-weight:700;color:#1a6b3c">${formatoPrecio(total)}</span>
+      </div>`;
+  }).join('');
+
+  div.innerHTML = `
+    <div style="
+      position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+      display:flex;align-items:center;justify-content:center;padding:1rem;">
+      <div style="
+        background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;
+        box-shadow:0 16px 48px rgba(0,0,0,.25);">
+
+        <div style="font-size:2rem;text-align:center;margin-bottom:.5rem">🛒</div>
+
+        <h3 style="margin:0 0 .25rem;font-size:1.05rem;color:#111;text-align:center">
+          Pedido a ${conWa.length} vendedores
+        </h3>
+
+        <p style="margin:0 0 1rem;font-size:.85rem;color:#777;text-align:center">
+          Se abrirá un chat de WhatsApp por cada vendedor
+        </p>
+
+        <div style="margin-bottom:1.25rem">${resumen}</div>
+
+        <div style="display:flex;gap:.6rem">
+          <button id="gi-confirm-cancelar" style="
+            flex:1;background:#f3f4f6;color:#555;border:none;border-radius:10px;
+            padding:.7rem;font-size:.9rem;font-weight:600;cursor:pointer">
+            Cancelar
+          </button>
+
+          <button id="gi-confirm-ok" style="
+            flex:2;background:#25D366;color:#fff;border:none;border-radius:10px;
+            padding:.7rem;font-size:.9rem;font-weight:600;cursor:pointer">
+            ✓ Enviar pedidos
+          </button>
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.appendChild(div);
+
+  // ❌ Cancelar
+  div.querySelector('#gi-confirm-cancelar')
+     .addEventListener('click', () => div.remove());
+
+  // ✅ CONFIRMAR → AQUÍ se abren las ventanas (MISMO CLICK)
+  div.querySelector('#gi-confirm-ok')
+     .addEventListener('click', () => {
+        _abrirVentanasWa(conWa);
+        div.remove();
+     });
+}
+function _abrirVentanasWa(conWa) {
+
+  // 🔹 1. Abrir ventanas VACÍAS inmediatamente (esto sí lo permite el navegador)
+  const ventanas = conWa.map(() => window.open('', '_blank'));
+
+  // 🔹 2. Si alguna fue bloqueada → mostrar alerta
+  const bloqueado = ventanas.some(w => !w || w.closed);
+
+  if (bloqueado) {
+    _mostrarAlertaPopups();
+    return;
+  }
+
+  // 🔹 3. Ahora sí construir y asignar URLs (ya no bloquea)
+  ventanas.forEach((win, i) => {
+    const [numero, { nombre, lineas }] = conWa[i];
+
+    const lista = lineas.map((l, idx) =>
+      `${idx + 1}. *${l.prod.nombre}* x${l.cantidad} — ${formatoPrecio(l.prod.valor * l.cantidad)}`
+    ).join('\n');
+
+    const total = lineas.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
+
+    const encabezado = nombre
+      ? `👋 ¡Hola, ${nombre}! Quisiera hacer un pedido:`
+      : '👋 ¡Hola! Quisiera hacer un pedido:';
+
+    const url = buildWaUrl(
+      numero,
+      `${encabezado}\n\n${lista}\n\n✅ *Total: ${formatoPrecio(total)}*\n\n¿Confirman disponibilidad? 🙏`
+    );
+
+    win.location.href = url;
+  });
+
+  // 🔹 4. Limpiar carrito
+  limpiarSeleccion();
+}
+
 function enviarWhatsappCarrito() {
   if (!seleccionados.size) return;
+
   const grupos = {};
+
   [...seleccionados.values()].forEach(({ prod, cantidad }) => {
-    const num = waVend(prod.vendedor_id);
-    if (!grupos[num]) grupos[num] = [];
-    grupos[num].push({ prod, cantidad });
+    const num    = waVend(prod.vendedor_id);
+    const nombre = nomVend(prod.vendedor_id);
+
+    if (!grupos[num]) {
+      grupos[num] = { nombre, lineas: [] };
+    }
+
+    grupos[num].lineas.push({ prod, cantidad });
   });
+
   const entradas = Object.entries(grupos);
-  if (entradas.length > 1) {
-    const ok = confirm(
-      `Este pedido incluye ${entradas.length} vendedores. Se abrirán ${entradas.length} chats. ¿Continuar?`
-    );
-    if (!ok) return;
+
+  // Productos sin WhatsApp
+  const sinWa = entradas.filter(([num]) => !num);
+  if (sinWa.length) {
+    const nombres = sinWa
+      .flatMap(([, g]) => g.lineas.map(l => l.prod.nombre))
+      .join(', ');
+
+    alert(`⚠️ Algunos productos no tienen WhatsApp y no se enviarán:\n${nombres}`);
   }
-  entradas.forEach(([numero, lineas]) => {
-    const lista = lineas.map((l, j) =>
-      `${j + 1}. *${l.prod.nombre}* x${l.cantidad} — ${formatoPrecio(l.prod.valor * l.cantidad)}`
-    ).join('\n');
-    const total = lineas.reduce((a, l) => a + l.prod.valor * l.cantidad, 0);
-    window.open(buildWaUrl(numero,
-      `👋 ¡Hola! Quisiera hacer un pedido:\n\n${lista}\n\n✅ *Total: ${formatoPrecio(total)}*\n\n¿Confirman disponibilidad? 🙏`
-    ), '_blank');
-  });
-  // Limpiar carrito después de enviar el pedido
-  setTimeout(() => {
-    limpiarSeleccion();
-  }, 500);
+
+  const conWa = entradas.filter(([num]) => !!num);
+  if (!conWa.length) return;
+
+  // 👉 UN SOLO VENDEDOR → directo
+  if (conWa.length === 1) {
+    _abrirVentanasWa(conWa);
+    return;
+  }
+
+  // 👉 VARIOS VENDEDORES → mostrar confirmación
+  _mostrarConfirmacionVendedores(conWa);
 }
 
 // ── Compartir ──────────────────────────────────────────────

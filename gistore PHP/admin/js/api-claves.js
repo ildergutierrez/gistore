@@ -45,8 +45,22 @@ function btnCargando(btn, cargando) {
   btn.disabled = cargando;
   btn.classList.toggle('cargando', cargando);
 }
-
 const el = id => document.getElementById(id);
+
+// ── Icono por servicio ────────────────────────────────────
+function iconoServicio(servicio = '') {
+  const s = servicio.toLowerCase();
+  if (s.includes('openai') || s.includes('gpt'))     return '🤖';
+  if (s.includes('openrouter'))                       return '🔀';
+  if (s.includes('google') || s.includes('gemini'))  return '✨';
+  if (s.includes('anthropic') || s.includes('claude'))return '🧠';
+  if (s.includes('stripe'))                          return '💳';
+  if (s.includes('meta') || s.includes('llama'))     return '🦙';
+  if (s.includes('mistral'))                         return '🌊';
+  if (s.includes('cohere'))                          return '🔗';
+  if (s.includes('wp') || s.includes('wordpress'))   return '📝';
+  return '🔑';
+}
 
 // ── Init ──────────────────────────────────────────────────
 el('fechaHoy').textContent = fechaHoy();
@@ -57,10 +71,11 @@ el('btnSalir').addEventListener('click', async () => {
 });
 
 // ── Estado global ─────────────────────────────────────────
-let claves     = [];
-let eliminarId = null;
+let claves        = [];
+let eliminarId    = null;
+let _claveRevelada = false;
 
-// ── Toggle ver/ocultar clave ──────────────────────────────
+// ── Toggle ver/ocultar clave (modal editar) ───────────────
 el('btnVerClave').addEventListener('click', () => {
   const inp = el('fClave');
   if (inp.type === 'password') { inp.type = 'text';     el('btnVerClave').textContent = '🙈'; }
@@ -69,10 +84,10 @@ el('btnVerClave').addEventListener('click', () => {
 
 // ── Cargar claves ─────────────────────────────────────────
 async function cargarClaves() {
-  el('clavesLista').innerHTML = '<p class="cargando-txt">Cargando…</p>';
+  const lista = el('clavesLista');
+  lista.innerHTML = '<p class="cargando-txt" style="grid-column:1/-1">Cargando…</p>';
   try {
     claves = await apiGet('api-claves.php?accion=obtener');
-    // Parsear modelos: vienen como JSON string desde MySQL
     claves = claves.map(c => ({
       ...c,
       activo: !!Number(c.activo),
@@ -81,82 +96,95 @@ async function cargarClaves() {
         try { return JSON.parse(c.modelos); } catch { return c.modelos.split('\n').filter(Boolean); }
       })(),
     }));
-    renderClaves();
+    renderCards();
   } catch (e) {
     console.error(e);
-    el('clavesLista').innerHTML = '<p class="vacio-txt">Error al cargar.</p>';
+    lista.innerHTML = '<p class="vacio-txt" style="grid-column:1/-1">Error al cargar.</p>';
   }
 }
 
-function renderClaves() {
-  if (!claves.length) {
-    el('clavesLista').innerHTML =
-      '<p class="vacio-txt">Sin claves registradas. Crea la primera con el botón de arriba.</p>';
-    return;
-  }
+// ── Render grid de cards ──────────────────────────────────
+function renderCards() {
+  const lista = el('clavesLista');
 
-  el('clavesLista').innerHTML = `
-    <div class="tabla-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Servicio</th>
-            <th>Nombre</th>
-            <th>URL origen</th>
-            <th>Clave</th>
-            <th>Modelos</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${claves.map(c => {
-            const modelos = Array.isArray(c.modelos) ? c.modelos : [];
-            return `<tr>
-              <td><code style="font-size:.78rem">${c.servicio || ''}</code></td>
-              <td style="font-weight:600;font-size:.85rem">${c.nombre || ''}</td>
-              <td style="font-size:.78rem;color:var(--texto-suave);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.origen_url||''}">${c.origen_url||'—'}</td>
-              <td>
-                <div class="clave-wrap">
-                  <span class="clave-texto" id="ctexto-${c.id}">••••••••••••</span>
-                  <button class="btn-eye" title="Revelar" onclick="toggleClave('${c.id}','${(c.clave||'').replace(/'/g,"\\'")}')">👁</button>
-                </div>
-              </td>
-              <td>
-                <div class="modelos-list">
-                  ${modelos.length
-                    ? modelos.map(m => `<span class="modelo-chip">${m}</span>`).join('')
-                    : `<span style="font-size:.75rem;color:var(--texto-suave)">—</span>`}
-                </div>
-              </td>
-              <td>
-                <span class="badge ${c.activo ? 'badge-on' : 'badge-off'}">
-                  ${c.activo ? '✅ Activa' : '⏸ Inactiva'}
-                </span>
-              </td>
-              <td>
-                <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-                  <button class="btn-tabla btn-editar"   onclick="editarClave('${c.id}')">✏️</button>
-                  <button class="btn-tabla btn-eliminar" onclick="pedirEliminar('${c.id}')">🗑</button>
-                </div>
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`;
+  const cardsHTML = claves.map(c => `
+    <div class="api-card" onclick="abrirDetalle('${c.id}')" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter')abrirDetalle('${c.id}')">
+      <div class="api-card-icon">${iconoServicio(c.servicio)}</div>
+      <div class="api-card-nombre" title="${c.nombre || ''}">${c.nombre || c.servicio}</div>
+      <div class="api-card-servicio">${c.servicio || ''}</div>
+      <div class="api-card-footer">
+        <span class="badge ${c.activo ? 'badge-on' : 'badge-off'}" style="font-size:.72rem;padding:.15rem .5rem;border-radius:20px">
+          ${c.activo ? '● Activa' : '● Inactiva'}
+        </span>
+        <button class="api-card-btn-editar"
+                onclick="event.stopPropagation(); editarClave('${c.id}')"
+                title="Editar esta clave">
+          <span class="material-symbols-outlined" style="font-size:.85rem">edit</span> Editar
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+
+  lista.innerHTML = cardsHTML;
 }
 
-// ── Toggle revelar clave en tabla ─────────────────────────
-const _reveladoState = {};
-window.toggleClave = (id, clave) => {
-  const span = el(`ctexto-${id}`);
-  if (!span) return;
-  _reveladoState[id] = !_reveladoState[id];
-  span.textContent = _reveladoState[id] ? clave : '••••••••••••';
+// ── Modal detalle ─────────────────────────────────────────
+window.abrirDetalle = (id) => {
+  const c = claves.find(x => String(x.id) === String(id));
+  if (!c) return;
+
+  el('detalleTituloTxt').textContent = c.nombre || c.servicio;
+  el('detalleIcono').textContent     = iconoServicio(c.servicio);
+  el('dServicio').textContent        = c.servicio || '';
+  el('dUrl').textContent             = c.origen_url || '—';
+
+  // Clave enmascarada
+  const claveReal = c.clave || '';
+  const spanClave = el('dClave');
+  spanClave.textContent = '••••••••••••';
+  spanClave.dataset.val = claveReal;
+  _claveRevelada = false;
+  el('dBtnVerClave').textContent = '👁';
+
+  // Estado badge
+  el('dEstado').className = `badge ${c.activo ? 'badge-on' : 'badge-off'}`;
+  el('dEstado').style.cssText = 'font-size:.75rem;padding:.2rem .6rem;border-radius:20px';
+  el('dEstado').textContent = c.activo ? '● Activa' : '● Inactiva';
+
+  // Modelos
+  const modelos = Array.isArray(c.modelos) ? c.modelos : [];
+  el('dModelos').innerHTML = modelos.length
+    ? modelos.map(m => `<span class="modelo-chip">${m}</span>`).join('')
+    : '<span style="font-size:.75rem;color:var(--texto-suave)">Sin modelos definidos</span>';
+
+  // Nota
+  el('dNota').textContent = c.nota || '—';
+
+  // Botón editar desde detalle
+  el('dBtnEditar').onclick = () => {
+    el('modalDetalleOverlay').classList.remove('visible');
+    editarClave(id);
+  };
+
+  el('modalDetalleOverlay').classList.add('visible');
 };
 
-// ── Abrir modal ───────────────────────────────────────────
+// Toggle revelar clave en modal detalle
+el('dBtnVerClave').addEventListener('click', () => {
+  const span = el('dClave');
+  _claveRevelada = !_claveRevelada;
+  span.textContent = _claveRevelada ? (span.dataset.val || '') : '••••••••••••';
+  el('dBtnVerClave').textContent = _claveRevelada ? '🙈' : '👁';
+});
+
+el('dBtnCerrar').addEventListener('click', () => el('modalDetalleOverlay').classList.remove('visible'));
+el('modalDetalleOverlay').addEventListener('click', e => {
+  if (e.target === el('modalDetalleOverlay')) el('modalDetalleOverlay').classList.remove('visible');
+});
+
+// ── Abrir modal editar/crear ───────────────────────────────
 el('btnNuevaClave').addEventListener('click', () => abrirModal());
 
 function abrirModal(clave = null) {
@@ -193,7 +221,6 @@ el('btnGuardar').addEventListener('click', async () => {
   const modelosTxt = el('fModelos').value.trim();
   const nota       = el('fNota').value.trim();
   const activo     = el('fActivo').value === 'true' ? 1 : 0;
-  // Modelos como JSON array
   const modelosArr = modelosTxt ? modelosTxt.split('\n').map(m => m.trim()).filter(Boolean) : [];
   const modelos    = JSON.stringify(modelosArr);
 
@@ -210,12 +237,8 @@ el('btnGuardar').addEventListener('click', async () => {
   try {
     const params = { servicio, nombre, origen_url: origenUrl, modelos, nota, activo };
     if (nuevaClave) params.clave = nuevaClave;
-
-    if (id) {
-      await apiPost('api-claves.php?accion=actualizar', { id, ...params });
-    } else {
-      await apiPost('api-claves.php?accion=crear', params);
-    }
+    if (id) { await apiPost('api-claves.php?accion=actualizar', { id, ...params }); }
+    else    { await apiPost('api-claves.php?accion=crear', params); }
     el('modalOverlay').classList.remove('visible');
     mostrarOk(id ? '✓ Clave actualizada.' : '✓ Clave creada.');
     await cargarClaves();

@@ -23,7 +23,17 @@ function _resolverImg(url) {
   return `${window.location.origin}${base}/${prefix}${url}`;
 }
 function _getVendedor(prod) {
-  return (window._vendedoresMap || {})[prod.vendedor_id] || null;
+  if (!prod.vendedor_id) return null;
+  // Los campos del vendedor vienen aplanados desde el JOIN en PHP
+  const nombre = prod.vendedor_nombre || '';
+  if (!nombre) return null;
+  return {
+    nombre,
+    whatsapp: prod.vendedor_whatsapp || '',
+    ciudad:   prod.vendedor_ciudad   || '',
+    perfil:   prod.vendedor_perfil   || '',
+    color:    prod.vendedor_color    || '#1a6b3c',
+  };
 }
 function _getCat(prod) {
   return (window._categoriasMap || {})[prod.categoria_id] || prod.categoria || "";
@@ -42,7 +52,7 @@ function _urlTienda(prod) {
 }
 function _getWA(prod) {
   const v = _getVendedor(prod);
-  return (v && v.whatsapp) || window._whatsappGlobal || window._vendedorWA || "";
+  return (v && v.whatsapp) || '';
 }
 
 // ── Inyectar CSS (replica exacta de style.css del index) ─

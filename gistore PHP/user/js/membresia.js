@@ -319,9 +319,10 @@ function renderPlanes(planes, esFundador, vendedorId) {
   }
 
   wrap.innerHTML = planesToShow.map((plan, i) => {
+    
     const esPlanFundador   = plan.nombre.toLowerCase().includes('fundador');
     const etiquetaDuracion = diasAEtiqueta(plan.duracion_dias);
-    const precioEntero     = parseInt(String(plan.precio).replace(/[^0-9]/g, ''), 10) || 0;
+    const precioEntero     = parseInt(String(plan.precio)) || 0;
 
     return `
       <div class="plan-card${i === 0 ? ' seleccionado' : ''}"

@@ -46,7 +46,7 @@ async function _cargarFallbackProductos() {
   return _cacheFallback;
 }
 
-function _siguienteProducto(productosExtra) {
+function _siguienteProducto(productosExtra) { 
   const localCache = window._cacheTodos || [];
   const activos    = localCache.filter(p => p.activo !== false);
   const fuente     = activos.length >= 3 ? activos : (productosExtra || activos);

@@ -104,7 +104,12 @@ function obtener_Productos($pdo): void
     $stmt = $pdo->prepare("
         SELECT p.id, p.vendedor_id, p.categoria_id, p.nombre,
                p.descripcion, p.recomendacion, p.beneficios,
-               p.valor, p.imagen, p.activo
+               p.valor, p.imagen, p.activo,
+               v.nombre      AS vendedor_nombre,
+               v.whatsapp    AS vendedor_whatsapp,
+               v.ciudad      AS vendedor_ciudad,
+               v.perfil      AS vendedor_perfil,
+               v.color       AS vendedor_color
         FROM productos p
         INNER JOIN vendedores v ON v.id = p.vendedor_id AND v.estado = 'activo'
         WHERE p.activo = 1
@@ -113,9 +118,10 @@ function obtener_Productos($pdo): void
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $rows = array_map(function($p) {
-        $p['beneficios'] = parsearBeneficios($p['beneficios']);
-        $p['activo']     = (bool) $p['activo'];
-        $p['imagen']     = resolverImagen($p['imagen'] ?? '');
+        $p['beneficios']       = parsearBeneficios($p['beneficios']);
+        $p['activo']           = (bool) $p['activo'];
+        $p['imagen']           = resolverImagen($p['imagen'] ?? '');
+        $p['vendedor_perfil']  = resolverImagen($p['vendedor_perfil'] ?? '');
         return $p;
     }, $rows);
     ok($rows);
@@ -130,7 +136,12 @@ function obtener_Productos_Vendedor($pdo): void
     $stmt = $pdo->prepare("
         SELECT p.id, p.vendedor_id, p.categoria_id, p.nombre,
                p.descripcion, p.recomendacion, p.beneficios,
-               p.valor, p.imagen, p.activo
+               p.valor, p.imagen, p.activo,
+               v.nombre      AS vendedor_nombre,
+               v.whatsapp    AS vendedor_whatsapp,
+               v.ciudad      AS vendedor_ciudad,
+               v.perfil      AS vendedor_perfil,
+               v.color       AS vendedor_color
         FROM productos p
         INNER JOIN vendedores v ON v.id = p.vendedor_id AND v.estado = 'activo'
         WHERE p.activo = 1 AND p.vendedor_id = :id
@@ -139,9 +150,10 @@ function obtener_Productos_Vendedor($pdo): void
     $stmt->execute([':id' => $id]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $rows = array_map(function($p) {
-        $p['beneficios'] = parsearBeneficios($p['beneficios']);
-        $p['activo']     = (bool) $p['activo'];
-        $p['imagen']     = resolverImagen($p['imagen'] ?? '');
+        $p['beneficios']      = parsearBeneficios($p['beneficios']);
+        $p['activo']          = (bool) $p['activo'];
+        $p['imagen']          = resolverImagen($p['imagen'] ?? '');
+        $p['vendedor_perfil'] = resolverImagen($p['vendedor_perfil'] ?? '');
         return $p;
     }, $rows);
     ok($rows);
@@ -156,7 +168,12 @@ function obtener_Producto($pdo): void
     $stmt = $pdo->prepare("
         SELECT p.id, p.vendedor_id, p.categoria_id, p.nombre,
                p.descripcion, p.recomendacion, p.beneficios,
-               p.valor, p.imagen, p.activo
+               p.valor, p.imagen, p.activo,
+               v.nombre      AS vendedor_nombre,
+               v.whatsapp    AS vendedor_whatsapp,
+               v.ciudad      AS vendedor_ciudad,
+               v.perfil      AS vendedor_perfil,
+               v.color       AS vendedor_color
         FROM productos p
         INNER JOIN vendedores v ON v.id = p.vendedor_id AND v.estado = 'activo'
         WHERE p.id = ? AND p.activo = 1
@@ -166,9 +183,10 @@ function obtener_Producto($pdo): void
     $p = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$p) error_respuesta('Producto no encontrado.', 404);
 
-    $p['beneficios'] = parsearBeneficios($p['beneficios']);
-    $p['activo']     = (bool) $p['activo'];
-    $p['imagen']     = resolverImagen($p['imagen'] ?? '');
+    $p['beneficios']      = parsearBeneficios($p['beneficios']);
+    $p['activo']          = (bool) $p['activo'];
+    $p['imagen']          = resolverImagen($p['imagen'] ?? '');
+    $p['vendedor_perfil'] = resolverImagen($p['vendedor_perfil'] ?? '');
     ok($p);
 }
 
