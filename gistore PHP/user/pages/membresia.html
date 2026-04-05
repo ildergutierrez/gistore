@@ -65,8 +65,20 @@
     .membresia-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
       gap: 1.5rem;
       align-items: start;
+    }
+    /* Columna izquierda: estado arriba, historial abajo */
+    .col-izquierda {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    /* Columna derecha: planes+pago ocupan toda la altura */
+    .col-derecha {
+      position: sticky;
+      top: 1.5rem;
     }
 
     /* ════════════════════════════════════════════════════════
@@ -309,27 +321,76 @@
     }
 
     /* ════════════════════════════════════════════════════════
-       HISTORIAL DE PAGOS
+       HISTORIAL DE PAGOS — TABLA
        ════════════════════════════════════════════════════════ */
-    .historial-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .7rem 0;
-      border-bottom: 1px solid var(--borde);
-      gap: .5rem;
-      flex-wrap: wrap;
+    .historial-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .83rem;
     }
-    .historial-item:last-child { border-bottom: none; }
-
-    .historial-fecha { font-size: .76rem; color: var(--texto-suave); margin-top: .15rem; }
-
+    .historial-tabla thead th {
+      text-align: left;
+      padding: .55rem .75rem;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--texto-suave);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-bottom: 2px solid var(--borde);
+      background: var(--fondo);
+    }
+    .historial-tabla thead th:last-child { text-align: right; }
+    .historial-tabla tbody tr {
+      border-bottom: 1px solid var(--borde);
+      transition: background .15s;
+    }
+    .historial-tabla tbody tr:last-child { border-bottom: none; }
+    .historial-tabla tbody tr:hover { background: var(--fondo); }
+    .historial-tabla tbody td {
+      padding: .65rem .75rem;
+      vertical-align: middle;
+    }
+    .historial-tabla tbody td:last-child { text-align: right; }
     .historial-monto {
       font-weight: 700;
       color: var(--verde);
       font-family: 'Nunito', sans-serif;
-      font-size: .95rem;
+      white-space: nowrap;
     }
+    .historial-fecha { font-size: .76rem; color: var(--texto-suave); margin-top: .1rem; }
+
+    /* ── Paginación ── */
+    .historial-paginacion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .historial-paginacion-info {
+      font-size: .78rem;
+      color: var(--texto-suave);
+    }
+    .historial-paginacion-btns {
+      display: flex;
+      gap: .35rem;
+    }
+    .pag-btn {
+      padding: .3rem .7rem;
+      border: 1px solid var(--borde);
+      border-radius: var(--radio-sm);
+      background: var(--fondo-2);
+      color: var(--texto-medio);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+      line-height: 1.4;
+    }
+    .pag-btn:hover:not(:disabled)  { background: var(--verde-claro); border-color: var(--verde-borde); color: var(--verde); }
+    .pag-btn.activo                { background: var(--verde); border-color: var(--verde); color: #fff; }
+    .pag-btn:disabled              { opacity: .4; cursor: default; }
 
     /* ════════════════════════════════════════════════════════
        BADGES GENÉRICOS
@@ -426,6 +487,10 @@
         <span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>
         Mi membresía
       </a>
+       <a href="videos.html" >
+                <span class="icono"><span class="material-symbols-outlined">movie</span></span>
+                Crear video
+            </a>
       <div class="nav-titulo">Comunidad</div>
     <a href="foro.html" ><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
       <div class="nav-titulo">Sitio</div>
@@ -463,90 +528,88 @@
 
     <div class="membresia-grid">
 
-      <!-- ── Columna izquierda: estado actual ── -->
-      <div class="card-estado">
-        <div class="card-estado-header">
-          <div class="card-estado-icono">🏅</div>
-          <div>
-            <div class="card-estado-titulo">Estado de tu membresía</div>
-            <div class="card-estado-sub">Acceso activo a GI Store</div>
+      <!-- ── Columna izquierda: estado + historial ── -->
+      <div class="col-izquierda">
+
+        <!-- Estado actual de la membresía -->
+        <div class="card-estado">
+          <div class="card-estado-header">
+            <div class="card-estado-icono">🏅</div>
+            <div>
+              <div class="card-estado-titulo">Estado de tu membresía</div>
+              <div class="card-estado-sub">Acceso activo a GI Store</div>
+            </div>
+          </div>
+          <!-- membresia.js inyecta las filas de estado aquí -->
+          <div id="estadoContenido">
+            <div class="skeleton" style="width:60%;margin-bottom:.6rem"></div>
+            <div class="skeleton" style="width:80%;margin-bottom:.6rem"></div>
+            <div class="skeleton" style="width:50%"></div>
           </div>
         </div>
 
-        <!-- membresia.js inyecta las filas de estado aquí -->
-        <div id="estadoContenido">
-          <div class="skeleton" style="width:60%;margin-bottom:.6rem"></div>
-          <div class="skeleton" style="width:80%;margin-bottom:.6rem"></div>
-          <div class="skeleton" style="width:50%"></div>
+        <!-- Historial de pagos -->
+        <div class="card-estado">
+          <div class="card-estado-header">
+            <div class="card-estado-icono">📋</div>
+            <div>
+              <div class="card-estado-titulo">Historial de pagos</div>
+              <div class="card-estado-sub">Tus últimas transacciones</div>
+            </div>
+          </div>
+          <div id="historialContenido">
+            <div class="skeleton" style="width:100%;margin-bottom:.5rem"></div>
+            <div class="skeleton" style="width:80%"></div>
+          </div>
         </div>
-      </div>
+
+      </div><!-- /col-izquierda -->
 
       <!-- ── Columna derecha: renovar membresía ── -->
-      <div class="card-estado">
-        <div class="card-estado-header">
-          <div class="card-estado-icono">💳</div>
-          <div>
-            <div class="card-estado-titulo">Renovar membresía</div>
-            <div class="card-estado-sub">Elige tu plan y paga en línea</div>
-          </div>
-        </div>
-
-        <!--
-          IMPORTANTE: id="planesWrap" es el contenedor dinámico.
-          membresia.js renderiza aquí las tarjetas de plan leídas
-          desde la colección "planes_membresia" de Firestore.
-          NO agregar tarjetas estáticas aquí.
-        -->
-        <div class="planes-wrap" id="planesWrap">
-          <!-- Skeletons mientras cargan los planes desde Firestore -->
-          <div class="skeleton" style="height:88px;border-radius:14px;margin-bottom:.5rem"></div>
-          <div class="skeleton" style="height:88px;border-radius:14px"></div>
-        </div>
-
-        <!-- Sección de pago: info de seguridad, resumen y botón Wompi -->
-        <div id="wompi-container" style="margin-top:1.25rem">
-          <div class="wompi-info">
-            <span>🔒</span>
-            <span>
-              Pago seguro procesado por <strong>Wompi</strong> (Bancolombia).
-              Acepta PSE, Nequi y tarjetas.
-            </span>
-          </div>
-
-          <!-- Resumen dinámico del plan seleccionado -->
-          <div class="wompi-resumen">
-            <span style="font-size:.83rem;color:var(--texto-medio)" id="resumenLabel">
-              Cargando plan…
-            </span>
-            <span style="font-weight:700;color:var(--verde);font-family:'Nunito',sans-serif"
-                  id="resumenMonto"></span>
+      <div class="col-derecha">
+        <div class="card-estado">
+          <div class="card-estado-header">
+            <div class="card-estado-icono">💳</div>
+            <div>
+              <div class="card-estado-titulo">Renovar membresía</div>
+              <div class="card-estado-sub">Elige tu plan y paga en línea</div>
+            </div>
           </div>
 
           <!--
-            membresia.js inyecta aquí un iframe con el widget de Wompi.
-            El iframe garantiza que el script del widget se re-renderice
-            correctamente cada vez que el vendedor cambia de plan.
+            IMPORTANTE: id="planesWrap" es el contenedor dinámico.
+            membresia.js renderiza aquí las tarjetas de plan.
+            NO agregar tarjetas estáticas aquí.
           -->
-          <div id="wompi-btn-wrap"></div>
-        </div>
-      </div>
+          <div class="planes-wrap" id="planesWrap">
+            <div class="skeleton" style="height:88px;border-radius:14px;margin-bottom:.5rem"></div>
+            <div class="skeleton" style="height:88px;border-radius:14px"></div>
+          </div>
 
-      <!-- ── Historial de pagos (ocupa el ancho completo) ── -->
-        <!--
-      <div class="card-estado" style="grid-column:1/-1">
-        <div class="card-estado-header">
-          <div class="card-estado-icono">📋</div>
-          <div>
-            <div class="card-estado-titulo">Historial de pagos</div>
-            <div class="card-estado-sub">Tus últimas transacciones</div>
+          <!-- Sección de pago: info de seguridad, resumen y botón Wompi -->
+          <div id="wompi-container" style="margin-top:1.25rem">
+            <div class="wompi-info">
+              <span>🔒</span>
+              <span>
+                Pago seguro procesado por <strong>Wompi</strong> (Bancolombia).
+                Acepta PSE, Nequi y tarjetas.
+              </span>
+            </div>
+
+            <!-- Resumen dinámico del plan seleccionado -->
+            <div class="wompi-resumen">
+              <span style="font-size:.83rem;color:var(--texto-medio)" id="resumenLabel">
+                Cargando plan…
+              </span>
+              <span style="font-weight:700;color:var(--verde);font-family:'Nunito',sans-serif"
+                    id="resumenMonto"></span>
+            </div>
+
+            <div id="wompi-btn-wrap"></div>
           </div>
         </div>
-        <div id="historialContenido">
-          <div class="skeleton" style="width:100%;margin-bottom:.5rem"></div>
-          <div class="skeleton" style="width:80%"></div>
-        </div>
-      </div>
--->
+      </div><!-- /col-derecha -->
+
     </div><!-- /membresia-grid -->
   </main>
 <script  src="../js/auth.js"></script>

@@ -134,35 +134,102 @@ function renderEstado(membresia) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  RENDER: HISTORIAL
+//  RENDER: HISTORIAL — tabla con paginación
 // ════════════════════════════════════════════════════════════
 
+const HISTORIAL_POR_PAGINA = 10;
+let _historialPagos   = [];
+let _historialPagActual = 1;
+
 function renderHistorial(pagos) {
+  _historialPagos     = pagos || [];
+  _historialPagActual = 1;
+  _pintarHistorial();
+}
+
+function _pintarHistorial() {
   const el = document.getElementById('historialContenido');
   if (!el) return;
 
-  if (!pagos || pagos.length === 0) {
+  if (_historialPagos.length === 0) {
     el.innerHTML = `
-      <p style="font-size:.83rem;color:var(--texto-suave);text-align:center;padding:1rem 0">
+      <p style="font-size:.83rem;color:var(--texto-suave);text-align:center;padding:1.5rem 0">
         Sin pagos registrados aún.
       </p>`;
     return;
   }
 
-  el.innerHTML = pagos.map(p => `
-    <div class="historial-item">
-      <div>
-        <div style="font-size:.85rem;font-weight:600">${p.plan_nombre || 'Membresía'}</div>
-        <div class="historial-fecha">${formatFecha(p.fecha_inicio)}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;justify-content:flex-end">
-        <span class="historial-monto">${formatCOP(p.monto || 0)}</span>
-        <span class="badge ${p.estado === 'activa' ? 'badge-activo' : 'badge-inactivo'}"
-              style="font-size:.73rem">
-          ${p.estado === 'activa' ? '✓ Activa' : p.estado || 'Vencida'}
-        </span>
-      </div>
-    </div>`).join('');
+  const total    = _historialPagos.length;
+  const paginas  = Math.ceil(total / HISTORIAL_POR_PAGINA);
+  const desde    = (_historialPagActual - 1) * HISTORIAL_POR_PAGINA;
+  const hasta    = Math.min(desde + HISTORIAL_POR_PAGINA, total);
+  const pagina   = _historialPagos.slice(desde, hasta);
+
+  // ── Tabla ────────────────────────────────────────────────
+  const filas = pagina.map(p => {
+    const estadoClass = p.estado === 'activa'   ? 'badge-activo'
+                      : p.estado === 'vencida'  ? 'badge-vencida'
+                      : 'badge-inactivo';
+    const estadoLabel = p.estado === 'activa'   ? '✓ Activa'
+                      : p.estado === 'vencida'  ? 'Vencida'
+                      : p.estado || 'Cancelada';
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600;font-size:.84rem">${p.plan_nombre || 'Membresía'}</div>
+          <div class="historial-fecha">${formatFecha(p.fecha_inicio)}</div>
+        </td>
+        <td>${formatFecha(p.fecha_fin)}</td>
+        <td><span class="badge ${estadoClass}" style="font-size:.72rem">${estadoLabel}</span></td>
+        <td><span class="historial-monto">${formatCOP(p.monto || 0)}</span></td>
+      </tr>`;
+  }).join('');
+
+  // ── Paginación ───────────────────────────────────────────
+  let paginaBtns = '';
+  if (paginas > 1) {
+    // Anterior
+    paginaBtns += `<button class="pag-btn" onclick="_irPagHistorial(${_historialPagActual - 1})"
+      ${_historialPagActual === 1 ? 'disabled' : ''}>‹</button>`;
+    // Números
+    for (let i = 1; i <= paginas; i++) {
+      paginaBtns += `<button class="pag-btn ${i === _historialPagActual ? 'activo' : ''}"
+        onclick="_irPagHistorial(${i})">${i}</button>`;
+    }
+    // Siguiente
+    paginaBtns += `<button class="pag-btn" onclick="_irPagHistorial(${_historialPagActual + 1})"
+      ${_historialPagActual === paginas ? 'disabled' : ''}>›</button>`;
+  }
+
+  el.innerHTML = `
+    <div style="overflow-x:auto">
+      <table class="historial-tabla">
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Vence</th>
+            <th>Estado</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+    ${paginas > 1 ? `
+    <div class="historial-paginacion">
+      <span class="historial-paginacion-info">
+        Mostrando ${desde + 1}–${hasta} de ${total} registros
+      </span>
+      <div class="historial-paginacion-btns">${paginaBtns}</div>
+    </div>` : ''}`;
+}
+
+function _irPagHistorial(pag) {
+  const paginas = Math.ceil(_historialPagos.length / HISTORIAL_POR_PAGINA);
+  if (pag < 1 || pag > paginas) return;
+  _historialPagActual = pag;
+  _pintarHistorial();
+  document.getElementById('historialContenido')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -196,6 +263,7 @@ async function obtenerFirma(referencia, montoEnCentavos) {
               + `&monto_centavos=${montoEnCentavos}`;
   const resp  = await fetch(url, { credentials: 'include' });
   const json  = await resp.json();
+  console.log('Respuesta firma Wompi:', json);
   if (!json.ok) throw new Error(json.error || 'Error al calcular firma');
   return json.datos.firma;
 }
@@ -204,7 +272,7 @@ async function obtenerFirma(referencia, montoEnCentavos) {
 //  WOMPI — BOTÓN DE PAGO
 // ════════════════════════════════════════════════════════════
 
-async function inyectarBotonWompi(monto, referencia) {
+async function inyectarBotonWompi(monto, referencia, llavePub) {
   const montoCOP        = parseInt(String(monto).replace(/[^0-9]/g, ''), 10);
   const montoEnCentavos = montoCOP * 100;
 
@@ -244,7 +312,8 @@ async function inyectarBotonWompi(monto, referencia) {
     currency:      'COP',
     amountInCents: montoEnCentavos,
     reference:     referencia,
-    publicKey:     WOMPI_LLAVE_PUBLICA,
+    publicKey:     llavePub,
+    signature:     { integrity: firma },
   };
 
   const checkout = new window.WidgetCheckout(config);
@@ -270,11 +339,47 @@ async function inyectarBotonWompi(monto, referencia) {
     Paga con <strong style="margin-left:.25rem">Wompi</strong>`;
 
   btn.addEventListener('click', () => {
-    checkout.open(result => {
+    checkout.open(async result => {
       const tx = result?.transaction;
-      if (tx?.status === 'APPROVED') {
-        mostrarAlerta('ok', '¡Pago aprobado! Tu membresía se activará en unos segundos.');
-      } else if (tx) {
+      if (!tx) return;
+
+      if (tx.status === 'APPROVED') {
+        mostrarAlerta('ok', '⏳ Pago aprobado. Activando membresía…');
+        btn.disabled = true;
+
+        try {
+          const token  = await getToken();
+          const planId = Number(document.querySelector('#planesWrap .plan-card.seleccionado')?.dataset?.planId ?? 0);
+          const monto  = Number(document.querySelector('#planesWrap .plan-card.seleccionado')?.dataset?.monto   ?? 0);
+
+          const resp = await fetch(
+            `../backend/membresias.php?accion=activar&token=${token}`,
+            {
+              method:      'POST',
+              credentials: 'include',
+              headers:     { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                wompi_tx_id: tx.id,
+                plan_id:     planId,
+                monto:       monto,
+              }),
+            }
+          );
+          const data = await resp.json();
+
+          if (data.ok) {
+            mostrarAlerta('ok', `✅ ¡Membresía activada hasta el ${new Date(data.datos.fecha_fin + 'T00:00:00').toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' })}!`);
+            setTimeout(() => location.reload(), 2500);
+          } else {
+            mostrarAlerta('warn', `Pago aprobado pero ocurrió un error al activar: ${data.error || 'contacta soporte.'}`);
+            console.error('activar membresia:', data);
+          }
+        } catch (e) {
+          console.error('Error al activar membresía:', e);
+          mostrarAlerta('warn', 'Pago aprobado pero no se pudo activar automáticamente. Recarga la página.');
+        }
+
+      } else {
         mostrarAlerta('warn', `Transacción ${tx.status || 'pendiente'}. Revisa tu historial.`);
       }
     });
@@ -372,7 +477,15 @@ function inicializarSeleccion(vendedorId) {
     if (resumenLabel) resumenLabel.textContent = etiqueta;
     if (resumenMonto) resumenMonto.textContent = formatCOP(monto);
 
-    inyectarBotonWompi(monto, referencia);
+    if (!WOMPI_LLAVE_PUBLICA) {
+      const wrap = document.getElementById('wompi-btn-wrap');
+      if (wrap) wrap.innerHTML = `<p style="font-size:.8rem;color:var(--error);text-align:center;padding:.5rem">
+        Error de configuración de pago. Recarga la página.</p>`;
+      console.error('WOMPI_LLAVE_PUBLICA está vacía. Verifica la columna public en la tabla wpis.');
+      return;
+    }
+
+    inyectarBotonWompi(monto, referencia, WOMPI_LLAVE_PUBLICA);
   }
 
   tarjetas.forEach(t => t.addEventListener('click', () => seleccionar(t)));
@@ -447,13 +560,13 @@ async function init() {
     renderPlanes(planes, esFundador, vendedorId);
 
     // ── Historial ──────────────────────────────────────────
-   // const resHist = await fetch(
-     // `../backend/membresias.php?accion=historial&token=${token}`,
-      //{ credentials: 'include' }
-    //).then(r => r.json());
+    const resHist = await fetch(
+      `../backend/membresias.php?accion=historial&token=${token}`,
+      { credentials: 'include' }
+    ).then(r => r.json());
 
-    //const pagos = resHist.ok && Array.isArray(resHist.datos) ? resHist.datos : [];
-    //renderHistorial(pagos);
+    const pagos = resHist.ok && Array.isArray(resHist.datos) ? resHist.datos : [];
+    renderHistorial(pagos);
 
   } catch (e) {
     console.error('Error al cargar membresía:', e);

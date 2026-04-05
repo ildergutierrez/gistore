@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generador de Videos — GI Store</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/videos.css" />
+    <link rel="stylesheet" href="../css/audios-banco.css" />
+    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@700;800&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+</head>
+
+<body>
+
+    <!-- ── Hamburguesa móvil ── -->
+    <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+       SIDEBAR — idéntico al resto del portal
+       ════════════════════════════════════════════════════════ -->
+    <aside class="sidebar">
+        <a href="../index.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none;display:flex;align-items:center;gap:.75rem;
+              padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
+            <div class="sidebar-logo-icono">
+                <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store"
+                    style="width:22px;height:22px;object-fit:contain" />
+            </div>
+            <div class="sidebar-logo-txt">
+                <strong>GI Store</strong>
+                <span id="vendedorNombre">Portal Vendedor</span>
+            </div>
+        </a>
+
+        <nav class="nav">
+            <div class="nav-titulo">Mi cuenta</div>
+            <a href="dashboard.html">
+                <span class="icono"><span class="material-symbols-outlined">bento</span></span>
+                Dashboard
+            </a>
+            <a href="productos.html">
+                <span class="icono"><span class="material-symbols-outlined">package_2</span></span>
+                Mis productos
+            </a>
+            <a href="catalogo.html">
+                <span class="icono"><span class="material-symbols-outlined">photo_library</span></span>
+                Exportar catálogo
+            </a>
+            <a href="spotlight.html">
+                <span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span>
+                Spotlight IA
+            </a>
+            <a href="membresia.html">
+                <span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>
+                Mi membresía
+            </a>
+            <a href="#" class="activo">
+                <span class="icono"><span class="material-symbols-outlined">movie</span></span>
+                Crear video
+            </a>
+
+            <div class="nav-titulo">Comunidad</div>
+            <a href="foro.html">
+                <span class="icono"><span class="material-symbols-outlined">forum</span></span>
+                Foro
+            </a>
+
+            <div class="nav-titulo">Sitio</div>
+            <a href="perfil.html">
+                <span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span>
+                Mi perfil
+            </a>
+            <a href="../../index.html" target="_blank">
+                <span class="icono"><span class="material-symbols-outlined">article_person</span></span>
+                Ver catálogo
+            </a>
+        </nav>
+
+        <div class="sidebar-pie">
+            <button class="btn-salir" id="btnSalir">
+                <span class="material-symbols-outlined">logout</span>
+                Cerrar sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- ════════════════════════════════════════════════════════
+       CONTENIDO PRINCIPAL
+       ════════════════════════════════════════════════════════ -->
+    <main class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-izq">
+                <h1>🎬 Crear Video</h1>
+                <p class="fecha" id="fechaHoy"></p>
+            </div>
+            <div class="topbar-der">
+                <span style="font-size:.8rem;color:var(--texto-suave)">
+                    Genera videos publicitarios con tus productos
+                </span>
+            </div>
+        </div>
+
+        <!-- ── Grid principal ── -->
+        <div class="vid-grid">
+
+            <!-- ══════════════════════════════════════════════
+           COLUMNA IZQUIERDA — Configuración
+           ══════════════════════════════════════════════ -->
+            <div style="display:flex;flex-direction:column;gap:1.25rem">
+
+                <!-- Panel: selección de imágenes -->
+                <div class="vid-panel">
+                    <div class="vid-panel-header">
+                        <span class="material-symbols-outlined">photo_library</span>
+                        <div>
+                            <div class="vid-panel-titulo">Imágenes de productos</div>
+                            <div class="vid-panel-sub">Toca para seleccionar (máx. 12)</div>
+                        </div>
+                    </div>
+                    <div class="vid-panel-body">
+                        <div class="vid-sel-info">
+                            <span>Seleccionadas</span>
+                            <span class="vid-sel-badge" id="vidSelCount">0</span>
+                        </div>
+                        <div class="vid-productos-grid" id="vidProductosGrid">
+                            <div class="vid-skeleton"></div>
+                            <div class="vid-skeleton"></div>
+                            <div class="vid-skeleton"></div>
+                            <div class="vid-skeleton"></div>
+                            <div class="vid-skeleton"></div>
+                            <div class="vid-skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel: plantillas -->
+                <div class="vid-panel">
+                    <div class="vid-panel-header">
+                        <span class="material-symbols-outlined">style</span>
+                        <div>
+                            <div class="vid-panel-titulo">Plantilla de animación</div>
+                            <div class="vid-panel-sub">45 estilos disponibles</div>
+                        </div>
+                    </div>
+                    <div class="vid-panel-body">
+                        <div class="vid-plantillas-scroll" id="vidPlantillasGrid">
+                            <!-- JS renderiza aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel: duración + audio -->
+                <div class="vid-panel">
+                    <div class="vid-panel-header">
+                        <span class="material-symbols-outlined">tune</span>
+                        <div>
+                            <div class="vid-panel-titulo">Ajustes</div>
+                            <div class="vid-panel-sub">Duración y música</div>
+                        </div>
+                    </div>
+                    <div class="vid-panel-body">
+
+                        <!-- Duración -->
+                        <div class="vid-config-seccion">
+                            <div class="vid-config-label">
+                                <span class="material-symbols-outlined">timer</span>
+                                Duración del video
+                            </div>
+                            <div class="vid-duracion-btns">
+                                <button class="vid-dur-btn" data-dur="10">10 s</button>
+                                <button class="vid-dur-btn activo" data-dur="15">15 s</button>
+                                <button class="vid-dur-btn" data-dur="30">30 s</button>
+                                <button class="vid-dur-btn" data-dur="60">60 s</button>
+                            </div>
+                        </div>
+
+
+                        <!-- Audio -->
+<div class="vid-config-seccion">
+  <div class="vid-config-label">
+    <span class="material-symbols-outlined">music_note</span>
+    Música de fondo
+  </div>
+ 
+  <!-- Banco de música Jamendo (audios-banco.js lo llena) -->
+  <div id="vidAudioBanco"></div>
+ 
+  <!-- Separador -->
+  <div style="display:flex;align-items:center;gap:.5rem;margin:.55rem 0">
+    <div style="flex:1;height:1px;background:var(--borde,rgba(255,255,255,.1))"></div>
+    <span style="font-size:.68rem;color:var(--texto-suave,#6b7280)">o sube tu propia música</span>
+    <div style="flex:1;height:1px;background:var(--borde,rgba(255,255,255,.1))"></div>
+  </div>
+ 
+  <div class="vid-audio-zona" id="vidAudioZona">
+    🎵 Toca para añadir música propia
+  </div>
+  <input type="file" id="vidAudioInput" accept="audio/*" style="display:none">
+ 
+  <div class="vid-audio-controles" style="margin-top:.6rem">
+    <span style="font-size:.75rem;color:var(--texto-suave)">Volumen</span>
+    <input type="range" class="vid-volumen" id="vidVolumen"
+           min="0" max="1" step="0.05" value="0.8">
+    <span style="font-size:.75rem;color:var(--texto-suave)">100%</span>
+  </div>
+</div>
+                    </div>
+                </div>
+
+            </div><!-- /col izquierda -->
+
+            <!-- ══════════════════════════════════════════════
+           COLUMNA DERECHA — Preview + Controles
+           ══════════════════════════════════════════════ -->
+            <div style="position:sticky;top:1.5rem">
+
+                <div class="vid-panel">
+                    <div class="vid-panel-header">
+                        <span class="material-symbols-outlined">smart_display</span>
+                        <div>
+                            <div class="vid-panel-titulo">Vista previa</div>
+                            <div class="vid-panel-sub">Formato vertical 9:16 (Reels / TikTok)</div>
+                        </div>
+                    </div>
+                    <div class="vid-panel-body">
+
+                        <!-- Canvas -->
+                        <div class="vid-preview-wrap">
+                            <canvas id="vidCanvas"></canvas>
+                            <div class="vid-preview-placeholder" id="vidPlaceholder">
+                                <span class="material-symbols-outlined">movie</span>
+                                <span>Selecciona imágenes<br>y presiona Vista previa</span>
+                            </div>
+                        </div>
+
+                        <!-- Barra de progreso -->
+                        <div class="vid-progreso-wrap" id="vidProgWrap">
+                            <div class="vid-progreso-barra">
+                                <div class="vid-progreso-fill" id="vidProgFill"></div>
+                            </div>
+                            <div class="vid-progreso-txt" id="vidProgTxt">Grabando…</div>
+                        </div>
+
+                        <!-- Controles -->
+                        <div class="vid-controles">
+                            <button class="vid-btn vid-btn-secundario" id="btnPreview">
+                                <span class="material-symbols-outlined">play_arrow</span>
+                                Vista previa
+                            </button>
+                            <button class="vid-btn vid-btn-secundario" id="btnDetener">
+                                <span class="material-symbols-outlined">stop</span>
+                                Detener
+                            </button>
+                            <button class="vid-btn vid-btn-primary" id="btnGrabar">
+                                <span class="material-symbols-outlined">download</span>
+                                Descargar video
+                            </button>
+                            <button class="vid-btn vid-btn-peligro" id="btnCancelar" style="display:none">
+                                <span class="material-symbols-outlined">cancel</span>
+                                Cancelar
+                            </button>
+                        </div>
+
+                        <!-- Nota de compatibilidad -->
+                        <p
+                            style="font-size:.72rem;color:var(--texto-suave);text-align:center;margin-top:.9rem;line-height:1.5">
+                            📱 El video se descarga en formato <strong>WebM</strong> o <strong>MP4</strong>
+                            según tu navegador.<br>
+                            Funciona mejor en <strong>Chrome</strong> o <strong>Edge</strong>.
+                        </p>
+
+                    </div>
+                </div>
+
+            </div><!-- /col derecha -->
+
+        </div><!-- /vid-grid -->
+    </main>
+
+   <script src="../js/auth.js"></script>
+<script src="../js/audios-banco.js"></script>
+<script src="../js/videos.js"></script>
+
+    <!-- Hamburguesa -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var btnH = document.getElementById('btnHamburguesa');
+            var sidebar = document.querySelector('.sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (!btnH || !sidebar || !overlay) return;
+            function abrir() { sidebar.classList.add('abierto'); overlay.classList.add('visible'); btnH.classList.add('abierto'); }
+            function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
+            btnH.addEventListener('click', function () {
+                sidebar.classList.contains('abierto') ? cerrar() : abrir();
+            });
+            overlay.addEventListener('click', cerrar);
+            document.querySelectorAll('.nav a').forEach(function (a) {
+                a.addEventListener('click', function () { if (window.innerWidth <= 700) cerrar(); });
+            });
+        });
+    </script>
+
+</body>
+
+</html>

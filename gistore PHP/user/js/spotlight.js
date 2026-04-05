@@ -93,10 +93,7 @@ if (fechaEl) {
   });
 }
 
-// ── Salir ────────────────────────────────────────────────────
-btnSalir?.addEventListener("click", () => {
-  window.location.href = "../../index.html";
-});
+
 
 // ── Init ─────────────────────────────────────────────────────
 async function init() {
@@ -105,30 +102,45 @@ async function init() {
     if (!token) { mostrarError('Error de autenticación.'); return; }
 
     // Cargar productos, categorías y datos del vendedor en paralelo
-    const [resProductos, resCategorias, resVendedor] = await Promise.all([
+    const [resProductos, resCategorias, resVendedor, resMembresia] = await Promise.all([
       fetch(`../backend/productos.php?accion=obtener&token=${token}`, { credentials: 'include' }),
       fetch(`../backend/categorias.php?accion=obtener&token=${token}`, { credentials: 'include' }),
       fetch(`../backend/vendedor.php?accion=stats&token=${token}`,    { credentials: 'include' }),
+      fetch(`../backend/membresias.php?accion=obtener&token=${token}`,    { credentials: 'include' }),
     ]);
 
-    const [jsonProd, jsonCat, jsonVen] = await Promise.all([
+    const [jsonProd, jsonCat, jsonVen, jsonMembresia] = await Promise.all([
       resProductos.json(),
       resCategorias.json(),
       resVendedor.json(),
+      resMembresia.json(),
+    
     ]);
-
+console.log("Datos cargados:", { jsonMembresia });
     if (!jsonProd.ok) { mostrarError(jsonProd.error || 'No se pudieron cargar los productos.'); return; }
     if (!jsonCat.ok)  { mostrarError(jsonCat.error  || 'No se pudieron cargar las categorías.'); return; }
+    
 
     productos   = jsonProd.datos || [];
     categorias  = jsonCat.datos  || [];
     vendedor    = jsonVen || null;
 
+
     const elNom = document.getElementById("vendedorNombre");
     if (elNom && vendedor?.nombre) elNom.textContent = vendedor.nombre;
 
-    poblarFiltroCategoria();
-    renderizarLista();
+
+   if(jsonMembresia.ok && jsonMembresia.datos.membresia.estado === "activa"){
+        poblarFiltroCategoria();
+        renderizarLista();}
+    else{
+      listaProductos.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:2.5rem 1rem;
+                  color:var(--texto-suave);font-size:.9rem">
+        🔒 Activa tu membresía para acceder a tus productos y generar spotlights.
+      </div>`;
+      if (btnGenerar) btnGenerar.disabled = true;
+    }
 
   } catch (e) {
     console.error("Error al cargar datos:", e);

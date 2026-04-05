@@ -111,10 +111,30 @@ function actualizar_Membresia($conn) {
         ':notas'        => $notas ?: null,
         ':id'           => $id,
     ]);
+    if($estado  !== 'activa') {
+        inavilitar_productos($conn, $vendedor_id);
+    }else{
+        //habilitar productos
+        habilitar_productos($conn, $vendedor_id);
+    }
+    
 
     ok(['id' => $id]);
 }
 
+//inavilitar productos
+function inavilitar_productos($conn, $id){
+    $stmt = $conn->prepare("UPDATE productos SET activo = 0 WHERE vendedor_id = ?");
+    $stmt->execute([$id]);
+    return true;
+
+}
+function habilitar_productos($conn, $id){
+    $stmt = $conn->prepare("UPDATE productos SET activo = 1 WHERE vendedor_id = ?");
+    $stmt->execute([$id]);
+    return true;
+
+}
 // ── Eliminar ──────────────────────────────────────────────
 function eliminar_Membresia($conn) {
     $id = intval($_POST['id'] ?? 0);
