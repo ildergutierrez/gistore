@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenida Vendedor — GI Store Comunicaciones</title>
+    <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .preview-email {
+      background:#fff; border:1.5px solid var(--borde); border-radius:var(--radio);
+      overflow:hidden; box-shadow:var(--sombra);
+    }
+    .preview-email-header {
+      background:var(--verde); padding:2rem; text-align:center;
+    }
+    .preview-email-body { padding:2rem; font-size:.9rem; line-height:1.7; color:#333; }
+    .preview-email-footer { background:#f4f9f6; padding:1rem 2rem; text-align:center; font-size:.75rem; color:#888; border-top:1px solid #e0e0e0; }
+    .var-chip {
+      display:inline-block; background:var(--verde-claro); border:1px solid var(--verde-borde);
+      border-radius:4px; padding:.1rem .4rem; font-size:.78rem; color:var(--verde); font-weight:600; cursor:pointer;
+    }
+    .var-chip:hover { background:var(--verde-hover); }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html" class="activo"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>🎉 Bienvenida al vendedor</h1>
+      <p class="sub">Correo automático que se envía al registrar un vendedor nuevo</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-secundario" onclick="resetear()">
+        <span class="material-symbols-outlined" style="font-size:1rem">restart_alt</span>Restablecer
+      </button>
+      <button class="btn btn-primary" onclick="guardar()" id="btnGuardar">
+        <span class="material-symbols-outlined" style="font-size:1rem">save</span>Guardar cambios
+      </button>
+    </div>
+  </div>
+
+  <div id="msgOk" class="msg-ok" style="margin-bottom:1.5rem"><span class="material-symbols-outlined">check_circle</span> Plantilla guardada correctamente. Se aplicará en el próximo registro.</div>
+
+  <div class="grilla-2" style="align-items:start">
+
+    <!-- Editor -->
+    <div>
+      <div class="panel" style="animation-delay:.05s">
+        <div class="panel-header"><h2>✏️ Editor de plantilla</h2></div>
+        <div class="panel-body">
+
+          <div class="campo">
+            <label>Asunto del correo</label>
+            <input type="text" id="asunto" value="¡Bienvenido a GI Store, [nombre]! 🎉"/>
+          </div>
+
+          <div class="campo">
+            <label>Encabezado del correo</label>
+            <input type="text" id="encabezado" value="¡Bienvenido a la familia GI Store!"/>
+          </div>
+
+          <div class="campo">
+            <label>Subtítulo del encabezado</label>
+            <input type="text" id="subtitulo" value="Tu tienda ya está activa en nuestra plataforma"/>
+          </div>
+
+          <div class="campo">
+            <label>
+              Cuerpo del mensaje
+              <span style="font-weight:400;color:var(--texto-suave);font-size:.75rem;text-transform:none;letter-spacing:0"> — Variables disponibles:</span>
+              <span class="var-chip" onclick="insertarVar('[nombre]')">[nombre]</span>
+              <span class="var-chip" onclick="insertarVar('[tienda]')">[tienda]</span>
+              <span class="var-chip" onclick="insertarVar('[plan]')">[plan]</span>
+              <span class="var-chip" onclick="insertarVar('[email]')">[email]</span>
+              <span class="var-chip" onclick="insertarVar('[fecha]')">[fecha]</span>
+            </label>
+            <textarea id="cuerpo" rows="10" oninput="actualizar()">Hola [nombre],
+
+Nos alegra tenerte como parte de la familia GI Store. Tu tienda [tienda] ya está activa y lista para recibir clientes.
+
+Aquí tienes un resumen de tu cuenta:
+• Plan activo: [plan]
+• Correo registrado: [email]
+• Fecha de ingreso: [fecha]
+
+Para empezar, te recomendamos:
+1. Completar el perfil de tu tienda
+2. Agregar tus productos al catálogo
+3. Configurar tus métodos de pago
+
+Si tienes alguna duda, escríbenos a soporte@gistore.com o responde este correo.
+
+¡Mucho éxito!
+Equipo GI Store</textarea>
+          </div>
+
+          <div class="campo">
+            <label>Texto del botón de llamado a la acción</label>
+            <input type="text" id="btnCta" value="Ir a mi panel de vendedor" oninput="actualizar()"/>
+          </div>
+
+          <div class="campo">
+            <label>Color del encabezado</label>
+            <div style="display:flex;align-items:center;gap:.75rem">
+              <input type="color" id="colorHeader" value="#1a6b3c" oninput="actualizar()"
+                style="width:48px;height:36px;padding:2px;border:1.5px solid var(--borde);border-radius:var(--radio-sm);cursor:pointer;background:var(--fondo-2)"/>
+              <span style="font-size:.83rem;color:var(--texto-suave)">Color principal del encabezado del correo</span>
+            </div>
+          </div>
+
+          <!-- Toggle envío automático -->
+          <div style="background:var(--verde-claro);border:1.5px solid var(--verde-borde);border-radius:var(--radio-sm);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+            <div>
+              <p style="font-size:.87rem;font-weight:600;color:var(--verde)">Envío automático al registrar</p>
+              <p style="font-size:.78rem;color:var(--texto-suave);margin-top:.2rem">Cuando está activo, este correo se envía automáticamente al crear un vendedor nuevo</p>
+            </div>
+            <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer">
+              <input type="checkbox" id="autoEnvio" checked style="width:18px;height:18px;accent-color:var(--verde)"/>
+              <span style="font-size:.85rem;font-weight:600;color:var(--verde)" id="lblAuto">Activo</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Envío de prueba -->
+      <div class="panel" style="animation-delay:.1s;margin-top:1.5rem">
+        <div class="panel-header"><h2>🧪 Envío de prueba</h2></div>
+        <div class="panel-body">
+          <p style="font-size:.85rem;color:var(--texto-suave);margin-bottom:1rem">Envía una vista previa a tu correo para verificar cómo se ve antes de activarla.</p>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <input type="email" id="correoTest" placeholder="tu@correo.com"
+              style="flex:1;min-width:200px;padding:.65rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+            <button class="btn btn-secundario" onclick="enviarPrueba()">
+              <span class="material-symbols-outlined" style="font-size:1rem">science</span>Enviar prueba
+            </button>
+          </div>
+          <div id="msgPrueba" style="display:none;margin-top:.75rem;padding:.65rem .9rem;border-radius:var(--radio-sm);font-size:.83rem;background:var(--ok-bg);border:1.5px solid var(--ok-borde);color:var(--ok)">
+            ✓ Correo de prueba enviado correctamente.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista previa -->
+    <div style="position:sticky;top:1.5rem">
+      <div class="panel" style="animation-delay:.15s">
+        <div class="panel-header"><h2>👁 Vista previa del correo</h2></div>
+        <div style="padding:1.25rem">
+          <p style="font-size:.75rem;color:var(--texto-suave);margin-bottom:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Asunto: <span id="prevAsunto" style="text-transform:none;font-weight:400;color:var(--texto)"></span></p>
+          <div class="preview-email">
+            <div class="preview-email-header" id="prevHeader">
+              <div style="width:50px;height:50px;border-radius:14px;background:rgba(255,255,255,.2);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:1.6rem">🛍️</div>
+              <h2 style="font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:.35rem" id="prevEncabezado"></h2>
+              <p style="color:rgba(255,255,255,.8);font-size:.85rem" id="prevSubtitulo"></p>
+            </div>
+            <div class="preview-email-body" id="prevCuerpo"></div>
+            <div style="padding:1.25rem 2rem;text-align:center;border-top:1px solid #e8f5ee">
+              <button id="prevBtn" style="padding:.7rem 1.75rem;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;color:#fff;background:var(--verde)"></button>
+            </div>
+            <div class="preview-email-footer">
+              © 2026 GI Store · Recibes este correo porque eres vendedor registrado.<br/>
+              <a href="#" style="color:#1a6b3c">Gestionar preferencias</a> · <a href="#" style="color:#1a6b3c">Darse de baja</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+
+<script src="../control/auth.js"></script>
+<script src="../control/bplantillas.js"></script>
+</body>
+</html>

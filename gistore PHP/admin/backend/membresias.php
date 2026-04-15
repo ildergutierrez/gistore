@@ -145,8 +145,16 @@ function eliminar_Membresia($conn) {
 
     ok(['id' => $id]);
 }
+//Actualizacion de membresias automatica
+function actualizar_membresias($conn) {
+    $hoy = date('Y-m-d');
+    //Actualizar a vencida las membresias que han pasado su fecha de fin
+    $stmt = $conn->prepare("UPDATE membresias SET estado = 'vencida' WHERE fecha_fin < ? AND estado = 'activa'");
+    $stmt->execute([$hoy]);
+}
 
 // ── Router ────────────────────────────────────────────────
+actualizar_membresias($pdo); // Actualiza estados antes de procesar cualquier acción
 $accion = $_GET['accion'] ?? $_POST['accion'] ?? '';
 
 match ($accion) {

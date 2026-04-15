@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plantillas — GI Store Comunicaciones</title>
+  <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .grid-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1.25rem; padding:1.5rem; }
+    .card {
+      background:var(--fondo-2); border:1.5px solid var(--borde); border-radius:var(--radio);
+      box-shadow:var(--sombra); overflow:hidden; transition:box-shadow .2s,transform .15s; display:flex; flex-direction:column;
+    }
+    .card:hover { box-shadow:var(--sombra-md); transform:translateY(-2px); }
+    .card-preview {
+      padding:1.1rem 1.25rem; flex:1; font-size:.81rem; line-height:1.65;
+      color:var(--texto-medio); border-bottom:1.5px solid var(--borde);
+      background:var(--fondo); white-space:pre-wrap; min-height:120px;
+    }
+    .card-footer { padding:.85rem 1.1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; }
+    .card-nombre { font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; color:var(--texto); }
+    .card-meta { font-size:.73rem; color:var(--texto-suave); margin-top:.15rem; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:500; padding:2rem; overflow-y:auto; }
+    .modal-box { max-width:660px; margin:0 auto; background:var(--fondo-2); border-radius:var(--radio-lg); box-shadow:var(--sombra-md); overflow:hidden; }
+    .modal-header { background:var(--verde-claro); padding:1.1rem 1.5rem; border-bottom:1.5px solid var(--borde); display:flex; align-items:center; justify-content:space-between; }
+    .modal-header h2 { font-family:'Nunito',sans-serif; font-size:1rem; font-weight:700; color:var(--verde); }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html" class="activo"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>📋 Mis plantillas</h1>
+      <p class="sub">Correos reutilizables para correo y WhatsApp</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-primary" onclick="abrirNueva()">
+        <span class="material-symbols-outlined" style="font-size:1rem">add</span>Nueva plantilla
+      </button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s"><div class="etiqueta">Total plantillas</div><div class="numero" id="statTotal">6</div><div class="icono-bg">📋</div></div>
+    <div class="stat" style="animation-delay:.1s"><div class="etiqueta">De correo</div><div class="numero" id="statCorreo">4</div><div class="icono-bg">✉️</div></div>
+    <div class="stat" style="animation-delay:.15s"><div class="etiqueta">De WhatsApp</div><div class="numero" id="statWA">2</div><div class="icono-bg">📲</div></div>
+    <div class="stat" style="animation-delay:.2s"><div class="etiqueta">Más usada</div><div class="numero" style="font-size:1rem;padding-top:.3rem">Bienvenida</div><div class="icono-bg">🏆</div></div>
+  </div>
+
+  <div class="panel" style="animation-delay:.25s">
+    <div class="panel-header">
+      <h2>📋 Todas las plantillas</h2>
+      <div class="acciones">
+        <input type="text" id="buscar" placeholder="Buscar…" oninput="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;min-width:200px;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)"/>
+        <select id="filtroCanal" onchange="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)">
+          <option value="">Todos</option>
+          <option value="correo">Correo</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+        <select id="filtroCat" onchange="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)">
+          <option value="">Todas las categorías</option>
+          <option value="transaccional">Transaccional</option>
+          <option value="promo">Promocional</option>
+          <option value="informativo">Informativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-cards" id="grid"></div>
+  </div>
+</main>
+
+<!-- Modal editor -->
+<div class="modal-overlay" id="modalEd">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Nueva plantilla</h2>
+      <button onclick="cerrarModal()" style="background:none;border:none;cursor:pointer;color:var(--texto-suave);font-size:1.2rem">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <div id="modalOk" class="msg-ok"><span class="material-symbols-outlined">check_circle</span> Plantilla guardada.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Nombre</label>
+          <input type="text" id="edNombre" placeholder="Nombre de la plantilla"/>
+        </div>
+        <div class="campo">
+          <label>Canal</label>
+          <select id="edCanal" style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+            <option value="correo">Correo</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Categoría</label>
+          <select id="edCat" style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+            <option value="transaccional">Transaccional</option>
+            <option value="promo">Promocional</option>
+            <option value="informativo">Informativo</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Asunto (solo correo)</label>
+          <input type="text" id="edAsunto" placeholder="Asunto del correo…"/>
+        </div>
+      </div>
+      <div class="campo">
+        <label>Variables disponibles</label>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">
+          <button type="button" onclick="insertarVar('[nombre]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.25rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[nombre]</button>
+          <button type="button" onclick="insertarVar('[tienda]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.25rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[tienda]</button>
+          <button type="button" onclick="insertarVar('[plan]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.25rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[plan]</button>
+          <button type="button" onclick="insertarVar('[fecha]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.25rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[fecha]</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label>Cuerpo del mensaje</label>
+        <textarea id="edCuerpo" rows="8" placeholder="Escribe el cuerpo del mensaje…"></textarea>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="guardar()"><span class="material-symbols-outlined" style="font-size:1rem">save</span>Guardar</button>
+        <button class="btn btn-secundario" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="../control/auth.js"></script>
+<script src="../control/plantillas.js"></script>
+</body>
+</html>

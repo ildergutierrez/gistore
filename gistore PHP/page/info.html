@@ -379,6 +379,25 @@
       .modal { padding: 1.5rem 1.1rem; }
       .plan-resumen { grid-template-columns: 1fr; }
     }
+
+    /* ── Checkbox TyC ── */
+    .tyc-wrap {
+      display: flex; align-items: flex-start; gap: .65rem;
+      margin: .85rem 0 .25rem;
+    }
+    .tyc-wrap input[type="checkbox"] {
+      width: 18px; height: 18px; min-width: 18px;
+      accent-color: var(--verde-claro);
+      cursor: pointer; margin-top: .15rem;
+    }
+    .tyc-label {
+      font-size: .84rem; color: #4b5563; line-height: 1.5;
+    }
+    .tyc-label a {
+      color: var(--verde-oscuro); font-weight: 600;
+      text-decoration: underline; cursor: pointer;
+    }
+    .tyc-label a:hover { color: var(--verde-claro); }
   </style>
   <link rel="stylesheet" href="../css/nav.css"/>
 </head>
@@ -618,6 +637,17 @@
         <div class="campo-nota">Esto ayuda al administrador a guiarle sobre la categoría correcta para su tienda o crear una nueva.</div>
       </div>
  
+
+      <!-- Checkbox Términos y Condiciones -->
+      <div class="tyc-wrap">
+        <input type="checkbox" id="chk-tyc" required/>
+        <label class="tyc-label" for="chk-tyc">
+          He leído y acepto los
+          <a id="linkTyC" href="../page/tyc.html" target="_blank" rel="noopener">Términos y Condiciones</a>,
+          la política de tratamiento de datos personales y el envío de comunicaciones
+          informativas y publicitarias por correo electrónico y WhatsApp.
+        </label>
+      </div>
       <button class="modal-enviar" id="btnEnviar">
         <span id="btnTexto">Enviar solicitud</span>
         <div class="spinner" id="spinner"></div>
@@ -628,6 +658,7 @@
     <div class="modal-exito" id="modalExito">
       <div class="exito-check" id="exitoCheckReg">⏳</div>
       <h3 id="exitoTituloReg">Enviando tu solicitud…</h3>
+     
       <p id="exitoMsgReg" style="font-size:.88rem;color:#6b7280;max-width:300px;line-height:1.6;text-align:center">
         Por favor espera un momento.
       </p>
@@ -797,4 +828,4 @@
   <script type="module" src="../js/accesoadmin.js"></script>
   <script src="../js/nav.js" defer></script>
 </body>
-</html> 
+</html>

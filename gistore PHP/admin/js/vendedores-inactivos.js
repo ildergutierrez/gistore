@@ -87,6 +87,15 @@ function aplicarFiltro() {
 
   renderTabla(lista);
 }
+//calcular la cantidad de días que han estado desactivados
+function calcularDiasDesactivados(fechaDesactivacion) {
+  const hoy = new Date();
+  const desactivacion = new Date(fechaDesactivacion);
+  const diffTime = Math.abs(hoy - desactivacion);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays + ' día' + (diffDays !== 1 ? 's' : '');
+}
+
 
 function renderTabla(lista) {
   const wrap = document.getElementById('tablaWrap');
@@ -112,7 +121,7 @@ function renderTabla(lista) {
           <th>Nombre</th>
           <th>Ciudad</th>
           <th>WhatsApp</th>
-          <th>Correo</th>
+          <th>Tiempo</th>
           <th>Acción</th>
         </tr>
       </thead>
@@ -130,12 +139,13 @@ function renderTabla(lista) {
               ? `<a href="https://wa.me/${v.whatsapp}" target="_blank"
                     style="color:var(--verde);text-decoration:none">📱 ${v.whatsapp}</a>`
               : '—'}</td>
-            <td>${v.correo || '—'}</td>
-            <td>
-              <button class="btn-reactivar" data-id="${v.id}" data-nombre="${v.nombre}">
+            
+            <td>${calcularDiasDesactivados(v.actualizado_en)}</td>
+              <td><button class="btn-reactivar" data-id="${v.id}" data-nombre="${v.nombre}">
                 ✅ Reactivar
               </button>
             </td>
+            
           </tr>`).join('')}
       </tbody>
     </table>`;

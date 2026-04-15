@@ -34,6 +34,7 @@ async function apiPost(endpoint, params = {}) {
     body: body.toString(),
   });
   const data = await resp.json();
+  //console.log('API Response:', data);
   if (!data.ok) throw new Error(data.error || 'Error');
   return data.datos;
 }
@@ -122,7 +123,7 @@ async function cargar() {
   try {
     const todos = await apiGet('vendedores.php?accion=obtener');
     vendedores = todos.filter(v => v.estado !== 'desactivado');
-    console.log(vendedores);
+    //console.log(vendedores);
     document.getElementById('totalVendedores').textContent =
       vendedores.length + ' vendedor' + (vendedores.length !== 1 ? 'es' : '');
     aplicarFiltro();

@@ -201,14 +201,14 @@
       transform-origin: top center;
       transition: transform .18s;
     }
-#ed-img-col {
-  overflow: hidden;
-  position: relative;
-}
+    #ed-img-col {
+      overflow: hidden;
+      position: relative;
+    }
     #ed-card {
       width: 780px;
       background: #fff;
-      color: #111827; /* color base de contraste sobre blanco */
+      color: #111827;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 12px 60px rgba(0,0,0,.5);
@@ -251,11 +251,10 @@
       padding: 2rem 1.75rem 1.5rem;
       display: flex; flex-direction: column; gap: .8rem;
     }
-    /* ── Colores de contraste sobre fondo blanco de la tarjeta ── */
     #ed-card, #ed-card * { color: inherit; }
 
     #ed-marca   { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-                  color: #1a6b3c; /* sobreescrito por aplicarColorPrimario */ }
+                  color: #1a6b3c; }
     #ed-nombre  { font-size: 1.7rem; font-weight: 800; line-height: 1.2; color: #111827; }
     #ed-divider { height: 3px; width: 48px; border-radius: 2px; background: linear-gradient(90deg,#1a6b3c,#1a6b3c88); }
     #ed-precio-wrap { display: flex; align-items: baseline; gap: .35rem; }
@@ -369,14 +368,12 @@
         <div class="logo">✨ Editor</div>
         <div class="sub">GI Store Spotlight</div>
       </div>
-      <!-- cierra la pestaña -->
       <button class="sb-back" onclick="window.close()">
         <span class="material-symbols-outlined" style="font-size:.9rem">arrow_back</span>
         Volver
       </button>
     </div>
 
-    <!-- Tabs -->
     <!-- Botón añadir texto libre -->
     <div style="padding:.5rem .85rem;border-bottom:1px solid var(--panel-borde);background:rgba(99,102,241,.08)">
       <button onclick="añadirTextoLibre()"
@@ -444,67 +441,28 @@
 
       <!-- ── IMAGEN ── -->
       <div class="sb-section" id="tab-imagen">
-        <!-- 
-  ══════════════════════════════════════════════════════
-  AGREGAR en editor.html, dentro de la sección "Imagen"
-  (tab-imagen), ANTES del input de URL existente.
-  
-  También: cambiar el atributo min/max del rng-zoom:
-    ANTES: min="80" max="200"  (o similar)
-    AHORA: min="100" max="300"
-    
-  Y el rng-imgx / rng-imgy deben estar en 0–100:
-    min="0" max="100" value="50"
-  ══════════════════════════════════════════════════════
--->
 
-<!-- Subir imagen desde el dispositivo -->
-<div class="sb-label" style="margin-bottom:.35rem">📁 Subir imagen</div>
-<label for="inp-img-file" style="
-  display:flex;align-items:center;justify-content:center;gap:.5rem;
-  padding:.55rem .75rem;border:2px dashed var(--panel-borde,#3f3f46);
-  border-radius:8px;cursor:pointer;font-size:.82rem;
-  color:var(--texto-suave);transition:border-color .2s;
-  background:var(--fondo-2,rgba(255,255,255,.03));
-" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor=''">
-  <span class="material-symbols-outlined" style="font-size:1.1rem">upload</span>
-  Elegir archivo de imagen
-</label>
-<input type="file" id="inp-img-file" accept="image/*"
-  style="display:none">
-<div style="font-size:.72rem;color:var(--texto-suave);margin-top:.25rem">
-  JPG, PNG, WebP, GIF — desde tu dispositivo
-</div>
+        <!-- Subir imagen desde el dispositivo -->
+        <div class="sb-label" style="margin-bottom:.35rem">📁 Subir imagen</div>
+        <label for="inp-img-file" style="
+          display:flex;align-items:center;justify-content:center;gap:.5rem;
+          padding:.55rem .75rem;border:2px dashed var(--panel-borde,#3f3f46);
+          border-radius:8px;cursor:pointer;font-size:.82rem;
+          color:var(--texto-suave);transition:border-color .2s;
+          background:var(--fondo-2,rgba(255,255,255,.03));
+        " onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor=''">
+          <span class="material-symbols-outlined" style="font-size:1.1rem">upload</span>
+          Elegir archivo de imagen
+        </label>
+        <input type="file" id="inp-img-file" accept="image/*" style="display:none">
+        <div style="font-size:.72rem;color:var(--texto-suave);margin-top:.25rem">
+          JPG, PNG, WebP, GIF — desde tu dispositivo
+        </div>
 
-<!-- Separador -->
-<div style="margin:.75rem 0;border-top:1px solid var(--panel-borde,#3f3f46);opacity:.4"></div>
+        <div style="margin:.75rem 0;border-top:1px solid var(--panel-borde,#3f3f46);opacity:.4"></div>
 
-<!-- URL de imagen (existente — déjalo igual) -->
-<div class="sb-label" style="margin-bottom:.35rem">🔗 O pega una URL</div>
-<!-- (aquí va el inp-img-url + botón Aplicar que ya tienes) -->
-
-
-<!--
-  ══════════════════════════════════════════════════════
-  NOTA SOBRE LOS SLIDERS DE IMAGEN:
-  
-  El slider "Zoom" (rng-zoom) ahora va de 100 a 300:
-    · 100 = imagen completa (object-fit: contain, sin recorte)
-    · >100 = zoom in con encuadre libre (object-fit: cover)
-  
-  Los sliders X (rng-imgx) e Y (rng-imgy) van de 0 a 100:
-    · 0 = izquierda/arriba
-    · 50 = centro (default)
-    · 100 = derecha/abajo
-  Solo tienen efecto cuando zoom > 100.
-  
-  VALORES RECOMENDADOS PARA LOS INPUTS HTML:
-    <input type="range" id="rng-zoom" min="100" max="300" value="100" step="1">
-    <input type="range" id="rng-imgx" min="0"   max="100" value="50"  step="1">
-    <input type="range" id="rng-imgy" min="0"   max="100" value="50"  step="1">
-  ══════════════════════════════════════════════════════
--->
-        <span class="sb-label">URL de imagen</span>
+        <!-- URL de imagen -->
+        <span class="sb-label">🔗 O pega una URL</span>
         <div class="sb-row">
           <input class="sb-input" id="inp-img-url" type="text" placeholder="https://…" style="flex:1"/>
           <button class="btn-sb btn-sb-verde" style="width:auto;padding:.55rem .75rem" onclick="aplicarUrlImagen()">
@@ -514,20 +472,20 @@
 
         <span class="sb-label">Zoom imagen</span>
         <div class="sb-row">
-          <input class="sb-range" type="range" id="rng-zoom" min="80" max="200" value="100"/>
+          <input class="sb-range" type="range" id="rng-zoom" min="100" max="300" value="100"/>
           <span class="range-val" id="val-zoom">100%</span>
         </div>
 
         <span class="sb-label">Posición horizontal</span>
         <div class="sb-row">
-          <input class="sb-range" type="range" id="rng-imgx" min="-100" max="100" value="0"/>
-          <span class="range-val" id="val-imgx">0</span>
+          <input class="sb-range" type="range" id="rng-imgx" min="0" max="100" value="50"/>
+          <span class="range-val" id="val-imgx">50</span>
         </div>
 
         <span class="sb-label">Posición vertical</span>
         <div class="sb-row">
-          <input class="sb-range" type="range" id="rng-imgy" min="-100" max="100" value="0"/>
-          <span class="range-val" id="val-imgy">0</span>
+          <input class="sb-range" type="range" id="rng-imgy" min="0" max="100" value="50"/>
+          <span class="range-val" id="val-imgy">50</span>
         </div>
 
         <span class="sb-label">Filtro de imagen</span>
@@ -657,6 +615,61 @@
           <option value="🌿">🌿 Hoja</option>
           <option value="💎">💎 Diamante</option>
         </select>
+
+        <!-- ══ ESTILOS DE TEXTOS DE BD ══ -->
+        <div class="sb-sep"></div>
+        <span class="sb-label" style="font-weight:700;color:var(--acento)">📝 Descripción</span>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Color texto</span>
+          <input type="color" class="sb-color" id="clr-desc-txt" value="#1f2937" style="width:44px;height:28px"/>
+        </div>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Fuente</span>
+          <select class="sb-select" id="sel-font-desc" style="flex:2">
+            <option value="Inter">Inter</option>
+            <option value="Nunito">Nunito</option>
+            <option value="Playfair Display">Playfair Display</option>
+            <option value="Oswald">Oswald</option>
+            <option value="Montserrat">Montserrat</option>
+          </select>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label" style="font-weight:700;color:var(--acento)">✦ Beneficios</span>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Color items</span>
+          <input type="color" class="sb-color" id="clr-bens-txt" value="#111827" style="width:44px;height:28px"/>
+        </div>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Tamaño</span>
+          <input class="sb-range" type="range" id="rng-bens-sz" min="10" max="18" value="13" style="flex:2"/>
+          <span class="range-val" id="val-bens-sz">13px</span>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label" style="font-weight:700;color:var(--acento)">💡 Recomendación</span>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Color texto</span>
+          <input type="color" class="sb-color" id="clr-reco-txt" value="#14532d" style="width:44px;height:28px"/>
+        </div>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Tamaño</span>
+          <input class="sb-range" type="range" id="rng-reco-sz" min="10" max="18" value="13" style="flex:2"/>
+          <span class="range-val" id="val-reco-sz">13px</span>
+        </div>
+
+        <div class="sb-sep"></div>
+        <span class="sb-label" style="font-weight:700;color:var(--acento)">✨ Texto IA</span>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Color texto</span>
+          <input type="color" class="sb-color" id="clr-ia-txt" value="#1f2937" style="width:44px;height:28px"/>
+        </div>
+        <div class="sb-row">
+          <span style="font-size:.78rem;color:var(--texto-suave);flex:1">Tamaño</span>
+          <input class="sb-range" type="range" id="rng-ia-sz" min="10" max="18" value="13" style="flex:2"/>
+          <span class="range-val" id="val-ia-sz">13px</span>
+        </div>
+
       </div>
     </div><!-- /sb-body -->
 

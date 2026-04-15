@@ -43,7 +43,13 @@ function error_respuesta(string $msg, int $codigo = 400): never
 $accion = $_GET['accion'] ?? '';
 
 if ($accion === 'obtener') {
-    $stmt = $pdo->prepare("SELECT id, nombre, orden FROM categorias ORDER BY orden ASC, nombre ASC");
+    $stmt = $pdo->prepare("
+        SELECT c.id, c.nombre, c.orden
+        FROM categorias c
+        INNER JOIN productos p ON p.categoria_id = c.id
+        GROUP BY c.id, c.nombre, c.orden
+        ORDER BY c.orden ASC, c.nombre ASC
+    ");
     $stmt->execute();
     ok($stmt->fetchAll(PDO::FETCH_ASSOC));
 }

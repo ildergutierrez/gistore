@@ -1,21 +1,24 @@
 // ═══════════════════════════════════════════════════
 //  EDITOR.JS — lógica completa del editor tipo Canva
-//  · Imagen sin recorte: object-fit + object-position
-//  · Zoom con slider/rueda mueve object-position, no scale
+//  · Imagen sin recorte: object-fit + object-position (compatible html2canvas)
+//  · Zoom con slider/rueda mueve object-position, no scale/transform
 //  · Subida de imagen local (file input)
+//  · Controles de color/fuente/tamaño para textos de BD
 //  · Sin Firebase — datos vienen de localStorage (spotlight.js)
 // ═══════════════════════════════════════════════════
 
 /* ── Estado ── */
 let zoomLevel  = 200;
-// Imagen: usamos object-position en % en lugar de scale/translate
 let imgObjX    = 50;   // % horizontal (0=izq, 100=der)
 let imgObjY    = 50;   // % vertical   (0=arriba, 100=abajo)
-let imgScale   = 100;  // % de zoom — controla object-fit entre contain y cover
+let imgScale   = 100;  // % de zoom
 let bullet     = "✦";
 let textAlign  = "left";
 let topbarGrad = "linear-gradient(90deg,#1a6b3c,#22c55e,#4f46e5)";
 let primaryClr = "#1a6b3c";
+
+// ── Color de items de beneficios (persiste al refrescar la lista) ──
+let _bensTxtColor = "#111827";
 
 // ── Cargar datos desde localStorage (pasados por spotlight.js) ──
 window.addEventListener("DOMContentLoaded", () => {
@@ -90,14 +93,12 @@ function initControls() {
   document.getElementById("tog-bens")?.addEventListener("change", actualizarTarjeta);
   document.getElementById("tog-ia"  )?.addEventListener("change", actualizarTarjeta);
 
-  // ── Imagen: zoom con object-fit/object-position ────────────
-  //    rng-zoom controla imgScale (100 = contain completa, >100 = crop con cover)
+  // Imagen: zoom con object-fit/object-position
   document.getElementById("rng-zoom")?.addEventListener("input", e => {
     imgScale = +e.target.value;
     document.getElementById("val-zoom").textContent = imgScale + "%";
     aplicarTransformImagen();
   });
-  //    rng-imgx / rng-imgy controlan object-position
   document.getElementById("rng-imgx")?.addEventListener("input", e => {
     imgObjX = +e.target.value;
     document.getElementById("val-imgx").textContent = imgObjX;
@@ -138,7 +139,7 @@ function initControls() {
   document.getElementById("clr-badge-bg" )?.addEventListener("input", actualizarBadge);
   document.getElementById("clr-badge-txt")?.addEventListener("input", actualizarBadge);
 
-  // Layout
+  // Layout — tipografía base
   document.getElementById("sel-font-titulo")?.addEventListener("change", e => {
     document.getElementById("ed-nombre").style.fontFamily = e.target.value + ", sans-serif";
   });
@@ -171,6 +172,51 @@ function initControls() {
     bullet = e.target.value; actualizarTarjeta();
   });
 
+  // ── Controles de estilo para textos de BD ─────────────────────
+
+  // Descripción — color
+  document.getElementById("clr-desc-txt")?.addEventListener("input", e => {
+    document.getElementById("ed-desc").style.color = e.target.value;
+  });
+  // Descripción — fuente
+  document.getElementById("sel-font-desc")?.addEventListener("change", e => {
+    document.getElementById("ed-desc").style.fontFamily = e.target.value + ", sans-serif";
+  });
+
+  // Beneficios — color items
+  document.getElementById("clr-bens-txt")?.addEventListener("input", e => {
+    _bensTxtColor = e.target.value;
+    document.querySelectorAll(".ed-ben-item").forEach(el => el.style.color = _bensTxtColor);
+  });
+  // Beneficios — tamaño
+  document.getElementById("rng-bens-sz")?.addEventListener("input", e => {
+    const v = e.target.value;
+    document.getElementById("val-bens-sz").textContent = v + "px";
+    document.getElementById("ed-bens").style.fontSize = v + "px";
+  });
+
+  // Recomendación — color
+  document.getElementById("clr-reco-txt")?.addEventListener("input", e => {
+    document.getElementById("ed-reco").style.color = e.target.value;
+  });
+  // Recomendación — tamaño
+  document.getElementById("rng-reco-sz")?.addEventListener("input", e => {
+    const v = e.target.value;
+    document.getElementById("val-reco-sz").textContent = v + "px";
+    document.getElementById("ed-reco").style.fontSize = v + "px";
+  });
+
+  // Texto IA — color
+  document.getElementById("clr-ia-txt")?.addEventListener("input", e => {
+    document.getElementById("ed-ia-txt").style.color = e.target.value;
+  });
+  // Texto IA — tamaño
+  document.getElementById("rng-ia-sz")?.addEventListener("input", e => {
+    const v = e.target.value;
+    document.getElementById("val-ia-sz").textContent = v + "px";
+    document.getElementById("ed-ia-txt").style.fontSize = v + "px";
+  });
+
   // ── Subida de imagen local ─────────────────────────────────
   const fileInput = document.getElementById("inp-img-file");
   if (fileInput) {
@@ -184,11 +230,9 @@ function initControls() {
       const reader = new FileReader();
       reader.onload = ev => {
         const dataUrl = ev.target.result;
-        // Mostrar URL en el input de texto (como referencia)
         const urlInput = document.getElementById("inp-img-url");
         if (urlInput) urlInput.value = "(imagen local cargada)";
         aplicarImagen(dataUrl);
-        // Resetear posición al cargar nueva imagen
         imgObjX = 50; imgObjY = 50; imgScale = 100;
         sincronizarSlidersImagen();
         aplicarTransformImagen();
@@ -229,7 +273,7 @@ function actualizarTarjeta() {
     bens.forEach(b => {
       const div = document.createElement("div");
       div.className = "ed-ben-item";
-      div.style.color = "#1f2937";
+      div.style.color = _bensTxtColor; // usa el color guardado en lugar de hardcodear
       div.innerHTML = `<span class="ed-ben-bullet" style="color:${primaryClr}">${bullet}</span>${b}`;
       elBens.appendChild(div);
     });
@@ -270,14 +314,17 @@ function aplicarImagen(url) {
   if (!img || !col) return;
   url = resolverUrlImagen(url);
   if (url) {
-    img.src           = url;
-    img.style.display = "";
-    // ── CLAVE: sin transform; usamos object-fit + object-position ──
-    img.style.transform       = "none";
-    img.style.objectFit       = "contain";        // imagen completa por defecto
-    img.style.objectPosition  = "50% 50%";
-    img.style.width           = "100%";
-    img.style.height          = "100%";
+    img.src                  = url;
+    img.style.display        = "";
+    // Resetear todos los estilos de posición/zoom al cargar imagen nueva
+    img.style.transform      = "none";
+    img.style.objectFit      = "contain";
+    img.style.objectPosition = "50% 50%";
+    img.style.width          = "100%";
+    img.style.height         = "100%";
+    img.style.position       = "static";
+    img.style.left           = "";
+    img.style.top            = "";
     img.onerror = () => {
       img.style.display = "none";
       col.style.background = "linear-gradient(135deg,#1a6b3c,#22c55e)";
@@ -288,36 +335,40 @@ function aplicarImagen(url) {
   }
 }
 
-// ── Aplicar zoom/posición con object-fit + object-position ────
+// ── Aplicar zoom/posición — compatible con html2canvas ────────
 //
 //  imgScale  100  → object-fit: contain  (imagen completa, sin recorte)
-//  imgScale >100  → object-fit: cover    (zoom in, se puede reencuadrar)
-//
-//  El slider de "zoom" va de 100 a 200 en el HTML (ajustar si hace falta).
-//  rng-imgx / rng-imgy van de 0 a 100 (%).
+//  imgScale >100  → agranda el <img> físicamente + object-fit: cover
+//                   El contenedor tiene overflow:hidden → simula crop
+//                   html2canvas captura tamaños reales, no CSS transform
 //
 function aplicarTransformImagen() {
   const img = document.getElementById("ed-img-el");
   if (!img || img.style.display === "none") return;
 
-  // Siempre mostrar imagen completa como base
-  img.style.objectFit = "contain";
+  // Sin transform en ningún caso — html2canvas no lo respeta bien en <img>
+  img.style.transform = "none";
 
-  const scale = imgScale / 100;
-
-  // Convertir posición (0–100) a desplazamiento centrado
-  const offsetX = (imgObjX - 50) / 50;
-  const offsetY = (imgObjY - 50) / 50;
-
-  // Movimiento proporcional al zoom
-  const moveX = offsetX * (scale - 1) * 100;
-  const moveY = offsetY * (scale - 1) * 100;
-
-  img.style.transform = `
-    translate(${moveX}%, ${moveY}%)
-    scale(${scale})
-  `;
+  if (imgScale <= 100) {
+    img.style.objectFit      = "contain";
+    img.style.objectPosition = "50% 50%";
+    img.style.width          = "100%";
+    img.style.height         = "100%";
+    img.style.position       = "static";
+    img.style.left           = "";
+    img.style.top            = "";
+  } else {
+    const scale              = imgScale / 100;
+    img.style.objectFit      = "cover";
+    img.style.objectPosition = `${imgObjX}% ${imgObjY}%`;
+    img.style.width          = (scale * 100) + "%";
+    img.style.height         = (scale * 100) + "%";
+    img.style.position       = "absolute";
+    img.style.left           = `${(1 - scale) / 2 * 100}%`;
+    img.style.top            = `${(1 - scale) / 2 * 100}%`;
+  }
 }
+
 // Sincronizar sliders visuales con el estado interno
 function sincronizarSlidersImagen() {
   const sZoom = document.getElementById("rng-zoom");
@@ -339,7 +390,7 @@ function actualizarOverlay() {
   if (ov) ov.style.background = `rgba(${r},${g},${b},${op/100})`;
 }
 
-// ── Drag imagen: mueve object-position (sin scale) ────────────
+// ── Drag imagen: mueve imgObjX/Y ──────────────────────────────
 function initImageDrag() {
   const col = document.getElementById("ed-img-col");
   if (!col) return;
@@ -347,7 +398,7 @@ function initImageDrag() {
 
   col.addEventListener("mousedown", e => {
     if (e.target.id === "ed-cat-badge") return;
-    if (imgScale <= 100) return; // sin zoom no tiene sentido arrastrar
+    if (imgScale <= 100) return;
     drag = true;
     startX    = e.clientX;
     startY    = e.clientY;
@@ -358,7 +409,6 @@ function initImageDrag() {
 
   window.addEventListener("mousemove", e => {
     if (!drag) return;
-    // Sensibilidad: mayor zoom → movimiento más preciso
     const sens = 0.15;
     imgObjX = Math.max(0, Math.min(100, startObjX - (e.clientX - startX) * sens));
     imgObjY = Math.max(0, Math.min(100, startObjY - (e.clientY - startY) * sens));
@@ -371,7 +421,7 @@ function initImageDrag() {
     col.style.cursor = "grab";
   });
 
-  // Rueda del mouse = zoom (cambia imgScale)
+  // Rueda del mouse = zoom
   col.addEventListener("wheel", e => {
     e.preventDefault();
     imgScale = Math.max(100, Math.min(300, imgScale - e.deltaY * 0.15));
@@ -492,7 +542,12 @@ function recalcularContraste(bgHex) {
     const el = document.getElementById(id);
     if (el) Object.assign(el.style, styles);
   }
-  document.querySelectorAll(".ed-ben-item").forEach(el   => el.style.color = colorBens);
+  // Actualizar _bensTxtColor solo si el usuario no lo ha cambiado manualmente
+  const clrBensInput = document.getElementById("clr-bens-txt");
+  if (!clrBensInput || clrBensInput.value === "#111827" || clrBensInput.value === "#e5e7eb") {
+    _bensTxtColor = colorBens;
+  }
+  document.querySelectorAll(".ed-ben-item").forEach(el   => el.style.color = _bensTxtColor);
   document.querySelectorAll(".ed-ben-titulo").forEach(el => el.style.color = colorBenTit);
 }
 
@@ -585,6 +640,7 @@ function resetear() {
   const raw = localStorage.getItem("spotlight_data");
   if (raw) { try { cargarDatos(JSON.parse(raw)); } catch(e){} }
   imgObjX = 50; imgObjY = 50; imgScale = 100;
+  _bensTxtColor = "#111827";
   sincronizarSlidersImagen();
   aplicarTransformImagen();
   toast("Restablecido ✓");

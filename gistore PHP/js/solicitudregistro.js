@@ -78,6 +78,10 @@
       $('modalExito').style.flexDirection = '';
 
       // Limpiar campos
+      // Limpiar checkbox TyC
+      const chkTyC = document.getElementById('chk-tyc');
+      if (chkTyC) chkTyC.checked = false;
+
       ['campo-tienda', 'campo-correo', 'campo-whatsapp', 'campo-descripcion'].forEach(id => {
         const el = $(id); if (el) { el.value = ''; el.classList.remove('invalido'); }
       });
@@ -116,6 +120,12 @@
     if (!correo   || !vEmail(correo)) { markInv('campo-correo',       true); ok = false; msg = msg || 'Ingresa un correo electrónico válido.'; }        else markInv('campo-correo',       false);
     if (!whatsapp || !vTel(whatsapp)) { markInv('campo-whatsapp',     true); ok = false; msg = msg || 'Ingresa un WhatsApp válido (solo dígitos).'; }   else markInv('campo-whatsapp',     false);
     if (!descripcion)                 { markInv('campo-descripcion',  true); ok = false; msg = msg || 'Describe brevemente lo que vendes.'; }           else markInv('campo-descripcion',  false);
+    // Validar checkbox TyC
+    const chkTyC = document.getElementById('chk-tyc');
+    if (chkTyC && !chkTyC.checked) {
+      ok = false;
+      msg = msg || 'Debes aceptar los Términos y Condiciones para continuar.';
+    }
     if (!ok) { mostrarError(msg); return; }
 
     setLoading(true);
@@ -171,12 +181,23 @@
     }
   }
 
+  function Verificadortyc(){
+    const chkTyC = document.getElementById('chk-tyc');
+    const mensaje = document.getElementById('exitoMsgReg');
+    if (chkTyC && !chkTyC.checked) {
+      if (mensaje) mensaje.textContent = 'Debes aceptar los Términos y Condiciones para continuar. Vuelva a intentar.';
+       mensaje.style.color = 'red';
+      return false;
+    }
+     mensaje.style.color = 'green';
+    return enviarFormulario();
+  }
   // ── Eventos ───────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     $('btnSolicitarRegistro') ?.addEventListener('click', abrirModal);
     $('btnCerrar')             ?.addEventListener('click', cerrarModal);
     $('btnExitoCerrar')        ?.addEventListener('click', cerrarModal);
-    $('btnEnviar')             ?.addEventListener('click', enviarFormulario);
+    $('btnEnviar')             ?.addEventListener('click', Verificadortyc);
     $('modalOverlay')          ?.addEventListener('click', e => { if (e.target === e.currentTarget) cerrarModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
   });

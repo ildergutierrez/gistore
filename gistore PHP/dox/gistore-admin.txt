@@ -1,0 +1,480 @@
+================================================================================
+  GI STORE — DOCUMENTACIÓN MÓDULO ADMIN
+  Panel de Administración · Backend · JS · HTML
+  Abril 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+1. DESCRIPCIÓN
+--------------------------------------------------------------------------------
+
+El módulo admin (gistore/admin/) es el panel de control exclusivo del
+superadministrador. Desde aquí se gestiona todo el sistema: vendedores,
+productos, membresías, publicidad, foro, categorías y claves de API.
+
+  Acceso    : El admin NO está vinculado desde el menú público.
+              Atajo oculto desde cualquier página: Ctrl + Shift + E
+              Redirige a: admin/index.html (formulario de login)
+
+  Rol       : Requiere rol = 1 en la tabla usuarios.
+              Verificado en CADA endpoint de admin/backend/.
+
+  Sesión    : PHP Session. Verificada por auth.js en todas las páginas.
+
+
+--------------------------------------------------------------------------------
+2. ESTRUCTURA DE CARPETAS — admin/
+--------------------------------------------------------------------------------
+
+admin/
+├── index.html                  ← Login del administrador
+│
+├── css/
+│   └── style.css               ← Estilos exclusivos del panel admin
+│
+├── js/
+│   ├── auth.js                 ← Guardia de sesión (incluir en todas las páginas)
+│   ├── login.js                ← Lógica del formulario de login
+│   ├── dashboard.js            ← Dashboard con estadísticas globales
+│   ├── vendedores.js           ← CRUD de vendedores activos
+│   ├── vendedores-inactivos.js ← Gestión de vendedores inactivos
+│   ├── productos.js            ← CRUD de productos (todos los vendedores)
+│   ├── catalogo.js             ← Vista del catálogo con filtros
+│   ├── categorias.js           ← CRUD de categorías
+│   ├── membresias.js           ← Gestión de membresías
+│   ├── publicidad.js           ← CRUD de campañas publicitarias
+│   ├── foro-admin.js           ← Moderación del foro
+│   ├── perfil.js               ← Perfil del administrador
+│   ├── api-claves.js           ← Gestión de claves de APIs externas
+│   ├── wip.js                  ← Configuración de claves Wompi
+│   └── ui.js                   ← Utilidades de UI compartidas
+│
+├── backend/
+│   ├── login.php               ← Autenticación del administrador
+│   ├── vendedores.php          ← CRUD de vendedores
+│   ├── productos.php           ← CRUD de productos
+│   ├── categorias.php          ← CRUD de categorías
+│   ├── membresias.php          ← Gestión de membresías
+│   ├── publicidad.php          ← Gestión de campañas
+│   ├── foro.php                ← Moderación del foro
+│   ├── fundadores.php          ← Gestión de fundadores
+│   ├── planes.php              ← Gestión de planes de membresía
+│   ├── perfil.php              ← Perfil del admin
+│   ├── api-claves.php          ← CRUD de claves de APIs externas
+│   ├── wompi_config.php        ← Configuración de claves Wompi
+│   ├── wip.php                 ← Gestión de la tabla wpis
+│   └── catalogo.php            ← Datos del catálogo para admin
+│
+└── pages/
+    ├── dashboard.html          ← Dashboard principal
+    ├── vendedores.html         ← Gestión de vendedores
+    ├── vendedores-inactivos.html
+    ├── productos.html          ← Gestión de productos
+    ├── catalogo.html           ← Vista del catálogo
+    ├── categorias.html         ← Gestión de categorías
+    ├── membresias.html         ← Gestión de membresías
+    ├── publicidad.html         ← Gestión de publicidad
+    ├── foro-admin.html         ← Moderación del foro
+    ├── perfil.html             ← Perfil del admin
+    ├── api-claves.html         ← Claves de APIs externas
+    └── manual-admin.html       ← Manual de uso del panel
+
+
+--------------------------------------------------------------------------------
+3. AUTENTICACIÓN — index.html + login.php
+--------------------------------------------------------------------------------
+
+  FLUJO DE LOGIN:
+    1. login.js solicita token CSRF → GET /backend/tokens.php
+    2. Usuario completa formulario (correo + contraseña)
+    3. POST a admin/backend/login.php con { correo, password, token }
+    4. login.php ejecuta:
+         verificar_token()       → valida CSRF
+         leer_campos()           → extrae y sanitiza correo + password
+         buscar_usuario($pdo)    → SELECT en tabla usuarios por correo
+         validar_usuario()       → password_verify() + activo + rol === 1
+         crear_sesion()          → guarda usuario_id, correo, rol en $_SESSION
+    5. Éxito: JS redirige a pages/dashboard.html
+
+  ACCESO DENEGADO:
+    - Si rol !== 1 → error "No tienes permisos de administrador."
+    - Si cuenta inactiva → error "Tu cuenta está desactivada."
+    - Mensaje de correo/contraseña incorrectos es genérico (sin revelar qué falló)
+
+  auth.js (guardia de sesión):
+    - Incluido en TODAS las páginas del panel admin.
+    - Llama a: /backend/sesion.php?accion=verificar&ac=admin
+    - Si la sesión no es válida → redirige a ../../index.html
+    - Gestiona el botón #btnSalir → llama a /backend/cerrar.php
+
+
+--------------------------------------------------------------------------------
+4. PÁGINAS HTML — admin/pages/
+--------------------------------------------------------------------------------
+
+  ── dashboard.html ────────────────────────────────────────────────────────────
+
+  Vista general del estado del sistema.
+
+  Tarjetas de estadísticas:
+    statVendedores   → vendedores con estado = 'activo'
+    statMembresias   → membresías activas Y fecha_fin >= hoy
+    statProductos    → productos con activo = 1
+    statCategorias   → total categorías
+
+  Tabla de vendedores con: nombre, ciudad, estado (badge), membresía activa.
+  Los datos se cargan con Promise.all([vendedores, membresías, productos, categorías]).
+
+  Badges de estado (función badgeEstado):
+    activo/activa   → fondo verde  (#dcfce7), texto verde oscuro
+    desactivado     → fondo amarillo
+    inactivo        → fondo gris oscuro
+    vencida         → fondo naranja
+    cancelada       → fondo amarillo oscuro
+
+  ── vendedores.html ───────────────────────────────────────────────────────────
+
+  CRUD completo de vendedores.
+
+  Crear vendedor:
+    → Crea usuario (rol 2) + registro en vendedores en TRANSACCIÓN SQL atómica.
+    → Verifica que el correo no esté duplicado en la tabla usuarios.
+    → Genera password_hash con PASSWORD_DEFAULT.
+    → Campos: nombre*, ciudad, correo*, password*, whatsapp, color, estado.
+
+  Editar vendedor:
+    → Modifica datos del perfil y/o contraseña del usuario asociado.
+    → Upload de foto de perfil con preview.
+    → Selector de color de marca (#1a6b3c por defecto).
+    → Gestión de redes sociales (JSON).
+
+  Cambiar estado: toggle activo ↔ inactivo.
+  Eliminar: con confirmación de diálogo.
+
+  ── vendedores-inactivos.html ────────────────────────────────────────────────
+
+  Vista filtrada: solo vendedores con estado = 'inactivo'.
+  Permite reactivar y ver historial de membresías de cada uno.
+
+  ── productos.html ────────────────────────────────────────────────────────────
+
+  CRUD de productos. El admin puede gestionar productos de CUALQUIER vendedor.
+
+  Filtros: por vendedor, por categoría.
+  Campos del producto: nombre, valor, descripción, recomendación,
+                       beneficios (JSON o texto), categoría, imagen.
+  Toggle activo/inactivo por producto.
+  Carga de imagen con preview antes de guardar.
+
+  ── categorias.html ───────────────────────────────────────────────────────────
+
+  CRUD de categorías del catálogo.
+  Campos: nombre, orden (entero, determina el orden de aparición).
+  Al eliminar, verifica que no haya productos asociados.
+
+  ── membresias.html ───────────────────────────────────────────────────────────
+
+  Gestión del ciclo de vida de membresías.
+
+  Crear membresía manual:
+    → Selecciona vendedor, plan (opcional), fecha_inicio, fecha_fin, estado.
+    → Agrega notas internas.
+
+  Editar membresía:
+    → Modifica cualquier campo incluyendo wompi_tx_id.
+    → Al cambiar a 'activa' → activa todos los productos del vendedor.
+    → Al cambiar a 'vencida'/'cancelada' → desactiva todos los productos.
+
+  Campos visibles:
+    vendedor, plan, fecha_inicio, fecha_fin, estado, notas, wompi_tx_id
+
+  ── publicidad.html ───────────────────────────────────────────────────────────
+
+  CRUD de campañas publicitarias tipo banner.
+
+  Crear campaña:
+    → titulo, imagen_url, url_destino, fecha_inicio, fecha_fin, limite_diario.
+    → estado inicial: activa.
+
+  Estados posibles:
+    activa        → visible en el sitio
+    inactiva      → oculta manualmente
+    pausada       → oculta manualmente
+    pausada_auto  → el sistema la pausó por alcanzar el límite diario
+
+  Vista de impresiones:
+    → Columna "_hoy_count" muestra cuántas impresiones lleva el día actual.
+    → JOIN a tabla publicidad_impresiones por fecha = hoy.
+
+  ── foro-admin.html ───────────────────────────────────────────────────────────
+
+  Panel de moderación del foro comunitario.
+  El admin puede ver TODOS los hilos y respuestas.
+  Puede eliminar hilos o respuestas inapropiadas.
+
+  ── api-claves.html ───────────────────────────────────────────────────────────
+
+  CRUD para claves de APIs externas (principalmente OpenRouter).
+
+  Campos:
+    servicio     → identificador del servicio (ej: "openrouter")
+    nombre       → nombre descriptivo
+    origen_url   → URL del servicio (referencia)
+    clave        → API key (se muestra censurada en la UI)
+    modelos      → JSON con array de modelos disponibles
+    activo       → 0/1
+    nota         → observaciones internas
+
+  Las claves activas son consumidas por user/backend/api_config.php
+  para el módulo Spotlight del portal vendedor.
+
+  ── perfil.html ───────────────────────────────────────────────────────────────
+
+  Permite al administrador cambiar su correo y contraseña de acceso.
+  Verifica la contraseña actual antes de permitir el cambio.
+
+  ── manual-admin.html ────────────────────────────────────────────────────────
+
+  Manual de usuario del panel de administración (HTML estático).
+  Describe el uso de cada sección del panel.
+
+
+--------------------------------------------------------------------------------
+5. BACKEND PHP — admin/backend/
+--------------------------------------------------------------------------------
+
+  PATRÓN COMÚN (todos los archivos):
+    1. session_start()
+    2. Verificar token CSRF (hash_equals + expiración)
+    3. require_once ../../backend/conexion.php
+    4. $pdo = __Conectar()
+    5. Definir ok() y error_respuesta() como helpers never-return
+    6. Router de acciones por $_GET['accion'] o $_POST['accion']
+
+  ── login.php ─────────────────────────────────────────────────────────────────
+
+  Funciones:
+    verificar_token()           Valida CSRF del POST
+    leer_campos()               Extrae correo + password
+    buscar_usuario($pdo,$email) SELECT en usuarios WHERE correo = ?
+    validar_usuario($u,$pass)   password_verify + activo + rol === 1
+    crear_sesion($usuario)      $_SESSION[usuario_id, correo, rol]
+
+  ── vendedores.php ────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener          Lista todos los vendedores (sin filtro estado)
+    POST accion=crear            Transacción: INSERT usuarios + INSERT vendedores
+    POST accion=actualizar       UPDATE vendedores + opcional UPDATE usuarios pass
+    POST accion=eliminar         Elimina vendedor, inactiva usuario
+    POST accion=cambiar_estado   UPDATE estado WHERE id = ?
+
+  La creación usa beginTransaction() para garantizar que si falla
+  la inserción en vendedores, se revierte la inserción en usuarios.
+
+  ── productos.php ─────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener           Todos los productos con JOIN a vendedores
+    GET  accion=listar            SELECT * FROM productos (sin JOIN)
+    GET  accion=obtener_categorias Para poblar selects en el frontend
+    POST accion=crear             INSERT con imagen opcional
+    POST accion=actualizar        UPDATE, imagen solo si se sube una nueva
+    POST accion=eliminar          DELETE WHERE id = ?
+    POST accion=toggle_activo     UPDATE activo = NOT activo WHERE id = ?
+
+  No verifica vendedor_id en sesión (el admin opera sobre todos los productos).
+
+  ── categorias.php ────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener    SELECT id, nombre, orden
+    POST accion=crear      INSERT (nombre, orden)
+    POST accion=actualizar UPDATE (nombre, orden) WHERE id = ?
+    POST accion=eliminar   DELETE WHERE id = ? (verifica integridad referencial)
+
+  ── membresias.php ────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener    JOIN a vendedores y planes_membresia, ORDER BY creado_en DESC
+    POST accion=crear      INSERT con fechas, plan_id (nullable), estado, notas
+    POST accion=actualizar UPDATE + sincroniza productos según nuevo estado
+    POST accion=eliminar   DELETE WHERE id = ?
+
+  Validaciones en crear/actualizar:
+    - fecha_fin debe ser >= fecha_inicio
+    - estado debe ser: activa | vencida | cancelada
+
+  ── publicidad.php ────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener    SELECT con LEFT JOIN a publicidad_impresiones (hoy)
+    POST accion=crear      INSERT campaña
+    POST accion=actualizar UPDATE campaña
+    POST accion=eliminar   DELETE WHERE id = ?
+    POST accion=impresion  Incrementa contador diario; si alcanza limite_diario
+                           actualiza estado a 'pausada_auto'
+
+  Función obtener_Publicidades($conn):
+    Usa $hoy = date('Y-m-d') para filtrar impresiones del día actual.
+    JOIN con COALESCE para mostrar 0 cuando no hay registros de hoy.
+
+  ── api-claves.php ────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener    Lista todas las claves (incluye clave completa)
+    POST accion=crear      INSERT con todos los campos
+    POST accion=actualizar UPDATE WHERE id = ?
+    POST accion=eliminar   DELETE WHERE id = ?
+    POST accion=toggle     UPDATE activo = NOT activo WHERE id = ?
+
+  Campos requeridos en crear: servicio*, nombre*, clave*
+  Campos opcionales: origen_url, modelos (JSON), nota
+
+  ── wip.php ───────────────────────────────────────────────────────────────────
+
+  Gestiona la tabla wpis (claves Wompi). Solo existe UN registro.
+
+  Acciones:
+    GET  accion=obtener    SELECT id, public, privada, eventos, integridad LIMIT 1
+    POST accion=guardar    UPSERT:
+                             Si no existe registro → INSERT
+                             Si ya existe → UPDATE WHERE id = <primer_id>
+
+  Campos: public*, privada*, eventos*, integridad*
+  La llave privada (prv_...) NUNCA debe ser expuesta en el frontend.
+
+  ── wompi_config.php ──────────────────────────────────────────────────────────
+
+  NOTA: Este archivo está en admin/backend/ pero también verifica rol 2.
+  Sirve las claves de Wompi al frontend del VENDEDOR para procesar pagos.
+
+  Verificación adicional: $_SESSION['rol'] !== 2 → HTTP 401
+
+  Genera firma de integridad:
+    hash_hmac('sha256',
+      referencia + monto_en_centavos + moneda + clave_integridad
+    )
+
+  Devuelve: { ok, datos: { public, firma, referencia } }
+  NUNCA devuelve la llave privada.
+
+  ── foro.php ──────────────────────────────────────────────────────────────────
+
+  Panel de moderación. Solo lectura de hilos + respuestas, con opción
+  de eliminar cualquier contenido independientemente del autor.
+
+  Acciones:
+    GET  accion=obtener_hilos       Lista todos los hilos
+    GET  accion=obtener_respuestas  Respuestas de un hilo por hilo_id
+    POST accion=eliminar_hilo       DELETE foro_hilos + sus respuestas
+    POST accion=eliminar_respuesta  DELETE foro_respuestas WHERE id = ?
+
+  ── fundadores.php ────────────────────────────────────────────────────────────
+
+  Gestiona la categoría especial de vendedores "fundadores".
+  Los fundadores tienen precio de membresía especial (menor al normal).
+  Permite marcar/desmarcar un vendedor como fundador.
+
+  ── planes.php ────────────────────────────────────────────────────────────────
+
+  CRUD de la tabla planes_membresia.
+  Campos: nombre, precio, duracion_dias, beneficios (JSON), activo.
+
+
+--------------------------------------------------------------------------------
+6. JAVASCRIPT — admin/js/
+--------------------------------------------------------------------------------
+
+  PATRÓN COMÚN (todos los archivos con llamadas al backend):
+    1. let _token = null
+    2. async getToken() → fetch /../../backend/tokens.php, cachea en _token
+    3. async apiGet/apiPost(endpoint, datos) → incluye token en cada request
+    4. credentials: 'include' en todos los fetch
+
+  ── dashboard.js ──────────────────────────────────────────────────────────────
+
+  Funciones:
+    badgeEstado(estado)   Retorna HTML de badge coloreado según estado
+    getToken()            Cache del token CSRF
+    apiGet(endpoint)      fetch con token a ../backend/<endpoint>
+    cargarDatos()         Promise.all con 4 peticiones paralelas
+    fechaHoy()            Fecha en español para el encabezado
+
+  Estadísticas calculadas en el cliente:
+    vendedores.filter(v => v.estado === 'activo').length
+    membresias.filter(m => m.estado === 'activa' && m.fecha_fin >= hoyStr).length
+    productos.filter(p => p.activo).length
+    categorias.length
+
+  ── vendedores.js ─────────────────────────────────────────────────────────────
+
+  El módulo más completo del panel admin.
+
+  Funcionalidades:
+    - Tabla con todos los vendedores + búsqueda en tiempo real
+    - Modal de creación con validación de campos requeridos
+    - Modal de edición (carga datos actuales del vendedor)
+    - Upload de foto de perfil: FileReader → preview → POST como FormData
+    - Selector de color HTML5 con preview en tiempo real
+    - Campos de redes sociales (Instagram, Facebook, TikTok, etc.)
+    - Botón de cambio de estado (activo/inactivo) por fila
+    - Botón de eliminación con confirm()
+
+  ── membresias.js ─────────────────────────────────────────────────────────────
+
+  Muestra la relación vendedor ↔ membresía.
+  Carga vendedores y planes en selects del formulario de creación.
+  Calcula y muestra días restantes para cada membresía activa.
+  Al guardar, recarga la tabla completa para reflejar cambios.
+
+  ── publicidad.js ─────────────────────────────────────────────────────────────
+
+  CRUD con columna de impresiones del día actual.
+  Preview de imagen del banner por URL.
+  Permite pausar/reactivar manualmente con un botón de toggle.
+  Muestra badge del estado actual (activa/pausada/inactiva/pausada_auto).
+
+  ── catalogo.js ───────────────────────────────────────────────────────────────
+
+  Vista del catálogo completo para revisión del admin.
+  Filtros: por vendedor, por categoría, por nombre.
+  Muestra datos adicionales: estado del producto, estado del vendedor.
+
+  ── categorias.js ─────────────────────────────────────────────────────────────
+
+  CRUD simple. Input inline para crear/editar.
+  Campos: nombre (texto) + orden (número).
+  Actualiza la lista tras cada operación.
+
+  ── api-claves.js ─────────────────────────────────────────────────────────────
+
+  Tabla de claves con clave censurada en la vista (muestra primeros 8 chars + ...).
+  Modal de edición con campo de modelos (JSON array de strings).
+  Toggle de estado activo/inactivo por fila.
+
+  ── wip.js ────────────────────────────────────────────────────────────────────
+
+  Formulario de 4 campos para ingresar las claves Wompi.
+  Al cargar la página, hace GET para pre-rellenar si ya existen claves guardadas.
+  Al guardar, hace POST accion=guardar (UPSERT en el servidor).
+
+  ── perfil.js ─────────────────────────────────────────────────────────────────
+
+  Carga datos actuales del admin (correo).
+  Formulario para cambiar correo y/o contraseña.
+  Verifica contraseña actual antes de permitir el cambio.
+
+  ── ui.js ─────────────────────────────────────────────────────────────────────
+
+  Utilidades compartidas de UI:
+    mostrarSpinner(el)    Inserta spinner en un elemento
+    ocultarSpinner(el)    Quita el spinner
+    formatoPrecio(n)      Formatea número como '$X.XXX' en locale es-CO
+    generarBadge(texto, color)   Retorna HTML de badge
+    confirmar(msg)        Wrapper de confirm() del navegador
+
+
+================================================================================
+  GI Store Admin © 2026 — gistore.com.co
+================================================================================

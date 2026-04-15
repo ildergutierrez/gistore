@@ -1,0 +1,759 @@
+================================================================================
+  GI STORE — DOCUMENTACIÓN MÓDULO USER
+  Portal del Vendedor · Backend · JS · HTML
+  Abril 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+1. DESCRIPCIÓN
+--------------------------------------------------------------------------------
+
+El módulo user (gistore/user/) es el portal de autogestión para los vendedores
+registrados. Permite administrar la tienda virtual de forma autónoma:
+perfil, productos, membresía, videos publicitarios, contenido de IA y foro.
+
+  Acceso    : user/acceso.html (login público del vendedor)
+  Rol       : Requiere rol = 2 en la tabla usuarios.
+  Sesión    : PHP Session. Verificada por auth.js en todas las páginas.
+
+  Funcionalidades especiales:
+    → Generación de texto publicitario con IA (OpenRouter)
+    → Creación de videos con FFmpeg WASM (en el navegador, sin servidor)
+    → Banco de música royalty-free (SoundHelix / Jamendo)
+    → Editor visual de imágenes para marketing
+    → Recuperación de contraseña por correo (código 6 dígitos)
+
+
+--------------------------------------------------------------------------------
+2. ESTRUCTURA DE CARPETAS — user/
+--------------------------------------------------------------------------------
+
+user/
+├── acceso.html                 ← Formulario de login del vendedor
+├── index.html                  ← Layout principal con sidebar de navegación
+├── htaccess                    ← Configuración Apache del módulo
+│
+├── css/
+│   ├── style.css               ← Estilos del portal del vendedor
+│   ├── audios-banco.css        ← Estilos del banco de audios
+│   └── videos.css              ← Estilos del editor de videos
+│
+├── js/
+│   ├── auth.js                 ← Guardia de sesión vendedor
+│   ├── login.js                ← Lógica del formulario de login
+│   ├── dashboard.js            ← Dashboard del vendedor
+│   ├── perfil.js               ← Edición del perfil de tienda
+│   ├── productos.js            ← CRUD de productos propios
+│   ├── catalogo.js             ← Vista del catálogo personal
+│   ├── membresia.js            ← Gestión de membresía y pagos Wompi
+│   ├── spotlight.js            ← Generación de contenido con IA
+│   ├── editor.js               ← Editor visual de imágenes
+│   ├── videos.js               ← Creación de videos publicitarios (~64KB)
+│   ├── audios-banco.js         ← Banco de música royalty-free
+│   ├── foro-vendedor.js        ← Participación en el foro
+│   └── ui.js                   ← Utilidades de UI compartidas
+│
+├── backend/
+│   ├── login.php               ← Autenticación del vendedor
+│   ├── perfil.php              ← CRUD del perfil
+│   ├── productos.php           ← CRUD de productos propios
+│   ├── categorias.php          ← Lectura de categorías (solo lectura)
+│   ├── membresias.php          ← Estado y renovación de membresía
+│   ├── vendedor.php            ← Info básica del vendedor en sesión
+│   ├── videos.php              ← Imágenes de productos para el editor de video
+│   ├── audios.php              ← Banco de música (SoundHelix / Jamendo)
+│   ├── foro.php                ← Publicar y leer en el foro
+│   ├── recuperar.php           ← Recuperación de contraseña por correo
+│   ├── api_config.php          ← Config de IA (OpenRouter) para Spotlight
+│   ├── wompi_config.php        ← Claves Wompi para pagos
+│   ├── convertir_video.php     ← Procesamiento de video server-side (respaldo)
+│   └── diagnostico_ffmpeg.php  ← Diagnóstico de FFmpeg en el servidor
+│
+├── pages/
+│   ├── dashboard.html          ← Dashboard del vendedor
+│   ├── perfil.html             ← Edición del perfil de tienda
+│   ├── productos.html          ← Gestión de productos
+│   ├── catalogo.html           ← Vista del catálogo personal
+│   ├── membresia.html          ← Membresía y pagos
+│   ├── spotlight.html          ← Generador de contenido con IA
+│   ├── editor.html             ← Editor visual de imágenes
+│   ├── videos.html             ← Editor de videos publicitarios
+│   ├── foro.html               ← Foro del vendedor
+│   ├── pago-resultado.html     ← Página de resultado de pago Wompi
+│   ├── manual-vendedor.html    ← Manual de uso del portal
+│   ├── terminos.html           ← Términos y condiciones
+│   └── politicas.html          ← Política de privacidad
+│
+├── recuperar/
+│   ├── index.html              ← Formulario de recuperación de contraseña
+│   └── recuperar.js            ← Lógica de los 3 pasos de recuperación
+│
+└── libs/
+    └── ffmpeg-wasm/            ← FFmpeg compilado para WebAssembly
+        ├── ffmpeg.js           ← Entrypoint de la librería
+        ├── ffmpeg-core.js      ← Core de FFmpeg
+        ├── ffmpeg-core.wasm    ← Binario WASM (~32MB)
+        └── 814.ffmpeg.js       ← Chunk adicional
+
+
+--------------------------------------------------------------------------------
+3. AUTENTICACIÓN — acceso.html + login.php
+--------------------------------------------------------------------------------
+
+  FLUJO DE LOGIN:
+    1. login.js solicita token CSRF → GET /backend/tokens.php
+    2. Vendedor completa formulario (correo + contraseña)
+    3. POST a user/backend/login.php con { correo, password, token }
+    4. login.php ejecuta:
+         verificar_token()       → valida CSRF
+         leer_campos()           → extrae y sanitiza correo + password
+         buscar_usuario($pdo)    → SELECT en usuarios WHERE correo = ?
+         validar_usuario()       → password_verify() + activo + rol === 2
+         crear_sesion()          → guarda usuario_id, correo, rol en $_SESSION
+    5. Éxito: JS redirige a pages/dashboard.html
+
+  DIFERENCIA VS ADMIN:
+    validar_usuario() verifica rol === 2 (no 1).
+    Un administrador NO puede entrar al portal de vendedor con sus credenciales.
+    El error es genérico: "No tienes permisos." (sin revelar el rol esperado).
+
+  auth.js (guardia de sesión):
+    - Incluido en TODAS las páginas del portal.
+    - Llama a: /backend/sesion.php?accion=verificar&ac=user
+    - Si la sesión no es válida → redirige a ../index.html
+    - Si el rol es 1 (admin intentando entrar) → también redirige
+    - Gestiona el botón #btnSalir → llama a /backend/cerrar.php
+
+
+--------------------------------------------------------------------------------
+4. RECUPERACIÓN DE CONTRASEÑA — user/recuperar/
+--------------------------------------------------------------------------------
+
+  Flujo de 3 pasos en user/backend/recuperar.php:
+
+  PASO 1 — solicitar:
+    POST { correo }
+    → Busca el correo en la tabla usuarios (rol 2)
+    → Genera código de 6 dígitos aleatorio
+    → Guarda en tabla recuperar: { correo, token: codigo, creado_en: NOW() }
+    → Envía correo con PHPMailer:
+        Asunto: "Código de recuperación GI Store"
+        Correo del destinatario enmascarado: "jo***@gmail.com"
+    → Responde con el correo enmascarado (para mostrar al usuario dónde buscar)
+
+  PASO 2 — verificar:
+    POST { correo, codigo }
+    → Busca registro en recuperar WHERE correo = ? AND token = ?
+    → Verifica que no hayan pasado más de 30 minutos (1800 seg)
+    → Si es válido: guarda $_SESSION['recuperar_correo'] = correo
+    → Elimina el registro de la tabla recuperar
+    → Responde { ok: true }
+
+  PASO 3 — cambiar:
+    POST { nueva_password }
+    → Verifica $_SESSION['recuperar_correo'] existe (sesión temporal)
+    → Valida que la nueva contraseña tenga al menos 6 caracteres
+    → UPDATE usuarios SET password_hash = password_hash(nueva_pass)
+    → Limpia $_SESSION['recuperar_correo']
+    → Responde { ok: true }
+
+  NOTA: Este flujo NO verifica token CSRF porque el usuario no tiene sesión activa.
+
+
+--------------------------------------------------------------------------------
+5. PÁGINAS HTML — user/pages/
+--------------------------------------------------------------------------------
+
+  ── dashboard.html ────────────────────────────────────────────────────────────
+
+  Vista de inicio del portal. Muestra:
+    - Bienvenida con el nombre de la tienda
+    - Fecha actual en español (es-ES)
+    - Panel de membresía:
+        · Estado actual (activa / vencida / próxima a vencer)
+        · Plan contratado y nombre del plan
+        · Fecha de vencimiento
+        · Días restantes (badge coloreado)
+    - Estadísticas de productos:
+        · statProductos  → total de productos del vendedor
+        · statActivos    → productos con activo = 1
+        · statInactivos  → productos con activo = 0
+    - Botón de renovación visible si membresía está vencida o <= 7 días
+
+  Carga con: Promise.all([membresias.php, productos.php?stats, vendedor.php])
+
+  ── perfil.html ───────────────────────────────────────────────────────────────
+
+  Formulario de edición del perfil público de la tienda.
+
+  Campos editables:
+    nombre         → nombre de la tienda (aparece en catálogo público)
+    ciudad         → ciudad o municipio
+    correo         → correo de contacto público
+    whatsapp       → número con código de país (ej: 573001234567)
+    descripcion    → descripción de la tienda
+    color          → color de marca (selector HTML5 + preview)
+    url_web        → sitio web externo (opcional)
+    redes          → JSON de redes sociales
+    perfil (foto)  → imagen de perfil de la tienda
+
+  Sección de contraseña (separada):
+    Requiere contraseña actual + nueva contraseña + confirmar nueva.
+
+  ── productos.html ────────────────────────────────────────────────────────────
+
+  CRUD de productos del PROPIO vendedor.
+
+  RESTRICCIÓN CRÍTICA:
+    El vendedor_id se obtiene SIEMPRE del servidor (de la sesión PHP).
+    El cliente NUNCA puede indicar qué vendedor_id usar.
+
+  Campos del producto:
+    nombre*, valor*, descripcion, recomendacion,
+    beneficios (JSON o texto separado por saltos de línea),
+    categoria_id, imagen
+
+  Toggle activo/inactivo:
+    Solo funciona si la membresía está activa.
+    Si no hay membresía, los productos se desactivan automáticamente.
+
+  ADVERTENCIA mostrada en la UI:
+    Si el vendedor no tiene membresía activa, se muestra aviso de que
+    sus productos no son visibles en el catálogo público.
+
+  ── catalogo.html ─────────────────────────────────────────────────────────────
+
+  Vista del catálogo personal del vendedor.
+  Similar al catálogo público pero solo muestra sus productos.
+  Útil para verificar cómo se ve la tienda desde el punto de vista del cliente.
+
+  ── membresia.html ────────────────────────────────────────────────────────────
+
+  Portal de autogestión de la membresía. La página más compleja del módulo.
+
+  Secciones:
+    1. Estado actual de la membresía:
+         → Si está activa: muestra plan, fecha de vencimiento, días restantes
+         → Si está vencida: muestra aviso y botón de renovar
+         → Si no existe: muestra formulario de primera compra
+
+    2. Precios disponibles:
+         → Precio fundador (especial): $15.000 COP
+         → Precio normal:              $25.000 COP
+         → Se determina la condición de fundador en el servidor
+
+    3. Widget de pagos Wompi:
+         → Carga la llave pública desde wompi_config.php
+         → Genera firma de integridad SHA256 en el servidor
+         → Inicializa el checkout de Wompi en el frontend
+
+    4. Verificación del pago:
+         → Después de la redirección de Wompi, llama a:
+           membresias.php?accion=verificar_pago&wompi_tx_id=<id>
+         → Si el pago está aprobado: crea/renueva membresía en BD
+         → Activa automáticamente todos los productos del vendedor
+
+  ── spotlight.html ────────────────────────────────────────────────────────────
+
+  Módulo de generación de texto publicitario con IA.
+
+  Flujo:
+    1. Se carga la lista de productos y categorías del vendedor
+    2. Vendedor selecciona un producto de la lista
+    3. Se muestran los datos del producto: imagen, nombre, precio,
+       descripción, beneficios, recomendación, categoría
+    4. Vendedor presiona "Generar contenido"
+    5. spotlight.js obtiene la API key de api_config.php
+    6. Hace petición a OpenRouter API con el modelo configurado
+    7. Si el modelo falla → intenta con el siguiente (fallback automático)
+    8. El texto generado aparece en el editor WYSIWYG
+    9. Vendedor puede editar, exportar o enviar al editor de diseño
+
+  Modelos con fallback (configurados en admin → API Claves):
+    Los modelos se listan en orden; si el primero falla (error o timeout),
+    se intenta con el siguiente de la lista automáticamente.
+
+  ── editor.html ───────────────────────────────────────────────────────────────
+
+  Editor visual para crear material publicitario.
+
+  Capacidades:
+    - Cargar imágenes de productos como fondo o elemento
+    - Agregar texto superpuesto con estilos
+    - Cambiar fondo (color o imagen)
+    - Mover y redimensionar elementos
+    - Exportar el diseño como imagen (PNG/JPG)
+
+  Integración con Spotlight:
+    El botón "Diseñar" en spotlight.html envía el texto generado
+    directamente al editor para usarlo como copia publicitaria.
+
+  ── videos.html ───────────────────────────────────────────────────────────────
+
+  Editor de videos publicitarios. Funciona 100% en el navegador (sin servidor).
+
+  Flujo de creación:
+    1. Carga imágenes de productos activos desde videos.php
+    2. Vendedor selecciona las imágenes para el video (slides)
+    3. Elige música del banco de audios (audios-banco.js)
+    4. Configura duración de cada slide y transiciones
+    5. Presiona "Crear video"
+    6. videos.js carga FFmpeg WASM (ffmpeg-core.wasm, ~32MB, carga asíncrona)
+    7. FFmpeg procesa las imágenes como frames a la música seleccionada
+    8. Genera un archivo MP4 disponible para descargar
+
+  NOTA:
+    La carga inicial de FFmpeg WASM puede tardar varios segundos.
+    El procesamiento se ejecuta en el hilo del navegador (puede congelar
+    la UI brevemente en dispositivos lentos).
+    convertir_video.php existe como respaldo para procesamiento server-side.
+
+  ── foro.html ─────────────────────────────────────────────────────────────────
+
+  Foro comunitario desde el portal del vendedor.
+
+  Funcionalidades:
+    - Ver todos los hilos con autor, fecha y cantidad de respuestas
+    - Crear nuevo hilo (título + contenido)
+    - Ver respuestas de un hilo
+    - Responder en un hilo
+    - Eliminar propios hilos (no los de otros)
+
+  Las publicaciones se identifican con el nombre y color de marca del vendedor.
+
+  ── pago-resultado.html ───────────────────────────────────────────────────────
+
+  Página a la que redirige Wompi después del pago.
+  Lee los parámetros de la URL que envía Wompi (id, status, reference).
+  Llama a membresias.php?accion=verificar_pago para confirmar en BD.
+  Muestra mensaje de éxito o error al vendedor.
+
+  ── manual-vendedor.html ──────────────────────────────────────────────────────
+
+  Manual completo de uso del portal del vendedor (HTML estático).
+  Explica cada sección del portal con instrucciones paso a paso.
+
+
+--------------------------------------------------------------------------------
+6. BACKEND PHP — user/backend/
+--------------------------------------------------------------------------------
+
+  PATRÓN COMÚN (todos los archivos privados):
+    1. session_start()
+    2. Verificar sesión: $_SESSION['usuario_id'] y $_SESSION['rol'] === 2
+       → Si falla: HTTP 401 + { ok: false, error: 'No autenticado.' }
+    3. Verificar token CSRF (hash_equals + expiración)
+    4. Obtener vendedor_id desde la sesión:
+         SELECT id FROM vendedores WHERE usuario_id = $_SESSION['usuario_id']
+    5. require_once ../../backend/conexion.php
+    6. $pdo = __Conectar()
+    7. Router de acciones
+
+  ── login.php ─────────────────────────────────────────────────────────────────
+
+  Igual a admin/backend/login.php pero valida rol === 2.
+  Funciones idénticas: verificar_token, leer_campos, buscar_usuario,
+                       validar_usuario, crear_sesion.
+
+  ── perfil.php ────────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener           Lee perfil + membresía activa + plan
+                                  JOIN vendedores + membresias + planes_membresia
+    POST accion=actualizar        UPDATE vendedores SET nombre, ciudad, correo,
+                                  whatsapp, descripcion, color, url_web, redes
+    POST accion=actualizar_foto   Upload de imagen:
+                                    - Valida MIME real (getimagesize)
+                                    - Tamaño máximo: 5MB
+                                    - Guarda en img/productos/<vendedor_id>/
+                                    - UPDATE vendedores SET perfil = ruta
+    POST accion=cambiar_password  Verifica contraseña actual con password_verify
+                                  UPDATE usuarios SET password_hash = nuevo_hash
+
+  Función obtener_vendedor_id($pdo, $usuario_id):
+    SELECT id FROM vendedores WHERE usuario_id = ? LIMIT 1
+    Si no existe → HTTP 404 + { ok: false, error: 'Vendedor no encontrado.' }
+
+  ── productos.php ─────────────────────────────────────────────────────────────
+
+  AISLAMIENTO: vendedor_id siempre del servidor, nunca del cliente.
+
+  Acciones:
+    GET  accion=obtener           SELECT con JOIN a categorías WHERE vendedor_id = ?
+    POST accion=crear             INSERT producto
+                                    · Si tiene membresía activa → activo = 1
+                                    · Si no → activo = 0
+    POST accion=actualizar        UPDATE WHERE id = ? AND vendedor_id = ?
+                                    · Verificación doble de propiedad
+    POST accion=eliminar          DELETE WHERE id = ? AND vendedor_id = ?
+    POST accion=toggle_activo     UPDATE activo = 1-activo WHERE id = ? AND vendedor_id = ?
+    GET  accion=obtener_categorias SELECT id, nombre FROM categorias (para selects)
+
+  ── membresias.php ────────────────────────────────────────────────────────────
+
+  La lógica de negocio más crítica del módulo user.
+
+  Función sincronizarProductosConMembresia($pdo, $vendedor_id):
+    → Busca membresía activa Y vigente (fecha_fin >= NOW())
+    → Si tiene:  UPDATE productos SET activo = 1 WHERE vendedor_id = ? AND activo = 0
+    → Si NO tiene:
+        UPDATE productos SET activo = 0 WHERE vendedor_id = ? AND activo = 1
+        UPDATE membresias SET estado = 'vencida' WHERE vendedor_id = ?
+          AND estado = 'activa' AND fecha_fin < NOW()
+
+  Acciones:
+    GET  accion=obtener           Membresía activa + info fundador + planes
+    GET  accion=verificar_pago    Consulta Wompi con wompi_tx_id:
+                                    · Si approved → crea/renueva membresía
+                                    · Llama sincronizarProductosConMembresia()
+    GET  accion=planes            Lista todos los planes activos
+
+  ── vendedor.php ──────────────────────────────────────────────────────────────
+
+  Endpoint de solo lectura.
+  Retorna: { ok, id, nombre, color } del vendedor en sesión.
+  Usado por dashboard.js para mostrar el nombre de bienvenida.
+
+  ── videos.php ────────────────────────────────────────────────────────────────
+
+  Acción única: accion=imagenes (default)
+  SELECT id, nombre, imagen FROM productos
+    WHERE vendedor_id = ? AND activo = 1
+    AND imagen IS NOT NULL AND imagen != ''
+    ORDER BY nombre ASC
+
+  Para cada imagen construye URL absoluta:
+    · Si empieza con http/https → usa tal cual (Cloudinary, etc.)
+    · Si contiene 'img/'        → construye URL del dominio actual
+    · Otra ruta relativa        → limpia '../' y construye URL del dominio
+
+  Devuelve: [{ id, nombre, url }]
+
+  ── audios.php ────────────────────────────────────────────────────────────────
+
+  Banco de música royalty-free. Dos modos de operación:
+
+  MODO LOCAL (USE_JAMENDO = false, por defecto):
+    Catálogo curado de 18 pistas via SoundHelix (MP3 públicos, sin key).
+    Géneros: corporate, electronic, ambient, pop, jazz, latin,
+             motivational, rock, classical, hip-hop.
+    Campos: id, titulo, genero, mood, duracion, url, url_page, autor
+
+  MODO JAMENDO (USE_JAMENDO = true):
+    Requiere JAMENDO_KEY (gratis en developer.jamendo.com).
+    Busca en la API de Jamendo con parámetros: q, genre, mood.
+    Mapea la respuesta de Jamendo al mismo formato que el catálogo local.
+
+  Acciones:
+    GET accion=buscar    Filtra por q (texto), genero, mood, con paginación
+    GET accion=detalle   Un track específico por id
+
+  ── api_config.php ────────────────────────────────────────────────────────────
+
+  Devuelve la configuración de la API de IA para el módulo Spotlight.
+
+  SELECT * FROM api_claves WHERE activo = 1 LIMIT 1
+
+  Respuesta: { ok, datos: { servicio, nombre, clave, modelos, origen_url } }
+  La clave de OpenRouter se expone al frontend (necesaria para llamadas
+  directas desde el cliente). Está restringida a sesiones con rol 2.
+
+  ── recuperar.php ─────────────────────────────────────────────────────────────
+
+  (Ver sección 4 de este documento para el flujo completo)
+
+  PHPMailer config:
+    Host      : mail.gistore.com.co
+    Puerto    : 465 (SMTPS)
+    Remitente : notificaciones@gistore.com.co
+    Timeout   : 15 segundos
+
+  ── foro.php ──────────────────────────────────────────────────────────────────
+
+  Acciones:
+    GET  accion=obtener_hilos       JOIN usuarios + vendedores para mostrar
+                                    nombre del autor y color de marca
+    GET  accion=obtener_respuestas  WHERE hilo_id = ? con datos del autor
+    POST accion=crear_hilo          INSERT foro_hilos
+    POST accion=crear_respuesta     INSERT foro_respuestas
+    POST accion=eliminar_hilo       DELETE WHERE id = ? AND usuario_id = ?
+                                    (solo puede eliminar los propios)
+
+  ── wompi_config.php ──────────────────────────────────────────────────────────
+
+  Lee claves de la tabla wpis.
+  Genera firma de integridad para la transacción:
+    $firma = hash_hmac('sha256',
+      $referencia . $monto_centavos . $moneda . $clave_integridad
+    );
+
+  Devuelve: { ok, datos: { public, firma, referencia } }
+  La llave privada (prv_...) NUNCA se devuelve al cliente.
+
+  ── diagnostico_ffmpeg.php ────────────────────────────────────────────────────
+
+  Endpoint de diagnóstico. Verifica si FFmpeg está disponible en el servidor
+  y muestra su versión. Usado durante el desarrollo para decidir si usar
+  procesamiento server-side vs WASM.
+
+
+--------------------------------------------------------------------------------
+7. JAVASCRIPT — user/js/
+--------------------------------------------------------------------------------
+
+  PATRÓN COMÚN (todos los archivos con llamadas al backend):
+    1. let _token = null
+    2. async getToken() → fetch ../../backend/tokens.php, cachea en _token
+    3. Todas las peticiones incluyen: credentials: 'include'
+    4. El token se pasa como parámetro GET o en FormData POST
+
+  ── auth.js ───────────────────────────────────────────────────────────────────
+
+  async VerificarSesion():
+    fetch /../backend/sesion.php?accion=verificar&ac=user
+    Si !data.ok O si rol === 1 → window.location.href = '../index.html'
+
+  cerrarSesion():
+    fetch ../../backend/cerrar.php
+    Si ok → window.location.href = '../index.html'
+
+  Evento: document.getElementById('btnSalir').addEventListener('click', cerrarSesion)
+  Se ejecuta VerificarSesion() al cargar la página.
+
+  ── dashboard.js ──────────────────────────────────────────────────────────────
+
+  Constantes:
+    PRECIO_FUNDADOR = 15000   COP
+    PRECIO_NORMAL   = 25000   COP
+
+  Funciones:
+    membresiaVigente(mem)    Verifica estado === 'activa' Y fecha_fin >= hoy
+    setStats(total,act,inact) Actualiza los 3 contadores del DOM
+    cargarNombreTienda(v)    Muestra "Bienvenido, <nombre>"
+
+  Fetch paralelos:
+    Promise.all([
+      membresias.php?accion=obtener,
+      productos.php?accion=stats,
+      vendedor.php?accion=obtener
+    ])
+
+  ── perfil.js ─────────────────────────────────────────────────────────────────
+
+  Al cargar: fetch perfil.php?accion=obtener → pre-rellena todos los campos.
+
+  Upload de foto:
+    input[type=file] → FileReader.readAsDataURL → preview en img
+    Al guardar → FormData con el archivo → POST perfil.php?accion=actualizar_foto
+
+  Selector de color:
+    input[type=color] → preview en tiempo real del avatar de la tienda
+    Muestra el color hex en un label actualizado dinámicamente.
+
+  Cambio de contraseña (sección separada):
+    Campos: password_actual, password_nueva, password_confirmar
+    Validación cliente: nueva === confirmar Y longitud >= 6
+    POST perfil.php?accion=cambiar_password
+
+  ── productos.js ──────────────────────────────────────────────────────────────
+
+  Al cargar: obtiene productos + categorías en paralelo.
+  Si no hay membresía activa: muestra banner de advertencia.
+
+  Modal de creación/edición:
+    Carga categorías en el select del formulario.
+    Upload de imagen con preview antes de guardar.
+    En edición: pre-rellena todos los campos del producto seleccionado.
+
+  Toggle activo/inactivo:
+    POST productos.php?accion=toggle_activo&id=N&token=...
+    Actualiza el estado del botón en la tabla sin recargar toda la lista.
+
+  ── membresia.js ──────────────────────────────────────────────────────────────
+
+  El JS más complejo del módulo user.
+
+  Al cargar:
+    1. Obtiene estado de membresía + info fundador de membresias.php
+    2. Obtiene claves Wompi de wompi_config.php
+    3. Renderiza el estado actual con badgeDias()
+
+  badgeDias(dias):
+    dias < 0   → rojo    "❌ Vencida"
+    dias <= 7  → amarillo "⚠️ N días restantes"
+    dias > 7   → verde   "✅ N días restantes"
+
+  Inicialización del widget Wompi:
+    WidgetCheckout.init({
+      currency: 'COP',
+      amountInCents: precio * 100,
+      reference: referencia,
+      publicKey: WOMPI_LLAVE_PUBLICA,
+      signature: { integrity: firma },
+      redirectUrl: <url del resultado>
+    })
+
+  diasAEtiqueta(dias):
+    365 días → "1 año"
+    30 días  → "1 mes"
+    7 días   → "1 semana"
+
+  ── spotlight.js ──────────────────────────────────────────────────────────────
+
+  Estado global:
+    productos       Lista de productos del vendedor
+    categorias      Mapa id → nombre
+    vendedor        Info del vendedor en sesión
+    productoActual  Producto seleccionado para generar contenido
+    _apiConfig      Config de IA (cargada desde api_config.php)
+
+  Flujo de generación:
+    1. Usuario selecciona producto → se pre-cargan todos sus datos en el formulario
+    2. btnGenerar.click → verifica _apiConfig → construye el prompt
+    3. Petición a: https://openrouter.ai/api/v1/chat/completions
+         modelo: _apiConfig.modelos[0] (primer modelo de la lista)
+         messages: [{ role: 'user', content: prompt_con_datos_del_producto }]
+    4. Si error/timeout → reintenta con _apiConfig.modelos[1], [2], etc.
+    5. Respuesta → inserta en el editor WYSIWYG (resultArea)
+
+  Botones:
+    btnGenerar    → genera nuevo contenido
+    btnRegenerar  → regenera con los mismos datos
+    btnExportar   → copia texto al portapapeles / descarga
+    btnDiseñar    → envía texto al editor.html (via sessionStorage o URL params)
+
+  ── videos.js ─────────────────────────────────────────────────────────────────
+
+  El archivo JS más grande del proyecto (~64KB).
+
+  Carga de FFmpeg WASM:
+    import { createFFmpeg, fetchFile } from './libs/ffmpeg-wasm/ffmpeg.js'
+    const ffmpeg = createFFmpeg({ log: true })
+    await ffmpeg.load()  ← carga ffmpeg-core.wasm (~32MB, puede tardar)
+
+  Flujo de video:
+    1. Carga imágenes de videos.php
+    2. Renderiza lista de imágenes seleccionables
+    3. Usuario selecciona música de audios-banco.js
+    4. Configura duración de slide (segundos) y tipo de transición
+    5. Al crear:
+         a. Para cada imagen: escribe en el FS virtual de FFmpeg
+         b. Construye el comando ffmpeg con inputs + filtros
+         c. Ejecuta ffmpeg.run(comando)
+         d. Lee el output del FS virtual
+         e. Crea Blob MP4 → URL.createObjectURL → botón de descarga
+
+  Muestra barra de progreso durante el procesamiento.
+
+  ── audios-banco.js ───────────────────────────────────────────────────────────
+
+  Al cargar: fetch audios.php?accion=buscar → renderiza lista de pistas.
+
+  Filtros en tiempo real:
+    → por género (select)
+    → por mood (select)
+    → por texto (input)
+
+  Preview de audio:
+    Al hacer clic en "Preview" → crea un <audio> temporal con la URL de la pista.
+    Solo una pista puede reproducirse a la vez.
+    Muestra botón de pausa mientras reproduce.
+
+  Selección:
+    Al hacer clic en "Usar" → guarda la pista seleccionada en una variable global
+    y notifica a videos.js para usar esa música en el video.
+
+  ── foro-vendedor.js ──────────────────────────────────────────────────────────
+
+  Carga hilos del foro con los nombres y colores de los autores.
+  Modal para crear nuevo hilo (título + contenido).
+  Al hacer clic en un hilo → carga sus respuestas en un panel lateral.
+  Input de respuesta + botón de enviar.
+  Botón de eliminación visible solo en los propios hilos del vendedor.
+
+  ── catalogo.js ───────────────────────────────────────────────────────────────
+
+  Funcionamiento idéntico al app.js del catálogo público pero usando
+  los endpoints de user/backend/ en lugar de php/.
+  Filtros: categoría, búsqueda por nombre.
+  Paginación de 20 productos por página.
+
+  ── editor.js ─────────────────────────────────────────────────────────────────
+
+  Editor de diseño basado en canvas o elemento posicionado.
+  Permite importar texto desde Spotlight (via sessionStorage).
+  Capas: fondo + imágenes + textos.
+  Exporta el diseño como imagen (toDataURL → descarga).
+
+  ── ui.js ─────────────────────────────────────────────────────────────────────
+
+  Funciones utilitarias compartidas:
+    mostrarToast(msg, tipo)    Notificación flotante (éxito/error/info)
+    mostrarModal(id)           Muestra un modal por ID
+    ocultarModal(id)           Oculta un modal
+    formatoPrecio(n)           '$X.XXX' en locale es-CO
+    formatFecha(str)           Fecha en español
+
+
+--------------------------------------------------------------------------------
+8. RELACIÓN MEMBRESÍA ↔ PRODUCTOS (LÓGICA DE NEGOCIO CRÍTICA)
+--------------------------------------------------------------------------------
+
+  Esta relación es la regla de negocio más importante del sistema.
+  Los productos de un vendedor solo son visibles en el catálogo público
+  cuando tiene una membresía activa y vigente.
+
+  ESTADO DE MEMBRESÍA           EFECTO EN PRODUCTOS
+  ─────────────────────────── ────────────────────────────────────────────────
+  activa + fecha_fin >= hoy   Todos los productos: activo = 1
+  vencida (fecha expirada)    Todos los productos: activo = 0
+                              La membresía se marca como 'vencida' en BD
+  cancelada                   Todos los productos: activo = 0
+  No existe                   Todos los productos: activo = 0
+  ─────────────────────────── ────────────────────────────────────────────────
+
+  La sincronización ocurre al llamar a:
+    sincronizarProductosConMembresia($pdo, $vendedor_id)
+
+  Esta función se invoca en:
+    → membresias.php al crear/actualizar una membresía
+    → Implícitamente al verificar el estado de membresía en el dashboard
+    → admin/backend/membresias.php al cambiar estado desde el panel admin
+
+
+--------------------------------------------------------------------------------
+9. LIBRERÍAS Y DEPENDENCIAS EXTERNAS
+--------------------------------------------------------------------------------
+
+  FFmpeg WASM
+    Ruta: user/libs/ffmpeg-wasm/
+    Tamaño: ~32MB (ffmpeg-core.wasm)
+    Uso: procesamiento de video en el navegador
+    Nota: se carga de forma asíncrona al abrir videos.html
+
+  OpenRouter API
+    URL: https://openrouter.ai/api/v1/chat/completions
+    Auth: Bearer <api_key> (clave desde tabla api_claves)
+    Uso: generación de texto en el módulo Spotlight
+    Fallback: lista de modelos en orden de prioridad
+
+  SoundHelix
+    URL: https://www.soundhelix.com/examples/mp3/
+    Uso: banco de música local (sin API key requerida)
+    18 pistas en géneros variados
+
+  Jamendo API (opcional)
+    URL: https://api.jamendo.com/v3.0/
+    Auth: client_id (gratis en developer.jamendo.com)
+    Uso: búsqueda de música (reemplaza SoundHelix en producción)
+    Activar: USE_JAMENDO = true en audios.php
+
+  Widget Wompi
+    CDN: cargado desde los servidores de Wompi
+    Uso: procesamiento de pagos de membresía
+    Requiere: llave pública + firma de integridad del servidor
+
+
+================================================================================
+  GI Store User © 2026 — gistore.com.co
+================================================================================

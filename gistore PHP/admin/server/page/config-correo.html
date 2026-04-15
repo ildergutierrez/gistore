@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuentas de Correo — GI Store Comunicaciones</title>
+    <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .cuenta-card {
+      background:var(--fondo-2); border:1.5px solid var(--borde); border-radius:var(--radio);
+      padding:1.25rem 1.5rem; box-shadow:var(--sombra); position:relative;
+      transition:box-shadow .2s;
+    }
+    .cuenta-card:hover { box-shadow:var(--sombra-md); }
+    .cuenta-card.principal { border-color:var(--verde); }
+    .tag-principal {
+      position:absolute; top:-10px; left:1.25rem;
+      background:var(--verde); color:#fff; font-size:.7rem; font-weight:700;
+      padding:.15rem .6rem; border-radius:20px; letter-spacing:.04em;
+    }
+    .paso { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; }
+    .paso-num {
+      width:32px; height:32px; border-radius:50%; background:var(--verde);
+      color:#fff; font-family:'Nunito',sans-serif; font-weight:800; font-size:.9rem;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.1rem;
+    }
+    .paso-body { flex:1; }
+    .paso-body h3 { font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700; color:var(--texto); margin-bottom:.25rem; }
+    .paso-body p { font-size:.84rem; color:var(--texto-suave); line-height:1.55; }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html" class="activo"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button id="btnSalir" class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>⚙️ Cuentas de correo</h1>
+      <p class="sub">Configuración SMTP para envío de correos con PHPMailer</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-primary" onclick="abrirNueva()">
+        <span class="material-symbols-outlined" style="font-size:1rem">add</span>Nueva cuenta
+      </button>
+    </div>
+  </div>
+
+  <!-- Cuentas activas -->
+  <div class="panel" style="animation-delay:.05s;margin-bottom:1.5rem">
+    <div class="panel-header"><h2>📧 Cuentas configuradas</h2></div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem" id="listaCuentas"></div>
+  </div>
+
+  <!-- Formulario agregar / editar -->
+  <div class="panel" id="formPanel" style="animation-delay:.1s;display:none;margin-bottom:1.5rem">
+    <div class="panel-header">
+      <h2 id="formTitulo">➕ Nueva cuenta SMTP</h2>
+      <button class="btn btn-secundario btn-sm" onclick="cerrarForm()">Cancelar</button>
+    </div>
+    <div class="panel-body">
+      <div id="formOk" class="msg-ok"><span class="material-symbols-outlined">check_circle</span> Cuenta guardada correctamente.</div>
+      <div id="formErr" class="msg-error"><span class="material-symbols-outlined">error</span> <span id="formErrTxt">Completa todos los campos.</span></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Nombre de la cuenta</label>
+          <input type="text" id="fNombre" placeholder="Ej: Correo principal GI Store"/>
+        </div>
+        <div class="campo">
+          <label>Correo remitente</label>
+          <input type="email" id="fEmail" placeholder="correo@gistore.com"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Nombre del remitente</label>
+          <input type="text" id="fRemitente" placeholder="GI Store"/>
+        </div>
+        <div class="campo">
+          <label>Proveedor SMTP</label>
+          <select id="fProveedor" onchange="cargarPreset()"
+            style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+            <option value="">— Seleccionar proveedor —</option>
+            <option value="gmail">Gmail (SMTP)</option>
+            <option value="outlook">Outlook / Hotmail</option>
+            <option value="yahoo">Yahoo Mail</option>
+            <option value="zoho">Zoho Mail</option>
+            <option value="sendgrid">SendGrid</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Host SMTP</label>
+          <input type="text" id="fHost" placeholder="smtp.gmail.com"/>
+        </div>
+        <div class="campo">
+          <label>Puerto</label>
+          <input type="number" id="fPuerto" placeholder="587"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="campo">
+          <label>Usuario SMTP</label>
+          <input type="text" id="fUsuario" placeholder="usuario@gmail.com"/>
+        </div>
+        <div class="campo">
+          <label>Contraseña / App password</label>
+          <div style="position:relative">
+            <input type="password" id="fPassword" placeholder="Contraseña o clave de app" style="width:100%;padding:.72rem 1rem;padding-right:2.5rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+            <button type="button" onclick="togglePass()" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--texto-suave)">
+              <span class="material-symbols-outlined" style="font-size:1rem" id="passIcon">visibility</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--texto-medio);cursor:pointer">
+          <input type="checkbox" id="fSSL" style="accent-color:var(--verde);width:16px;height:16px"/> Usar SSL/TLS
+        </label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--texto-medio);cursor:pointer">
+          <input type="checkbox" id="fPrincipal" style="accent-color:var(--verde);width:16px;height:16px"/> Establecer como cuenta principal
+        </label>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="guardarCuenta()"><span class="material-symbols-outlined" style="font-size:1rem">save</span>Guardar cuenta</button>
+        <button class="btn btn-secundario" onclick="probarConexion()" id="btnProbar"><span class="material-symbols-outlined" style="font-size:1rem">bolt</span>Probar conexión</button>
+        <button class="btn btn-secundario" onclick="cerrarForm()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guía SMTP -->
+  <div class="panel" style="animation-delay:.15s">
+    <div class="panel-header"><h2>📖 Guía rápida de configuración SMTP</h2></div>
+    <div class="panel-body">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-body">
+          <h3>Gmail — Activa la verificación en dos pasos</h3>
+          <p>Ve a <strong>myaccount.google.com → Seguridad</strong> y activa la verificación en dos pasos. Luego genera una <strong>contraseña de aplicación</strong> para usar como clave SMTP. Host: <code style="background:var(--fondo);padding:.1rem .4rem;border-radius:4px;font-size:.82rem">smtp.gmail.com</code> · Puerto: <strong>587</strong></p>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-body">
+          <h3>Outlook / Hotmail</h3>
+          <p>Host: <code style="background:var(--fondo);padding:.1rem .4rem;border-radius:4px;font-size:.82rem">smtp-mail.outlook.com</code> · Puerto: <strong>587</strong> · SSL desactivado, TLS activado. Usa tu correo y contraseña habitual.</p>
+        </div>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-body">
+          <h3>SendGrid (recomendado para envíos masivos)</h3>
+          <p>Host: <code style="background:var(--fondo);padding:.1rem .4rem;border-radius:4px;font-size:.82rem">smtp.sendgrid.net</code> · Puerto: <strong>587</strong> · Usuario: <code style="background:var(--fondo);padding:.1rem .4rem;border-radius:4px;font-size:.82rem">apikey</code> · Contraseña: tu API Key de SendGrid. Ideal para enviar más de 300 correos/día.</p>
+        </div>
+      </div>
+      <div class="paso" style="margin-bottom:0">
+        <div class="paso-num">4</div>
+        <div class="paso-body">
+          <h3>Usa el botón "Probar conexión"</h3>
+          <p>Antes de guardar, siempre prueba la conexión para confirmar que los datos son correctos y el servidor SMTP responde correctamente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../control/auth.js"></script>
+<script src="../control/confi-correo.js"></script>
+
+</body>
+</html>
