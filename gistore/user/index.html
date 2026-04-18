@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portal Vendedor — GI Store</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="icon" href="../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body.login-page {
+      min-height: 100vh;
+      display: flex;
+      background: #fff;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── Panel izquierdo verde ── */
+    .lp-verde {
+      width: 38%;
+      flex-shrink: 0;
+      background: var(--verde, #1a6b3c);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .lp-verde::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      bottom: -80px; right: -80px;
+    }
+    .lp-verde::before {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      top: -60px; left: -60px;
+    }
+    .lp-verde-inner { position: relative; z-index: 1; text-align: center; }
+    .lp-verde-inner img { width: 60px; margin-bottom: 1.5rem; }
+    .lp-verde-inner h2 {
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.9rem; font-weight: 800;
+      line-height: 1.2; margin-bottom: .8rem;
+    }
+    .lp-verde-inner p { color: #a8d8bc; font-size: .88rem; line-height: 1.6; }
+    .lp-puntos { margin-top: 2rem; text-align: left; display: flex; flex-direction: column; gap: .8rem; }
+    .lp-puntos span {
+      display: flex; align-items: center; gap: .65rem;
+      color: #c8ecd6; font-size: .85rem;
+    }
+    .lp-puntos span::before {
+      content: '✓';
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem;
+    }
+
+    /* ── Panel derecho ── */
+    .lp-derecho {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    /* Foto — pegada a la derecha, altura completa */
+    .lp-foto {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 48%;
+    }
+    .lp-foto img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: 30% top;
+      display: block;
+    }
+    /* Degradado izquierda de la foto */
+    .lp-foto::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, #fff 0%, rgba(255,255,255,.6) 35%, transparent 70%);
+      z-index: 1;
+    }
+    /* Tag sobre la foto */
+    .lp-foto-tag {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%; transform: translateX(-50%);
+      z-index: 2;
+      background: var(--verde, #1a6b3c);
+      color: #fff;
+      padding: .45rem 1.2rem;
+      border-radius: 20px;
+      font-size: .76rem;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(26,107,60,.35);
+    }
+
+    /* Formulario */
+    .lp-form {
+      position: relative;
+      z-index: 2;
+      width: 56%;
+      display: flex;
+      align-items: center;
+      padding: 3rem 2.5rem 3rem 3.5rem;
+    }
+    .lp-form-inner { width: 100%; max-width: 360px; }
+
+    .lp-logo {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 2.5rem;
+    }
+    .lp-logo-icono {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: var(--verde, #1a6b3c);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(26,107,60,.3);
+    }
+    .lp-logo-icono img { width: 26px; }
+    .lp-logo-txt strong {
+      display: block;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.2rem; font-weight: 800;
+      color: var(--verde, #1a6b3c);
+    }
+    .lp-logo-txt span { font-size: .76rem; color: #7a9e86; }
+
+    .lp-form-inner h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.7rem; font-weight: 800;
+      color: #1a2e22; margin-bottom: .3rem;
+    }
+    .lp-subtitulo { font-size: .85rem; color: #7a9e86; margin-bottom: 1.75rem; line-height: 1.5; }
+
+    .lp-pie { font-size: .74rem; color: #aaa; margin-top: .6rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) {
+      .lp-foto { width: 42%; }
+      .lp-form { width: 60%; padding: 2.5rem 1.5rem 2.5rem 2.5rem; }
+    }
+    @media (max-width: 768px) {
+      .lp-verde { width: 100%; min-height: auto; padding: 2rem 1.5rem; }
+      body.login-page { flex-direction: column; }
+      .lp-derecho { min-height: 100vh; }
+      .lp-foto { width: 50%; }
+      .lp-form { width: 55%; padding: 2rem 1rem 2rem 1.5rem; }
+    }
+    @media (max-width: 560px) {
+      .lp-foto { display: none; }
+      .lp-form { width: 100%; padding: 2rem 1.5rem; justify-content: center; }
+      .lp-form-inner { max-width: 100%; }
+    }
+
+    /* ── Panel cuenta desactivada ── */
+    .panel-desactivado {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem 1.1rem;
+      background: #fff7ed;
+      border: 1.5px solid #fed7aa;
+      border-radius: 10px;
+    }
+    .panel-desactivado-titulo {
+      font-size: .88rem;
+      font-weight: 700;
+      color: #9a3412;
+      margin-bottom: .35rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .panel-desactivado p {
+      font-size: .82rem;
+      color: #7c2d12;
+      line-height: 1.55;
+      margin-bottom: .75rem;
+    }
+    .btn-solicitar-reac {
+      width: 100%;
+      background: #ea580c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .65rem 1rem;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .btn-solicitar-reac:hover { background: #c2410c; }
+
+    /* ── Modal reactivación ── */
+    .modal-reac-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,25,15,.55);
+      backdrop-filter: blur(3px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-reac-overlay.abierto { display: flex; }
+    .modal-reac {
+      background: #fff;
+      border-radius: 18px;
+      padding: 2rem 1.75rem;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.2);
+      position: relative;
+      animation: reacIn .22s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes reacIn {
+      from { opacity:0; transform: translateY(20px) scale(.96); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .modal-reac-cerrar {
+      position: absolute; top: .9rem; right: .9rem;
+      background: #f1f5f9; border: none; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #64748b; font-size: .9rem;
+      transition: background .15s;
+    }
+    .modal-reac-cerrar:hover { background: #e2e8f0; }
+    .modal-reac-icono {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: #fff7ed; display: flex; align-items: center;
+      justify-content: center; font-size: 1.5rem; margin-bottom: .9rem;
+    }
+    .modal-reac h2 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.15rem; font-weight: 800;
+      color: #1a2e22; margin-bottom: .25rem;
+    }
+    .modal-reac-sub { font-size: .83rem; color: #64748b; margin-bottom: 1.4rem; line-height: 1.5; }
+    .modal-reac .campo { margin-bottom: .9rem; }
+    .modal-reac .campo label {
+      display: block; font-size: .78rem; font-weight: 700;
+      color: #374151; text-transform: uppercase; letter-spacing: .04em;
+      margin-bottom: .3rem;
+    }
+    .modal-reac .campo input {
+      width: 100%; border: 1.5px solid #d1d5db; border-radius: 8px;
+      padding: .65rem .9rem; font-size: .92rem; font-family: inherit;
+      color: #1a2e22; outline: none; background: #fafafa;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .modal-reac .campo input:focus {
+      border-color: #1a6b3c;
+      box-shadow: 0 0 0 3px rgba(26,107,60,.12);
+      background: #fff;
+    }
+    .modal-reac-error {
+      display: none;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 7px; padding: .55rem .8rem;
+      font-size: .82rem; color: #b91c1c; margin-bottom: .8rem;
+    }
+    .modal-reac-tel { position: relative; }
+    .modal-reac-tel span {
+      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+      font-size: .92rem; color: #6b7280; font-weight: 600; pointer-events: none;
+    }
+    .modal-reac-tel input { padding-left: 2.7rem; }
+    .btn-enviar-reac {
+      width: 100%; background: #1a6b3c; color: #fff;
+      border: none; border-radius: 8px; padding: .8rem;
+      font-size: .94rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: .5rem;
+      transition: background .15s;
+    }
+    .btn-enviar-reac:hover { background: #2d9e5f; }
+    .btn-enviar-reac:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Pantalla éxito dentro del modal */
+    .modal-reac-exito {
+      display: none;
+      flex-direction: column; align-items: center;
+      text-align: center; padding: .5rem 0;
+      gap: .5rem;
+    }
+    .modal-reac-exito .exito-ico {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #f0faf4; display: flex; align-items: center;
+      justify-content: center; font-size: 1.8rem;
+      animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-reac-exito h3 { font-size: 1.05rem; font-weight: 800; color: #1a2e22; }
+    .modal-reac-exito p  { font-size: .83rem; color: #64748b; line-height: 1.55; max-width: 270px; }
+    .modal-reac-exito button {
+      margin-top: .6rem; background: #f0faf4; color: #1a6b3c;
+      border: none; border-radius: 7px; padding: .55rem 1.3rem;
+      font-size: .85rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: background .15s;
+    }
+    .modal-reac-exito button:hover { background: #d1ead9; }
+  </style>
+</head>
+<body class="login-page">
+
+  <!-- Verde izquierdo -->
+  <div class="lp-verde">
+    <div class="lp-verde-inner">
+      <img src="../img/favicon/gi-icono-blanco.svg" alt="GI Store"/>
+      <h2>Portal de<br/>Vendedores</h2>
+      <p>Gestiona tus productos, revisa tu membresía y exporta tu catálogo.</p>
+      <div class="lp-puntos">
+        <span>Administra tus productos</span>
+        <span>Consulta tu membresía</span>
+        <span>Exporta tu catálogo en PDF</span>
+        <span><a href="../page/info.html#registro" style="color: #ffffff;">Solicitar Registro</a></span>
+        <span><a href="acceso.html" style="color: #ffffff;">Información de acceso</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Derecho: form + foto -->
+  <div class="lp-derecho">
+
+    <!-- Foto persona pegada al lado derecho, altura completa -->
+    <div class="lp-foto">
+      <img
+        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&q=90&auto=format&fit=crop&crop=top"
+        alt="Vendedor profesional"/>
+      <div class="lp-foto-tag">🌿 Tu negocio, tu éxito</div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="lp-form">
+      <div class="lp-form-inner">
+
+        <a href="../index.html" class="lp-logo" style="text-decoration:none" title="Ir al catálogo">
+          <div class="lp-logo-icono">
+            <img src="../img/favicon/gi-icono-blanco.svg" alt="GI Store"/>
+          </div>
+          <div class="lp-logo-txt">
+            <strong>GI Store</strong>
+            <span>Portal de Vendedores</span>
+          </div>
+        </a>
+
+        <h1>Iniciar sesión</h1>
+        <p class="lp-subtitulo">Ingresa las credenciales que te envió el administrador</p>
+
+        <div class="msg-error" id="msgError">
+          <span>⚠&nbsp;</span><span id="textoError"></span>
+        </div>
+
+        <!-- Panel cuenta desactivada (se muestra tras login con cuenta desactivada) -->
+        <div class="panel-desactivado" id="panelDesactivado">
+          <div class="panel-desactivado-titulo">🚫 Cuenta desactivada</div>
+          <p>
+            Tu cuenta ha sido desactivada por el administrador.<br/>
+            Si crees que es un error o deseas ser reactivado,
+            envíanos una solicitud y te contactaremos.
+          </p>
+          <button class="btn-solicitar-reac" id="btnSolicitarReactivacion">
+            ✉️ Solicitar reactivación
+          </button>
+        </div>
+
+        <div class="campo">
+          <label>Correo electrónico</label>
+          <input type="email" id="correo" placeholder="tu@correo.com" autocomplete="email"/>
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" id="contrasena" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="btnLogin"
+                style="padding:.85rem;font-size:.95rem;margin-top:.25rem">
+          <span class="btn-texto">Ingresar al portal</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div style="text-align:center;margin-top:.75rem">
+          <button type="button" id="btnOlvide"
+                  style="background:none;border:none;color:var(--verde);font-size:.83rem;cursor:pointer;text-decoration:underline;padding:0">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+        <div style="text-align:center;margin-top:.75rem">
+          <button type="button" id="Sregistro"
+                  style="background:none;border:none;color:var(--verde);font-size:.83rem;cursor:pointer;text-decoration:underline;padding:0">
+            Solicitar Registro
+          </button>
+        </div>
+
+        <!-- Panel recuperar contraseña (oculto) -->
+        <div id="panelRecuperar" style="display:none;margin-top:1rem;padding:1rem;background:var(--fondo-2);border:1.5px solid var(--borde);border-radius:10px">
+          <p style="font-size:.83rem;color:var(--texto-medio);margin-bottom:.75rem">
+            Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+          </p>
+          <div class="msg-error" id="msgErrorRecup" style="margin-bottom:.5rem"><span>⚠&nbsp;</span><span id="textoErrorRecup"></span></div>
+          <div class="msg-ok"    id="msgOkRecup"    style="margin-bottom:.5rem"><span>✓&nbsp;</span><span id="textoOkRecup"></span></div>
+          <input type="email" id="correoRecup" placeholder="tu@correo.com"
+                 style="width:100%;padding:.65rem .9rem;border:1.5px solid var(--borde);border-radius:8px;font-size:.87rem;margin-bottom:.6rem;outline:none;background:var(--fondo);color:var(--texto)"/>
+          <div style="display:flex;gap:.5rem">
+            <button type="button" id="btnEnviarRecup" class="btn btn-primary" style="flex:1;padding:.65rem">
+              <span class="btn-texto">📧 Enviar enlace</span>
+              <div class="spinner"></div>
+            </button>
+            <button type="button" id="btnCancelarRecup" class="btn btn-secundario" style="padding:.65rem .9rem">
+              Cancelar
+            </button>
+          </div>
+        </div>
+
+        <p class="lp-pie">¿Problemas para ingresar? Contacta al administrador.</p>
+        <p class="lp-pie">© 2026 GI Store · Aguachica, Cesar</p>
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

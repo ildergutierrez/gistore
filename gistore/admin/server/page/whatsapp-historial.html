@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Historial WA — GI Store Comunicaciones</title>
+    <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .log-item { display:flex; align-items:center; gap:1rem; padding:.9rem 1.5rem; border-bottom:1px solid var(--fondo); transition:background .12s; cursor:default; }
+    .log-item:last-child { border-bottom:none; }
+    .log-item:hover { background:var(--verde-claro); }
+    .log-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .log-icon.masivo { background:#e0e7ff; }
+    .log-icon.individual { background:var(--verde-claro); }
+    .log-msg { font-size:.8rem; color:var(--texto-suave); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:360px; margin-top:.15rem; }
+    .log-right { text-align:right; flex-shrink:0; }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .status-ok { background:#16a34a; }
+    .status-fail { background:var(--error); }
+    .status-parcial { background:var(--advertencia); }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html" class="activo"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>🗂 Historial WhatsApp</h1>
+      <p class="sub">Registro completo de mensajes enviados por API</p>
+    </div>
+    <div class="topbar-der">
+      <a href="whatsapp-masivo.html" class="btn btn-primary">
+        <span class="material-symbols-outlined" style="font-size:1rem">add</span>Nuevo envío
+      </a>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s"><div class="etiqueta">Total enviados</div><div class="numero">412</div><div class="icono-bg">💬</div></div>
+    <div class="stat" style="animation-delay:.1s"><div class="etiqueta">Entregados</div><div class="numero">398</div><div class="icono-bg">✅</div></div>
+    <div class="stat" style="animation-delay:.15s"><div class="etiqueta">Fallidos</div><div class="numero">14</div><div class="icono-bg">⚠️</div></div>
+    <div class="stat" style="animation-delay:.2s"><div class="etiqueta">Tasa de entrega</div><div class="numero">96%</div><div class="icono-bg">📊</div></div>
+  </div>
+
+  <div class="panel" style="animation-delay:.25s">
+    <div class="panel-header">
+      <h2>📋 Registro de envíos</h2>
+      <div class="acciones">
+        <input type="text" id="buscar" placeholder="Buscar por destinatario o mensaje…" oninput="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;min-width:220px;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)"/>
+        <select id="filtroTipo" onchange="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)">
+          <option value="">Todos</option>
+          <option value="masivo">Masivo</option>
+          <option value="individual">Individual</option>
+        </select>
+        <select id="filtroStatus" onchange="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)">
+          <option value="">Todos los estados</option>
+          <option value="ok">Entregado</option>
+          <option value="parcial">Parcial</option>
+          <option value="fail">Fallido</option>
+        </select>
+      </div>
+    </div>
+    <div id="listaLog"></div>
+  </div>
+</main>
+
+<!-- Modal detalle -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;padding:2rem;overflow-y:auto">
+  <div style="max-width:600px;margin:0 auto;background:var(--fondo-2);border-radius:var(--radio-lg);box-shadow:var(--sombra-md);overflow:hidden">
+    <div style="background:var(--verde-claro);padding:1.1rem 1.5rem;border-bottom:1.5px solid var(--borde);display:flex;align-items:center;justify-content:space-between">
+      <h2 style="font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--verde)">Detalle del envío</h2>
+      <button onclick="cerrar()" style="background:none;border:none;cursor:pointer;color:var(--texto-suave);font-size:1.2rem">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem" id="modalGrid"></div>
+      <hr class="separador"/>
+      <p style="font-size:.75rem;color:var(--texto-suave);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem">Mensaje enviado</p>
+      <div id="modalMsg" style="background:var(--fondo);border-radius:var(--radio-sm);padding:1rem;font-size:.88rem;line-height:1.65;color:var(--texto-medio);white-space:pre-wrap"></div>
+      <div style="margin-top:1.5rem;display:flex;gap:.75rem">
+        <a href="whatsapp-masivo.html" class="btn btn-primary"><span class="material-symbols-outlined" style="font-size:1rem">replay</span>Reenviar</a>
+        <button class="btn btn-secundario" onclick="cerrar()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../control/auth.js"></script>
+<script src="../control/whistoria.js"></script>
+</body>
+</html>

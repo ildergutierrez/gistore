@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Términos y Condiciones — GI Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --verde:       #1a6b3c;
+      --verde-claro: #2d9458;
+      --verde-suave: #e8f5ee;
+      --gris-100:    #f4f4f4;
+      --gris-300:    #d1d1d1;
+      --gris-500:    #888888;
+      --gris-700:    #444444;
+      --negro:       #1a1a1a;
+      --blanco:      #ffffff;
+      --rojo:        #c0392b;
+      --crema:       #fafaf8;
+      --sombra-sm:   0 1px 4px rgba(0,0,0,.08);
+      --sombra-md:   0 4px 16px rgba(0,0,0,.10);
+      --radio:       12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--crema);
+      color: var(--negro);
+      line-height: 1.7;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--verde);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .75rem clamp(1rem, 4vw, 2.5rem);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    .nav-brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+    .nav-icon svg { width: 36px; height: 36px; }
+    .nav-brand-text { color: var(--blanco); }
+    .nav-brand-text strong { font-size: 1.05rem; letter-spacing: .04em; display: block; }
+    .nav-brand-text span { font-size: .65rem; opacity: .7; letter-spacing: .12em; }
+    .nav-links { display: flex; gap: 1.4rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--blanco); }
+    .nav-cta {
+      background: rgba(0,0,0,.25); color: var(--blanco);
+      border: 1px solid rgba(255,255,255,.3);
+      padding: .45rem 1.1rem; border-radius: 20px;
+      font-size: .85rem; font-weight: 600; text-decoration: none;
+      transition: background .2s;
+    }
+    .nav-cta:hover { background: rgba(0,0,0,.4); }
+    @media (max-width: 640px) { .nav-links { display: none; } }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #111 0%, var(--verde) 100%);
+      color: var(--blanco);
+      text-align: center;
+      padding: clamp(2.5rem, 6vw, 5rem) 1.5rem clamp(2rem, 4vw, 3.5rem);
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      margin-bottom: .6rem;
+    }
+    .hero p { font-size: clamp(.9rem, 2vw, 1.05rem); opacity: .85; max-width: 600px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 20px;
+      padding: .3rem 1rem;
+      font-size: .78rem;
+      margin-bottom: .9rem;
+      letter-spacing: .1em;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem clamp(1rem, 4vw, 2rem);
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      .toc-aside { display: none; }
+    }
+
+    /* ── TOC SIDEBAR ── */
+    .toc-aside {
+      position: sticky;
+      top: 80px;
+      background: var(--blanco);
+      border: 1px solid var(--gris-300);
+      border-radius: var(--radio);
+      padding: 1.2rem;
+      box-shadow: var(--sombra-sm);
+    }
+    .toc-aside h4 {
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--verde);
+      margin-bottom: .8rem;
+    }
+    .toc-aside ol {
+      list-style: none;
+      padding: 0;
+      counter-reset: toc;
+    }
+    .toc-aside li { counter-increment: toc; margin-bottom: .4rem; }
+    .toc-aside li::before {
+      content: counter(toc) ". ";
+      font-weight: 700;
+      color: var(--verde-claro);
+      font-size: .78rem;
+    }
+    .toc-aside a {
+      color: var(--gris-700);
+      text-decoration: none;
+      font-size: .82rem;
+      line-height: 1.4;
+      transition: color .2s;
+    }
+    .toc-aside a:hover { color: var(--verde); }
+
+    /* ── CONTENIDO ── */
+    .tyc-content {}
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0 1.2rem;
+    }
+    .section-header:first-child { margin-top: 0; }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.3rem, 3vw, 1.7rem);
+      color: var(--verde);
+      white-space: nowrap;
+    }
+    .section-line { flex: 1; height: 2px; background: var(--gris-300); }
+
+    .tyc-article {
+      background: var(--blanco);
+      border: 1px solid var(--gris-300);
+      border-radius: var(--radio);
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--sombra-sm);
+    }
+    .tyc-article h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--verde);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .tyc-article h3 .art-num {
+      background: var(--verde);
+      color: var(--blanco);
+      border-radius: 6px;
+      font-size: .72rem;
+      padding: .15rem .45rem;
+      letter-spacing: .04em;
+    }
+    .tyc-article p { font-size: .95rem; color: var(--gris-700); }
+
+    /* ── PROHIBIDOS ── */
+    .prohibidos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: .8rem;
+      margin-top: .8rem;
+    }
+    .proh-card {
+      background: #fff5f5;
+      border: 1px solid #f5c6c6;
+      border-left: 4px solid var(--rojo);
+      border-radius: 0 8px 8px 0;
+      padding: .9rem 1rem;
+    }
+    .proh-card h4 { font-size: .9rem; color: var(--rojo); font-weight: 700; margin-bottom: .3rem; }
+    .proh-card p { font-size: .83rem; color: var(--gris-700); line-height: 1.45; }
+
+    .warn-box {
+      background: #fff5f5;
+      border: 1.5px solid var(--rojo);
+      border-radius: var(--radio);
+      padding: 1rem 1.2rem;
+      display: flex;
+      gap: .8rem;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+    }
+    .warn-box .icon { font-size: 1.4rem; flex-shrink: 0; }
+    .warn-box p { font-size: .9rem; color: var(--gris-700); }
+    .warn-box strong { color: var(--rojo); }
+
+    /* ── FIRMA ── */
+    .firma-box {
+      background: var(--verde);
+      color: var(--blanco);
+      border-radius: var(--radio);
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2.5rem;
+    }
+    .firma-box .logo svg { width: 56px; height: 56px; margin-bottom: .8rem; }
+    .firma-box h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: .3rem;
+    }
+    .firma-box p { font-size: .88rem; opacity: .8; margin-bottom: .5rem; }
+    .firma-box .version {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: .3rem .9rem;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      margin-top: .4rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--negro);
+      color: rgba(255,255,255,.55);
+      text-align: center;
+      padding: 1.8rem 1rem;
+      font-size: .82rem;
+      margin-top: 3rem;
+    }
+    footer strong { color: var(--blanco); }
+    footer a { color: var(--verde-claro); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="../../index.html">
+    <span class="nav-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="vg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2d9458"/>
+            <stop offset="100%" style="stop-color:#1a6b3c"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" fill="url(#vg2)"/>
+        <polygon points="50,10 86,31 86,69 50,90 14,69 14,31" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text x="14" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="#fff" letter-spacing="-3">G</text>
+        <text x="57" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="rgba(255,255,255,0.7)">I</text>
+      </svg>
+    </span>
+    <span class="nav-brand-text">
+      <strong>GISTORE</strong>
+      <span>CALIDAD · ESTILO · CONFIANZA</span>
+    </span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">Catálogo</a></li>
+    <li><a href="politicas.html">Políticas</a></li>
+  </ul>
+  <a class="nav-cta" href="../../user/acceso.html">⬡ Vendedores</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-badge">LEGAL · REGLAMENTO</span>
+  <h1>Términos y Condiciones</h1>
+  <p>Al registrarse en GI Store, el vendedor acepta íntegramente estos términos. Léelos con atención.</p>
+</section>
+
+<div class="page-wrap">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="toc-aside">
+    <h4>Contenido</h4>
+    <ol>
+      <li><a href="#art1">Partes del Acuerdo</a></li>
+      <li><a href="#art2">Naturaleza del Servicio</a></li>
+      <li><a href="#art3">Registro y Cuenta</a></li>
+      <li><a href="#art4">Membresía y Facturación</a></li>
+      <li><a href="#art5">Propiedad Intelectual</a></li>
+      <li><a href="#art6">Limitación de Responsabilidad</a></li>
+      <li><a href="#art7">Suspensión y Terminación</a></li>
+      <li><a href="#art8">Modificaciones</a></li>
+      <li><a href="#art9">Ley Aplicable</a></li>
+      <li><a href="#art10">Contacto</a></li>
+      <li><a href="#prohibidos">Productos Prohibidos</a></li>
+    </ol>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="tyc-content">
+
+    <div class="section-header">
+      <h2>Términos de Uso</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div id="art1" class="tyc-article">
+      <h3><span class="art-num">Art. 1</span> Partes del Acuerdo</h3>
+      <p>Este acuerdo se celebra entre <strong>GI Store</strong> (en adelante «la Plataforma») y el Vendedor o Usuario que accede a sus servicios. GI Store es operada por sus fundadores con domicilio en Aguachica, Cesar, Colombia.</p>
+    </div>
+
+    <div id="art2" class="tyc-article">
+      <h3><span class="art-num">Art. 2</span> Naturaleza del Servicio</h3>
+      <p>GI Store es un catálogo digital que facilita la exhibición de productos de vendedores independientes. La Plataforma no es parte de las transacciones entre vendedores y compradores, ni garantiza la calidad, legalidad o entrega de los productos publicados.</p>
+    </div>
+
+    <div id="art3" class="tyc-article">
+      <h3><span class="art-num">Art. 3</span> Registro y Cuenta</h3>
+      <p>El vendedor garantiza que la información proporcionada durante el registro es veraz, actualizada y completa. El uso indebido de la cuenta es responsabilidad exclusiva del titular. Deberá notificar de inmediato cualquier acceso no autorizado.</p>
+    </div>
+
+    <div id="art4" class="tyc-article">
+      <h3><span class="art-num">Art. 4</span> Membresía y Facturación</h3>
+      <p>El acceso a las funcionalidades de GI Store requiere el pago de una membresía mensual. Los precios vigentes se publican en la sección de Membresía del portal. El incumplimiento de pago resultará en la suspensión de la cuenta hasta regularizar el saldo. No se realizan reembolsos por períodos ya consumidos.</p>
+    </div>
+
+    <div id="art5" class="tyc-article">
+      <h3><span class="art-num">Art. 5</span> Propiedad Intelectual</h3>
+      <p>El contenido publicado por el vendedor (imágenes, textos, logos) es responsabilidad del vendedor. Al publicarlo, otorga a GI Store una licencia no exclusiva para usarlo con fines promocionales. GI Store no reivindica propiedad sobre dicho contenido.</p>
+    </div>
+
+    <div id="art6" class="tyc-article">
+      <h3><span class="art-num">Art. 6</span> Limitación de Responsabilidad</h3>
+      <p>GI Store no se hace responsable por pérdidas económicas, disputas comerciales, fraudes entre partes, interrupciones del servicio por causas de fuerza mayor o cualquier daño indirecto derivado del uso de la plataforma.</p>
+    </div>
+
+    <div id="art7" class="tyc-article">
+      <h3><span class="art-num">Art. 7</span> Suspensión y Terminación</h3>
+      <p>GI Store puede suspender o terminar el acceso de un vendedor si detecta: violación de políticas, comportamiento fraudulento, inactividad prolongada (+90 días) o cualquier conducta que dañe la comunidad.</p>
+    </div>
+
+    <div id="art8" class="tyc-article">
+      <h3><span class="art-num">Art. 8</span> Modificaciones</h3>
+      <p>GI Store se reserva el derecho de modificar estos Términos en cualquier momento. Los cambios se publicarán en la plataforma. El uso continuado constituye aceptación de los nuevos términos.</p>
+    </div>
+
+    <div id="art9" class="tyc-article">
+      <h3><span class="art-num">Art. 9</span> Ley Aplicable</h3>
+      <p>Este acuerdo se rige por las leyes de la República de Colombia. Cualquier controversia será dirimida ante los jueces competentes de Aguachica, Cesar, Colombia.</p>
+    </div>
+
+    <div id="art10" class="tyc-article">
+      <h3><span class="art-num">Art. 10</span> Contacto</h3>
+      <p>Para dudas, reclamaciones o solicitudes relacionadas con estos Términos, el vendedor puede comunicarse a través del canal oficial de GI Store disponible en la plataforma.</p>
+    </div>
+
+    <!-- PRODUCTOS PROHIBIDOS -->
+    <div class="section-header" id="prohibidos" style="margin-top:2.5rem">
+      <h2>Apéndice — Productos Prohibidos</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="warn-box">
+      <span class="icon">⚠️</span>
+      <p><strong>Aviso importante:</strong> El administrador de GI Store está facultado para eliminar cualquier producto que considere inapropiado, engañoso, peligroso o contrario a los valores de la plataforma, <strong>incluso si no figura en esta lista</strong>. La decisión es inapelable de forma inmediata.</p>
+    </div>
+
+    <div class="prohibidos-grid">
+      <div class="proh-card">
+        <h4>🚫 Sustancias Ilegales</h4>
+        <p>Drogas, estupefacientes, precursores químicos o sustancias cuya venta esté penalizada en Colombia.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Armas y Explosivos</h4>
+        <p>Armas de fuego, municiones, armas blancas, explosivos, pirotecnia no autorizada o artefactos peligrosos.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Medicamentos sin Registro</h4>
+        <p>Fármacos sin registro INVIMA, de venta exclusiva bajo fórmula sin autorización o de contrabando.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Contenido para Adultos</h4>
+        <p>Material pornográfico, contenido sexual explícito o artículos vinculados a explotación.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Animales Vivos / CITES</h4>
+        <p>Animales vivos, partes de especies en peligro de extinción o productos regulados por CITES.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Piratería / Falsificaciones</h4>
+        <p>Productos falsificados, marcas imitadas, software pirata u obras con derechos reproducidas ilegalmente.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Juegos de Azar</h4>
+        <p>Apuestas, rifas no autorizadas, loterías ilegales o mecanismos de juego sin licencia.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Tabaco a Menores</h4>
+        <p>Productos de tabaco o nicotina dirigidos o accesibles a menores de edad.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Información Personal</h4>
+        <p>Bases de datos, listados de contactos, credenciales de acceso o datos personales de terceros.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Servicios Fraudulentos</h4>
+        <p>Esquemas piramidales, promesas de rendimientos irreales, estafas o captación ilegal de dinero.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Productos Peligrosos</h4>
+        <p>Artículos sin certificación de seguridad que representen riesgo para el consumidor.</p>
+      </div>
+      <div class="proh-card">
+        <h4>🚫 Contenido Ofensivo</h4>
+        <p>Artículos que promuevan odio, discriminación o que atenten contra la dignidad humana.</p>
+      </div>
+    </div>
+
+    <!-- FIRMA -->
+    <div class="firma-box">
+      <div class="logo">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="vg3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:rgba(255,255,255,0.3)"/>
+              <stop offset="100%" style="stop-color:rgba(255,255,255,0.1)"/>
+            </linearGradient>
+          </defs>
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" fill="url(#vg3)" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+          <text x="14" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="#fff" letter-spacing="-3">G</text>
+          <text x="57" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="rgba(255,255,255,0.7)">I</text>
+        </svg>
+      </div>
+      <h3>GI Store</h3>
+      <p>Calidad · Estilo · Confianza</p>
+      <p>Aguachica, Cesar, Colombia</p>
+      <span class="version">Versión 1.0 · 2025</span>
+    </div>
+
+  </div><!-- /tyc-content -->
+</div><!-- /page-wrap -->
+
+<footer>
+  <strong>GI Store</strong> — Calidad · Estilo · Confianza<br/>
+  <a href="../../index.html">gistore</a> · Aguachica, Cesar, Colombia<br/>
+  <span style="font-size:.78rem;opacity:.5;">© 2026 GI Store. Todos los derechos reservados.</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Perfil — GI Store</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+    <style>
+      #avatarWrap {
+        width: 88px; height: 88px;
+        border-radius: 50%; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 14px rgba(0,0,0,.13);
+        overflow: hidden; transition: box-shadow .2s;
+      }
+      .avatar-inicial {
+        font-size: 2.2rem; font-weight: 700;
+        color: #fff; background: var(--verde);
+      }
+      .avatar-foto { background: #f3f3f3; }
+
+      .foto-bloque {
+        display: flex; align-items: center; gap: 1.25rem;
+        background: var(--verde-claro, #f0faf4);
+        border: 1.5px dashed var(--verde-borde, #a8d5b5);
+        border-radius: 12px; padding: 1.1rem 1.25rem;
+        margin-bottom: 1.25rem; flex-wrap: wrap;
+      }
+      .foto-bloque-info { flex: 1; min-width: 180px; }
+      .foto-bloque-info strong { font-size: .9rem; color: var(--texto); display: block; margin-bottom: .25rem; }
+      .foto-bloque-info p { font-size: .76rem; color: var(--texto-suave); line-height: 1.5; margin: 0 0 .6rem; }
+      .foto-acciones { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+
+      #fotoPreviewWrap {
+        display: none; align-items: center; gap: .75rem;
+        background: #fff; border: 1.5px solid var(--verde-borde, #a8d5b5);
+        border-radius: 10px; padding: .55rem .85rem;
+        margin-top: .65rem; flex-wrap: wrap;
+      }
+      #fotoPreviewWrap img {
+        width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
+        border: 2px solid var(--verde); flex-shrink: 0;
+      }
+      #fotoEstado { font-size: .76rem; color: var(--texto-suave); flex: 1; min-width: 100px; }
+      #btnQuitarPreview {
+        background: none; border: none; color: var(--error, #dc2626);
+        cursor: pointer; font-size: .78rem; padding: .2rem .4rem; flex-shrink: 0;
+      }
+      #fFotoFile { display: none; }
+
+      /* Descripción */
+      #fDescripcion {
+        width: 100%; resize: vertical; min-height: 90px;
+        font-family: inherit; font-size: .88rem;
+        padding: .6rem .85rem; border-radius: 8px;
+        border: 1.5px solid var(--borde); background: var(--fondo-2);
+        color: var(--texto); line-height: 1.5;
+        transition: border-color .2s;
+        box-sizing: border-box;
+      }
+      #fDescripcion:focus { outline: none; border-color: var(--verde); }
+      #descContador { font-size: .72rem; color: var(--texto-suave); margin-top: .3rem; display: block; }
+
+      /* Redes sociales */
+      .redes-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .85rem 1rem;
+        margin-top: .25rem;
+      }
+      @media (max-width: 520px) {
+        .redes-grid { grid-template-columns: 1fr; }
+      }
+      .red-campo { display: flex; flex-direction: column; gap: .3rem; }
+      .red-campo label {
+        font-size: .8rem; font-weight: 600; color: var(--texto-suave);
+        display: flex; align-items: center; gap: .4rem;
+      }
+      .red-campo label svg { flex-shrink: 0; }
+      .red-campo input {
+        padding: .52rem .85rem;
+        border: 1.5px solid var(--borde);
+        border-radius: 8px;
+        font-size: .85rem;
+        color: var(--texto);
+        background: var(--fondo-2);
+        transition: border-color .2s;
+        width: 100%; box-sizing: border-box;
+      }
+      .red-campo input:focus { outline: none; border-color: var(--verde); }
+
+      @media (max-width: 520px) {
+        .foto-bloque { flex-direction: column; align-items: flex-start; gap: .85rem; }
+        #avatarWrap  { width: 70px; height: 70px; font-size: 1.8rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="btn-hamburguesa" id="btnHamburguesa"><span></span><span></span><span></span></button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar">
+      <a href="../../index.html" class="sidebar-logo" title="Ir al inicio 🏠" style="text-decoration:none">
+        <div class="sidebar-logo-icono">
+          <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/>
+        </div>
+        <div class="sidebar-logo-txt">
+          <strong>GI Store</strong>
+          <span id="vendedorNombre">Mi Portal</span>
+        </div>
+      </a>
+      <nav class="nav">
+        <div class="nav-titulo">Mi cuenta</div>
+        <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bento</span></span> Dashboard</a>
+        <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">package_2</span></span> Mis productos</a>
+        <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">photo_library</span></span> Exportar catálogo</a>
+        <a href="spotlight.html">
+        <span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span>
+        Spotlight IA
+      </a>
+        <a href="membresia.html"><span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span> Mi membresía</a>
+         <a href="videos.html" >
+                <span class="icono"><span class="material-symbols-outlined">movie</span></span>
+                Crear video
+            </a>
+        <div class="nav-titulo">Comunidad</div>
+    <a href="foro.html" ><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+        <div class="nav-titulo">Sitio</div>
+        <a href="#" class="activo"><span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span> Mi perfil</a>
+        <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">article_person</span></span> Ver catálogo</a>
+      </nav>
+      <div class="sidebar-pie">
+        <button class="btn-salir" id="btnSalir">
+          <span class="material-symbols-outlined">logout</span> Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-izq">
+          <h1>Mi Perfil</h1>
+          <p class="fecha" id="fechaHoy"></p>
+        </div>
+      </div>
+
+      <div class="perfil-grid">
+
+        <!-- Información personal + Foto -->
+        <div class="panel" style="grid-column:1/-1">
+          <div class="panel-header"><h2>👤 Información personal</h2></div>
+          <div style="padding:1.5rem">
+
+            <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
+            <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
+
+            <!-- FOTO -->
+            <div class="foto-bloque">
+              <div id="avatarWrap" class="avatar-inicial">V</div>
+              <div class="foto-bloque-info">
+                <strong>Foto de perfil</strong>
+                <p>JPG, PNG o WebP · máx. 2 MB.<br/>Si no tienes foto se muestra tu inicial.</p>
+                <div class="foto-acciones">
+                  <input type="file" id="fFotoFile" accept="image/jpeg,image/png,image/webp"/>
+                  <button class="btn btn-secundario" type="button" id="btnCambiarFoto"
+                          style="padding:.38rem .85rem;font-size:.82rem">📷 Cambiar foto</button>
+                  <button class="btn btn-primary" type="button" id="btnSubirFoto"
+                          style="padding:.38rem .85rem;font-size:.82rem;display:none">
+                    <span class="btn-texto">☁️ Subir</span><div class="spinner"></div>
+                  </button>
+                  <button class="btn" type="button" id="btnEliminarFoto"
+                          style="padding:.38rem .85rem;font-size:.82rem;display:none;
+                                 background:var(--error-claro,#fee2e2);color:var(--error,#dc2626);
+                                 border:1px solid var(--error,#dc2626)">
+                    <span class="btn-texto">🗑 Eliminar foto</span><div class="spinner"></div>
+                  </button>
+                </div>
+                <div id="fotoPreviewWrap">
+                  <img id="fotoPreviewImg" src="" alt="Vista previa"/>
+                  <span id="fotoEstado">Lista para subir</span>
+                  <button id="btnQuitarPreview" title="Cancelar">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CAMPOS -->
+            <div class="perfil-campos-grid">
+              <div class="campo">
+                <label>Nombre completo</label>
+                <input type="text" id="fNombre" placeholder="Tu nombre"/>
+              </div>
+              <div class="campo">
+                <label>Ciudad</label>
+                <input type="text" id="fCiudad" placeholder="Ej: Aguachica"/>
+              </div>
+              <div class="campo">
+                <label>WhatsApp (con código país)</label>
+                <input type="text" id="fWhatsapp" placeholder="573145891108"/>
+              </div>
+              <div class="campo">
+                <label>Página web <span style="font-size:.72rem;color:var(--texto-suave);font-weight:400">(opcional)</span></label>
+                <input type="url" id="fUrlWeb" placeholder="https://mipagina.com"/>
+                <p style="font-size:.72rem;color:var(--texto-suave);margin-top:.3rem">
+                  🌐 Se mostrará como botón en tu tienda pública.
+                </p>
+              </div>
+              <div class="campo">
+                <label>Correo electrónico</label>
+                <input type="email" id="fCorreo" disabled
+                       style="background:var(--fondo);color:var(--texto-suave);cursor:not-allowed"/>
+                <p style="font-size:.72rem;color:var(--texto-suave);margin-top:.3rem">
+                  🔒 El correo no se puede cambiar aquí.
+                </p>
+              </div>
+            </div>
+
+            <!-- DESCRIPCIÓN — ocupa todo el ancho -->
+            <div class="campo" style="margin-top:.25rem">
+              <label>Descripción de la tienda</label>
+              <textarea id="fDescripcion" maxlength="300"
+                        placeholder="Cuéntale a tus clientes a qué se dedica tu tienda, qué productos ofreces o qué te hace especial..."></textarea>
+              <span id="descContador">300 caracteres restantes</span>
+            </div>
+
+            <!-- REDES SOCIALES -->
+            <div style="margin-top:1.25rem">
+              <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem">
+                <strong style="font-size:.9rem;color:var(--texto)">📲 Redes sociales</strong>
+                <span style="font-size:.72rem;color:var(--texto-suave);font-weight:400">(opcionales · se mostrarán en tu tienda pública)</span>
+              </div>
+              <div class="redes-grid">
+
+                <!-- Facebook -->
+                <div class="red-campo">
+                  <label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.514c-1.491 0-1.956.93-1.956 1.884v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+                    Facebook
+                  </label>
+                  <input type="url" id="fRedFacebook" placeholder="https://facebook.com/tutienda"/>
+                </div>
+
+                <!-- TikTok -->
+                <div class="red-campo">
+                  <label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#010101"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.16 8.16 0 004.77 1.52V6.82a4.85 4.85 0 01-1-.13z"/></svg>
+                    TikTok
+                  </label>
+                  <input type="url" id="fRedTiktok" placeholder="https://tiktok.com/@tutienda"/>
+                </div>
+
+                <!-- Instagram -->
+                <div class="red-campo">
+                  <label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="url(#igGrad)">
+                      <defs>
+                        <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#f09433"/>
+                          <stop offset="25%" style="stop-color:#e6683c"/>
+                          <stop offset="50%" style="stop-color:#dc2743"/>
+                          <stop offset="75%" style="stop-color:#cc2366"/>
+                          <stop offset="100%" style="stop-color:#bc1888"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                    Instagram
+                  </label>
+                  <input type="url" id="fRedInstagram" placeholder="https://instagram.com/tutienda"/>
+                </div>
+
+                <!-- YouTube -->
+                <div class="red-campo">
+                  <label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+                    YouTube
+                  </label>
+                  <input type="url" id="fRedYoutube" placeholder="https://youtube.com/@tucanal"/>
+                </div>
+
+              </div>
+            </div>
+            <!-- / REDES SOCIALES -->
+
+            <button class="btn btn-primary" id="btnGuardarPerfil" style="margin-top:.75rem">
+              <span class="btn-texto">💾 Guardar cambios</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="panel">
+          <div class="panel-header"><h2>🔐 Cambiar contraseña</h2></div>
+          <div style="padding:1.5rem">
+            <div class="msg-error" id="msgErrorPass"><span>⚠&nbsp;</span><span id="textoErrorPass"></span></div>
+            <div class="msg-ok"    id="msgOkPass"   ><span>✓&nbsp;</span><span id="textoOkPass"></span></div>
+            <div class="campo">
+              <label>Contraseña actual</label>
+              <div style="position:relative">
+                <input type="password" id="fPassActual" placeholder="Tu contraseña actual" style="padding-right:2.8rem"/>
+                <button type="button" id="btnVerPassActual" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--texto-suave)">👁</button>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Nueva contraseña</label>
+              <div style="position:relative">
+                <input type="password" id="fNewPass" placeholder="Mínimo 6 caracteres" style="padding-right:2.8rem"/>
+                <button type="button" id="btnVerPassNueva" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--texto-suave)">👁</button>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Confirmar nueva contraseña</label>
+              <div style="position:relative">
+                <input type="password" id="fConfPass" placeholder="Repite la nueva contraseña" style="padding-right:2.8rem"/>
+                <button type="button" id="btnVerPassConf" style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--texto-suave)">👁</button>
+              </div>
+            </div>
+            <button class="btn btn-secundario" id="btnCambiarPass" style="margin-top:.5rem">
+              <span class="btn-texto">🔐 Actualizar contraseña</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info de cuenta -->
+        <div class="panel">
+          <div class="panel-header"><h2>ℹ️ Mi cuenta</h2></div>
+          <div style="padding:1.5rem;display:flex;flex-direction:column;gap:.75rem">
+            <div class="info-cuenta-fila" style="padding:.6rem 0;border-bottom:1px solid var(--borde)">
+              <span style="font-size:.83rem;color:var(--texto-suave)">Estado</span>
+              <span id="infoEstado" class="badge badge-activo info-valor">—</span>
+            </div>
+            <div class="info-cuenta-fila" style="padding:.6rem 0;border-bottom:1px solid var(--borde)">
+              <span style="font-size:.83rem;color:var(--texto-suave)">Membresía</span>
+              <span id="infoMembresia" class="info-valor" style="font-size:.83rem;font-weight:600;color:var(--texto)">—</span>
+            </div>
+            <div class="info-cuenta-fila" style="padding:.6rem 0">
+              <span style="font-size:.83rem;color:var(--texto-suave)">Vendedor desde</span>
+              <span id="infoCreadoEn" class="info-valor" style="font-size:.83rem;color:var(--texto)">—</span>
+            </div>
+            <div class="info-cuenta-fila" style="padding:.6rem 0;border-bottom:1px solid var(--borde)">
+              <span style="font-size:.83rem;color:var(--texto-suave)"><a href="politicas.html" target="_blank" class="info-valor"style="font-size:.83rem; font-weight: 600;color:var(--verde); text-decoration:none" >Políticas</a>
+            </div>
+            <div class="info-cuenta-fila" style="padding:.6rem 0;">
+              <span  ><a href="terminos.html" target="_blank" class="info-valor"style="font-size:.83rem;font-weight: 600;color:var(--verde); text-decoration:none">Filosofía, Términos y condiciones </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+<script  src="../js/auth.js"></script>
+    <script type="module" src="../js/perfil.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnH = document.getElementById("btnHamburguesa");
+        var sidebar = document.querySelector(".sidebar");
+        var overlay = document.getElementById("sidebarOverlay");
+        if (!btnH || !sidebar || !overlay) return;
+        function abrir()  { sidebar.classList.add("abierto");    overlay.classList.add("visible");    btnH.classList.add("abierto"); }
+        function cerrar() { sidebar.classList.remove("abierto"); overlay.classList.remove("visible"); btnH.classList.remove("abierto"); }
+        btnH.addEventListener("click", function () { sidebar.classList.contains("abierto") ? cerrar() : abrir(); });
+        overlay.addEventListener("click", cerrar);
+        document.querySelectorAll(".nav a").forEach(function (a) {
+          a.addEventListener("click", function () { if (window.innerWidth <= 700) cerrar(); });
+        });
+      });
+    </script>
+  </body>
+</html>

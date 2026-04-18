@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Claves API — GI Store Admin</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <style>
+    /* ══ GRID DE CARDS — APIs ══ */
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+    }
+    .api-card {
+      position: relative;
+      background: var(--fondo-2, #fff);
+      border: 1.5px solid var(--borde, #e5e7eb);
+      border-radius: 14px;
+      padding: 1.1rem 1.1rem 1rem;
+      display: flex; flex-direction: column; gap: .55rem;
+      cursor: pointer;
+      transition: box-shadow .18s, border-color .18s, transform .15s;
+      overflow: hidden;
+    }
+    .api-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--verde,#1a6b3c), #34d399);
+      opacity: 0; transition: opacity .2s;
+      border-radius: 14px 14px 0 0;
+    }
+    .api-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.09); border-color: var(--verde,#1a6b3c); transform: translateY(-2px); }
+    .api-card:hover::before { opacity: 1; }
+    .api-card-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, #e8f5ee, #d1ead9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .api-card-nombre {
+      font-weight: 700; font-size: .92rem; color: var(--texto,#111);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .api-card-servicio {
+      font-family: monospace; font-size: .72rem; color: var(--texto-suave,#6b7280);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .api-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: auto; padding-top: .55rem;
+      border-top: 1px solid var(--borde,#e5e7eb);
+    }
+    .api-card-btn-editar {
+      background: none; border: 1.5px solid var(--borde,#e5e7eb);
+      border-radius: 7px; padding: .22rem .6rem; font-size: .75rem;
+      cursor: pointer; color: var(--texto-medio,#374151);
+      display: flex; align-items: center; gap: .3rem;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .api-card-btn-editar:hover { background: var(--verde,#1a6b3c); border-color: var(--verde,#1a6b3c); color: #fff; }
+    .api-card-empty {
+      border-style: dashed; border-color: #d1d5db; background: transparent;
+      align-items: center; justify-content: center; gap: .4rem;
+      color: var(--texto-suave,#9ca3af); font-size: .82rem; min-height: 130px;
+      transition: border-color .18s, color .18s, background .18s;
+    }
+    .api-card-empty:hover { border-color: var(--verde,#1a6b3c); color: var(--verde,#1a6b3c); background: #f0faf4; transform: none; box-shadow: none; }
+    .api-card-empty::before { display: none; }
+    .api-card-empty .material-symbols-outlined { font-size: 1.6rem; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: #f0faf4; border: 1.5px solid #a8d5b5;
+      border-radius: 12px; padding: 1rem 1.25rem;
+      font-size: .85rem; color: #155c32; line-height: 1.6; margin-bottom: 1.25rem;
+    }
+    .info-box strong { display: block; margin-bottom: .3rem; }
+    .info-box code { background: #d1ead9; border-radius: 4px; padding: .1rem .35rem; font-size: .78rem; font-family: monospace; }
+
+    /* ── Badge ── */
+    .badge-on  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    /* ── Modelos chips ── */
+    .modelos-list { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .modelo-chip { background: var(--fondo,#f3f4f6); border: 1px solid var(--borde,#e5e7eb); border-radius: 4px; font-size: .7rem; padding: .15rem .45rem; font-family: monospace; color: var(--texto-medio,#374151); }
+
+    /* ── Textarea modelos ── */
+    #fModelos { width: 100%; min-height: 80px; resize: vertical; font-family: monospace; font-size: .82rem; border: 1.5px solid var(--borde,#e5e7eb); border-radius: 8px; padding: .55rem .85rem; box-sizing: border-box; color: var(--texto,#111); background: var(--fondo-2,#fff); }
+    #fModelos:focus { outline: none; border-color: var(--verde,#1a6b3c); }
+
+    /* ── Modal detalle ── */
+    #modalDetalleOverlay .modal { max-width: 520px; }
+    .detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem 1.25rem; margin-bottom: 1rem; }
+    .detalle-campo { display: flex; flex-direction: column; gap: .2rem; }
+    .detalle-campo label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--texto-suave,#6b7280); }
+    .detalle-valor { font-size: .82rem; color: var(--texto,#111); font-family: monospace; background: var(--fondo,#f3f4f6); border-radius: 6px; padding: .35rem .6rem; word-break: break-all; display: flex; align-items: center; gap: .4rem; }
+    .detalle-valor.url-val { font-family: inherit; font-size: .78rem; color: var(--texto-medio,#374151); }
+    .detalle-campo.full { grid-column: 1 / -1; }
+    .detalle-sep { border: none; border-top: 1px solid var(--borde,#e5e7eb); margin: .75rem 0; }
+    .detalle-acciones { display: flex; gap: .6rem; justify-content: flex-end; flex-wrap: wrap; margin-top: .25rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) { .api-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 780px)  { .api-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px)  { .api-grid { grid-template-columns: 1fr; } .topbar { flex-direction: column; align-items: flex-start; gap: .75rem; } .detalle-grid { grid-template-columns: 1fr; } }
+
+    /* ── Badge activo/inactivo ── */
+    .badge-on  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #fee2e2; color: #991b1b; }
+
+    /* ── Campo clave oculta ── */
+    .clave-wrap { display: flex; align-items: center; gap: .4rem; }
+    .clave-texto {
+      font-family: monospace; font-size: .8rem;
+      color: var(--texto-suave,#6b7280);
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .btn-eye {
+      background: none; border: none; cursor: pointer;
+      color: var(--texto-suave); font-size: .9rem; padding: .1rem;
+    }
+    .btn-eye:hover { color: var(--verde,#1a6b3c); }
+
+    /* ── Modelos chips ── */
+    .modelos-list { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .modelo-chip {
+      background: var(--fondo,#f3f4f6); border: 1px solid var(--borde,#e5e7eb);
+      border-radius: 4px; font-size: .7rem; padding: .15rem .45rem;
+      font-family: monospace; color: var(--texto-medio,#374151);
+    }
+
+    /* ── Textarea modelos ── */
+    #fModelos {
+      width: 100%; min-height: 80px; resize: vertical;
+      font-family: monospace; font-size: .82rem;
+      border: 1.5px solid var(--borde,#e5e7eb); border-radius: 8px;
+      padding: .55rem .85rem; box-sizing: border-box;
+      color: var(--texto,#111); background: var(--fondo-2,#fff);
+    }
+    #fModelos:focus { outline: none; border-color: var(--verde,#1a6b3c); }
+
+    /* ── Info box ── */
+    .info-box {
+      background: #f0faf4; border: 1.5px solid #a8d5b5;
+      border-radius: 12px; padding: 1rem 1.25rem;
+      font-size: .85rem; color: #155c32; line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+    .info-box strong { display: block; margin-bottom: .3rem; }
+    .info-box code {
+      background: #d1ead9; border-radius: 4px;
+      padding: .1rem .35rem; font-size: .78rem; font-family: monospace;
+    }
+
+    @media (max-width: 600px) {
+      .topbar { flex-direction: column; align-items: flex-start; gap: .75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="dashboard.html" class="sidebar-logo" title="Ir al inicio" style="text-decoration:none">
+    <div class="sidebar-logo-icono">
+      <img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/>
+    </div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Admin Panel</span></div>
+  </a>
+  <nav class="nav">
+    <div class="nav-titulo">General</div>
+    <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bar_chart</span></span> Dashboard</a>
+    <div class="nav-titulo">Gestión</div>
+    <a href="vendedores.html"><span class="icono"><span class="material-symbols-outlined">point_of_sale</span></span> Vendedores</a>
+    <a href="vendedores-inactivos.html"><span class="icono"><span class="material-symbols-outlined">person_off</span></span> Desactivados</a>
+    <a href="membresias.html"><span class="icono"><span class="material-symbols-outlined">id_card</span></span> Membresías</a>
+    <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">shopping_bag</span></span> Productos</a>
+    <a href="categorias.html"><span class="icono"><span class="material-symbols-outlined">article_person</span></span> Categorías</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">export_notes</span></span> Exportar catálogo</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span> Publicidad</a>
+    <a href="foro-admin.html"><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+    <a href="#" class="activo"><span class="icono"><span class="material-symbols-outlined">key</span></span> Claves API</a>
+    <a href="perfil.html"><span class="icono"><span class="material-symbols-outlined">contacts_product</span></span> Mi perfil</a>
+    <div class="nav-titulo">Sitio</div>
+    <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">trolley</span></span> Ver catálogo</a>
+  </nav>
+  <div class="sidebar-pie">
+    <button class="btn-salir" id="btnSalir">
+      <span class="material-symbols-outlined">logout</span> Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>🔑 Claves API</h1>
+      <p class="fecha" id="fechaHoy"></p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-primary" id="btnNuevaClave">
+        <span class="material-symbols-outlined" style="font-size:1rem">add</span>
+        Nueva clave
+      </button>
+    </div>
+  </div>
+
+  <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
+  <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
+
+  <!-- Info -->
+  <div class="info-box">
+    <strong>🔐 ¿Para qué sirve esto?</strong>
+    Las claves API <strong>nunca se guardan en el código fuente</strong>. Se almacenan aquí en Firestore
+    y los módulos que las necesitan (como Spotlight IA) las leen dinámicamente.
+    Si cambias una clave aquí, el cambio aplica de inmediato sin tocar ningún archivo.<br/>
+    Campos clave: <code>servicio</code> = identificador único · <code>origen_url</code> = URL base de la API
+    · <code>modelos</code> = lista de modelos (uno por línea) · <code>clave</code> = API key secreta.
+  </div>
+
+  <!-- Panel de cards -->
+  <div class="panel">
+    <div class="panel-header"><h2>Servicios registrados</h2></div>
+    <div id="clavesLista" class="api-grid">
+      <p class="cargando-txt" style="grid-column:1/-1">Cargando…</p>
+    </div>
+  </div>
+</main>
+
+<!-- ══ Modal detalle de clave ══ -->
+<div class="modal-overlay" id="modalDetalleOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-titulo" id="detalleTitulo" style="display:flex;align-items:center;gap:.6rem">
+      <span id="detalleIcono"></span><span id="detalleTituloTxt"></span>
+    </div>
+    <div class="detalle-grid">
+      <div class="detalle-campo">
+        <label>Servicio</label>
+        <div class="detalle-valor"><code id="dServicio" style="font-size:.8rem"></code></div>
+      </div>
+      <div class="detalle-campo">
+        <label>Estado</label>
+        <div class="detalle-valor" style="background:transparent;padding:0"><span id="dEstado"></span></div>
+      </div>
+      <div class="detalle-campo full">
+        <label>URL de origen</label>
+        <div class="detalle-valor url-val" id="dUrl"></div>
+      </div>
+      <div class="detalle-campo full">
+        <label>Clave API</label>
+        <div class="detalle-valor" style="justify-content:space-between">
+          <span id="dClave" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span>
+          <button class="btn-eye" id="dBtnVerClave" title="Revelar" style="background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--texto-suave);flex-shrink:0">&#128065;</button>
+        </div>
+      </div>
+      <div class="detalle-campo full">
+        <label>Modelos disponibles</label>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.15rem" id="dModelos"></div>
+      </div>
+      <div class="detalle-campo full">
+        <label>Nota interna</label>
+        <div class="detalle-valor url-val" id="dNota" style="font-family:inherit;color:var(--texto-medio)"></div>
+      </div>
+    </div>
+    <hr class="detalle-sep"/>
+    <div class="detalle-acciones">
+      <button class="btn btn-secundario" id="dBtnCerrar">Cerrar</button>
+      <button class="btn btn-primary" id="dBtnEditar">
+        <span class="material-symbols-outlined" style="font-size:.95rem">edit</span> Editar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal crear / editar clave ══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-titulo" id="modalTitulo">Nueva clave API</div>
+    <div class="msg-error" id="msgErrorModal"><span>⚠&nbsp;</span><span id="textoErrorModal"></span></div>
+    <input type="hidden" id="claveId"/>
+
+    <div class="campo">
+      <label>Identificador del servicio <span style="font-size:.72rem;color:var(--texto-suave);font-weight:400">(único, sin espacios)</span></label>
+      <input type="text" id="fServicio" placeholder="ej: openrouter" autocomplete="off"/>
+      <p style="font-size:.72rem;color:var(--texto-suave);margin-top:.3rem">
+        Se usa en el código para pedir la clave: <code style="font-size:.72rem">obtenerClaveApi("openrouter")</code>
+      </p>
+    </div>
+
+    <div class="campo">
+      <label>Nombre legible</label>
+      <input type="text" id="fNombre" placeholder="ej: OpenRouter IA"/>
+    </div>
+
+    <div class="campo">
+      <label>URL de origen de la API</label>
+      <input type="url" id="fOrigenUrl" placeholder="https://openrouter.ai/api/v1/chat/completions"/>
+    </div>
+
+    <div class="campo">
+      <label>Clave API (API Key)</label>
+      <div style="position:relative">
+        <input type="password" id="fClave" placeholder="sk-or-v1-…" autocomplete="new-password"
+               style="padding-right:2.5rem"/>
+        <button type="button" id="btnVerClave"
+                style="position:absolute;right:.6rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.95rem;color:var(--texto-suave)">👁</button>
+      </div>
+      <p style="font-size:.72rem;color:var(--texto-suave);margin-top:.3rem">
+        Si estás editando y no quieres cambiar la clave, déjala vacía.
+      </p>
+    </div>
+
+    <div class="campo">
+      <label>Modelos disponibles <span style="font-size:.72rem;color:var(--texto-suave);font-weight:400">(uno por línea, se usan en orden de preferencia)</span></label>
+      <textarea id="fModelos" placeholder="google/gemini-2.5-pro-exp-03-25:free&#10;google/gemma-3-27b-it:free&#10;meta-llama/llama-4-scout:free"></textarea>
+    </div>
+
+    <div class="campo">
+      <label>Nota interna <span style="font-size:.72rem;color:var(--texto-suave);font-weight:400">(opcional)</span></label>
+      <input type="text" id="fNota" placeholder="ej: Clave generada el 2026-03-15, plan gratuito"/>
+    </div>
+
+    <div class="campo">
+      <label>Estado</label>
+      <select id="fActivo">
+        <option value="true">Activa</option>
+        <option value="false">Inactiva</option>
+      </select>
+    </div>
+
+    <div class="modal-acciones">
+      <button class="btn btn-secundario" id="btnCancelar">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardar">
+        <span class="btn-texto">Guardar</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal confirmar eliminar ══ -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+  <div class="modal" style="max-width:400px;text-align:center">
+    <div class="modal-titulo" style="color:var(--error,#dc2626)">🗑 Eliminar clave</div>
+    <p style="font-size:.9rem;color:var(--texto-medio);margin-bottom:1.25rem">
+      ¿Eliminar esta clave API? Los módulos que la usan dejarán de funcionar.
+    </p>
+    <div class="modal-acciones" style="justify-content:center">
+      <button class="btn btn-secundario" id="btnCancelarEliminar">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmarEliminar"
+              style="background:var(--error,#dc2626);border-color:var(--error,#dc2626)">
+        <span class="btn-texto">Eliminar</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="../js/api-claves.js"></script>
+<script type="module" src="../js/wip.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var btnH = document.getElementById("btnHamburguesa");
+    var sidebar = document.querySelector(".sidebar");
+    var overlay = document.getElementById("sidebarOverlay");
+    if (!btnH || !sidebar || !overlay) return;
+    function abrir()  { sidebar.classList.add("abierto");    overlay.classList.add("visible");    btnH.classList.add("abierto"); }
+    function cerrar() { sidebar.classList.remove("abierto"); overlay.classList.remove("visible"); btnH.classList.remove("abierto"); }
+    btnH.addEventListener("click", () => sidebar.classList.contains("abierto") ? cerrar() : abrir());
+    overlay.addEventListener("click", cerrar);
+    document.querySelectorAll(".nav a").forEach(a => a.addEventListener("click", () => { if (window.innerWidth <= 700) cerrar(); }));
+  });
+</script>
+</body>
+</html>

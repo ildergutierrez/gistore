@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API WhatsApp — GI Store Comunicaciones</title>
+    <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .info-box { background:var(--adv-bg); border:1.5px solid var(--adv-borde); border-radius:var(--radio-sm); padding:1rem 1.25rem; font-size:.85rem; color:#7c4c0a; display:flex; gap:.75rem; align-items:flex-start; margin-bottom:1.5rem; }
+    .info-box .material-symbols-outlined { flex-shrink:0; font-size:1.1rem; margin-top:.1rem; }
+    .paso { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; }
+    .paso-num { width:28px; height:28px; border-radius:50%; background:var(--verde); color:#fff; font-family:'Nunito',sans-serif; font-weight:800; font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.15rem; }
+    .paso-body h3 { font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; color:var(--texto); margin-bottom:.2rem; }
+    .paso-body p { font-size:.83rem; color:var(--texto-suave); line-height:1.55; }
+    .campo-api { position:relative; }
+    .campo-api input { padding-right:5rem; }
+    .btn-copy { position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:.3rem .65rem; background:var(--verde-claro); border:1px solid var(--verde-borde); border-radius:6px; font-size:.74rem; font-weight:600; color:var(--verde); cursor:pointer; white-space:nowrap; }
+    .btn-copy:hover { background:var(--verde-hover); }
+    .status-bar { display:flex; align-items:center; gap:.6rem; padding:.75rem 1rem; border-radius:var(--radio-sm); font-size:.83rem; font-weight:600; }
+    .status-ok  { background:var(--ok-bg);    border:1.5px solid var(--ok-borde);    color:var(--ok); }
+    .status-err { background:var(--error-bg); border:1.5px solid var(--error-borde); color:var(--error); }
+    .status-off { background:var(--fondo);    border:1.5px solid var(--borde);       color:var(--texto-suave); }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html" class="activo"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>🔑 API WhatsApp Business</h1>
+      <p class="sub">Configuración de la API oficial de Meta para envío de mensajes</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-secundario" onclick="probarApi()" id="btnProbar">
+        <span class="material-symbols-outlined" style="font-size:1rem">bolt</span>Probar API
+      </button>
+      <button class="btn btn-primary" onclick="guardarConfig()" id="btnGuardar">
+        <span class="material-symbols-outlined" style="font-size:1rem">save</span>Guardar
+      </button>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="material-symbols-outlined">info</span>
+    <div>
+      <strong>GI Store usa la API oficial de WhatsApp Business (Meta Cloud API).</strong> Para usarla necesitas una cuenta de Meta Business, un número de WhatsApp Business verificado y un token de acceso permanente. Este módulo solo maneja el <strong>envío de mensajes</strong>.
+    </div>
+  </div>
+
+  <div class="grilla-2" style="align-items:start">
+
+    <!-- Formulario configuración -->
+    <div>
+      <div class="panel" style="animation-delay:.05s">
+        <div class="panel-header"><h2>🔧 Credenciales de la API</h2></div>
+        <div class="panel-body">
+          <div id="msgOk" class="msg-ok"><span class="material-symbols-outlined">check_circle</span> Configuración guardada correctamente.</div>
+          <div id="msgErr" class="msg-error"><span class="material-symbols-outlined">error</span> <span id="errTxt">Completa todos los campos.</span></div>
+
+          <div class="campo">
+            <label>Token de acceso (Access Token)</label>
+            <div class="campo-api">
+              <input type="password" id="token" placeholder="EAAxxxxxxxxxxxxx…" style="width:100%;padding:.72rem 1rem;padding-right:5rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+              <button class="btn-copy" onclick="toggleVer('token', this)">Ver</button>
+            </div>
+            <p style="font-size:.75rem;color:var(--texto-suave);margin-top:.3rem">Token permanente obtenido desde Meta Business Manager</p>
+          </div>
+
+          <div class="campo">
+            <label>Phone Number ID</label>
+            <div class="campo-api">
+              <input type="text" id="phoneId" placeholder="123456789012345" style="width:100%;padding:.72rem 1rem;padding-right:5rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+              <button class="btn-copy" onclick="copiar('phoneId', this)">Copiar</button>
+            </div>
+            <p style="font-size:.75rem;color:var(--texto-suave);margin-top:.3rem">ID del número de teléfono registrado en Meta</p>
+          </div>
+
+          <div class="campo">
+            <label>WhatsApp Business Account ID (WABA ID)</label>
+            <div class="campo-api">
+              <input type="text" id="wabaId" placeholder="987654321098765" style="width:100%;padding:.72rem 1rem;padding-right:5rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+              <button class="btn-copy" onclick="copiar('wabaId', this)">Copiar</button>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label>Versión de la API</label>
+            <select id="apiVersion" style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+              <option value="v19.0" selected>v19.0 (recomendada)</option>
+              <option value="v18.0">v18.0</option>
+              <option value="v17.0">v17.0</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>Número de teléfono registrado</label>
+            <input type="tel" id="telefono" placeholder="+57 300 000 0000"
+              style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+          </div>
+
+          <!-- Estado de conexión -->
+          <div id="statusBar" class="status-bar status-off" style="margin-top:.5rem;margin-bottom:1rem">
+            <span class="material-symbols-outlined" style="font-size:1rem">radio_button_unchecked</span>
+            Sin verificar — guarda y prueba la API para ver el estado
+          </div>
+
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="guardarConfig()"><span class="material-symbols-outlined" style="font-size:1rem">save</span>Guardar configuración</button>
+            <button class="btn btn-secundario" onclick="probarApi()"><span class="material-symbols-outlined" style="font-size:1rem">bolt</span>Probar conexión</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Envío de prueba -->
+      <div class="panel" style="animation-delay:.1s;margin-top:1.5rem">
+        <div class="panel-header"><h2>🧪 Mensaje de prueba</h2></div>
+        <div class="panel-body">
+          <div class="campo">
+            <label>Número de destino (con código de país)</label>
+            <input type="tel" id="testTel" placeholder="+57 300 000 0000"
+              style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"/>
+          </div>
+          <div class="campo">
+            <label>Mensaje de prueba</label>
+            <textarea id="testMsg" rows="3" style="resize:none">Hola, este es un mensaje de prueba desde GI Store. La API de WhatsApp está funcionando correctamente. ✅</textarea>
+          </div>
+          <button class="btn btn-primary" onclick="enviarPrueba()">
+            <span class="material-symbols-outlined" style="font-size:1rem">send</span>Enviar mensaje de prueba
+          </button>
+          <div id="testResult" style="display:none;margin-top:.75rem;padding:.65rem .9rem;border-radius:var(--radio-sm);font-size:.83rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guía y endpoint -->
+    <div>
+      <div class="panel" style="animation-delay:.15s">
+        <div class="panel-header"><h2>📖 Cómo obtener tus credenciales</h2></div>
+        <div class="panel-body">
+          <div class="paso">
+            <div class="paso-num">1</div>
+            <div class="paso-body">
+              <h3>Crea una app en Meta Developers</h3>
+              <p>Ve a <strong>developers.facebook.com</strong> → Mis apps → Crear app → Tipo: Business. Agrega el producto <strong>WhatsApp</strong>.</p>
+            </div>
+          </div>
+          <div class="paso">
+            <div class="paso-num">2</div>
+            <div class="paso-body">
+              <h3>Configura tu número de WhatsApp Business</h3>
+              <p>En la sección <strong>WhatsApp → Configuración</strong> de tu app, verifica tu número de teléfono. Copia el <strong>Phone Number ID</strong> y el <strong>WABA ID</strong>.</p>
+            </div>
+          </div>
+          <div class="paso">
+            <div class="paso-num">3</div>
+            <div class="paso-body">
+              <h3>Genera un token permanente</h3>
+              <p>Ve a <strong>Meta Business Suite → Configuración → Usuarios del sistema</strong> → Crea un usuario del sistema → Genera un token con permisos <code style="background:var(--fondo);padding:.1rem .4rem;border-radius:4px;font-size:.8rem">whatsapp_business_messaging</code>.</p>
+            </div>
+          </div>
+          <div class="paso" style="margin-bottom:0">
+            <div class="paso-num">4</div>
+            <div class="paso-body">
+              <h3>Pega las credenciales aquí y prueba</h3>
+              <p>Ingresa el token, Phone Number ID y WABA ID en el formulario. Usa el botón <strong>Probar conexión</strong> para verificar que todo funcione.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint y ejemplo -->
+      <div class="panel" style="animation-delay:.2s;margin-top:1.5rem">
+        <div class="panel-header"><h2>🔗 Endpoint utilizado</h2></div>
+        <div class="panel-body">
+          <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:.75rem">GI Store envía mensajes usando el siguiente endpoint de la Cloud API:</p>
+          <div style="background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-sm);padding:.75rem 1rem;font-family:monospace;font-size:.78rem;color:var(--texto-medio);word-break:break-all;margin-bottom:1rem">
+            POST https://graph.facebook.com/<span id="versionLabel" style="color:var(--verde);font-weight:700">v19.0</span>/<span style="color:var(--advertencia)">{Phone-Number-ID}</span>/messages
+          </div>
+          <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:.75rem">Cuerpo del request (JSON):</p>
+          <pre style="background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-sm);padding:.75rem 1rem;font-size:.76rem;color:var(--texto-medio);overflow-x:auto;white-space:pre-wrap">{
+  "messaging_product": "whatsapp",
+  "to": "+573001234567",
+  "type": "text",
+  "text": {
+    "body": "Hola [nombre], mensaje desde GI Store."
+  }
+}</pre>
+          <p style="font-size:.78rem;color:var(--texto-suave);margin-top:.75rem">
+            <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:middle;color:var(--advertencia)">info</span>
+            Los números destinatarios deben haber iniciado una conversación con la cuenta en las últimas 24 h, o debes usar plantillas aprobadas por Meta.
+          </p>
+        </div>
+      </div>
+
+      <!-- Límites -->
+      <div class="panel" style="animation-delay:.25s;margin-top:1.5rem">
+        <div class="panel-header"><h2>📊 Límites de la API</h2></div>
+        <div style="padding:1rem 1.5rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+            <div style="background:var(--fondo);border-radius:var(--radio-sm);padding:.85rem 1rem;text-align:center">
+              <p style="font-size:1.4rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--verde)">1K</p>
+              <p style="font-size:.75rem;color:var(--texto-suave)">conversaciones/mes gratis</p>
+            </div>
+            <div style="background:var(--fondo);border-radius:var(--radio-sm);padding:.85rem 1rem;text-align:center">
+              <p style="font-size:1.4rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--verde)">∞</p>
+              <p style="font-size:.75rem;color:var(--texto-suave)">mensajes por conversación</p>
+            </div>
+            <div style="background:var(--fondo);border-radius:var(--radio-sm);padding:.85rem 1rem;text-align:center">
+              <p style="font-size:1.4rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--verde)">80/s</p>
+              <p style="font-size:.75rem;color:var(--texto-suave)">mensajes por segundo (tier 1)</p>
+            </div>
+            <div style="background:var(--fondo);border-radius:var(--radio-sm);padding:.85rem 1rem;text-align:center">
+              <p style="font-size:1.4rem;font-weight:800;font-family:'Nunito',sans-serif;color:var(--verde)">24h</p>
+              <p style="font-size:.75rem;color:var(--texto-suave)">ventana de conversación activa</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../control/auth.js"></script>
+<script src="../control/wconfi.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spam — GI Store Comunicaciones</title>
+    <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Comunicaciones</span></div>
+  </a>
+  <nav class="nav">
+    <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose"><span class="material-symbols-outlined" style="font-size:1rem">edit</span>Redactar correo</a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa"><span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>Enviar WhatsApp</a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html" class="activo"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie"><button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>🚫 Spam</h1>
+      <p class="sub">Mensajes filtrados automáticamente como no deseados</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-peligro" onclick="vaciarSpam()">
+        <span class="material-symbols-outlined" style="font-size:1rem">delete_sweep</span>
+        Vaciar spam
+      </button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s">
+      <div class="etiqueta">En spam</div>
+      <div class="numero" id="statSpam">14</div>
+      <div class="icono-bg">🚫</div>
+    </div>
+    <div class="stat" style="animation-delay:.1s">
+      <div class="etiqueta">Bloqueados este mes</div>
+      <div class="numero">87</div>
+      <div class="icono-bg">🛡️</div>
+    </div>
+    <div class="stat" style="animation-delay:.15s">
+      <div class="etiqueta">Dominios bloqueados</div>
+      <div class="numero" id="statBloqueados">3</div>
+      <div class="icono-bg">⛔</div>
+    </div>
+  </div>
+
+  <div class="panel" style="animation-delay:.25s">
+    <div class="panel-header">
+      <h2>🚫 Mensajes en spam</h2>
+      <div class="acciones">
+        <input type="text" id="buscar" placeholder="Buscar…" oninput="filtrar()"
+          style="padding:.45rem .9rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.83rem;outline:none;min-width:200px;font-family:'Inter',sans-serif;background:var(--fondo-2);color:var(--texto)"/>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px"><input type="checkbox" id="selAll" onchange="toggleAll(this)"/></th>
+            <th>De</th>
+            <th>Asunto</th>
+            <th>Recibido</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div id="barMasiva" style="display:none;padding:.75rem 1.2rem;border-top:1.5px solid var(--borde);background:var(--error-bg);align-items:center;gap:.75rem;flex-wrap:wrap">
+      <span style="font-size:.82rem;color:var(--error);font-weight:600" id="lblSel">0 seleccionados</span>
+      <button class="btn btn-secundario btn-sm" onclick="restaurarSeleccion()">Mover a bandeja</button>
+      <button class="btn btn-peligro btn-sm" onclick="eliminarSeleccion()">Eliminar definitivamente</button>
+    </div>
+  </div>
+
+  <!-- Dominios bloqueados -->
+  <div class="panel" style="animation-delay:.3s">
+    <div class="panel-header">
+      <h2>⛔ Dominios bloqueados</h2>
+      <div class="acciones">
+        <button class="btn btn-primary btn-sm" onclick="abrirNuevoDominio()">+ Agregar</button>
+      </div>
+    </div>
+    <div style="padding:1rem 1.5rem" id="listaDominios"></div>
+  </div>
+</main>
+
+<!-- Modal ver spam -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;padding:2rem;overflow-y:auto">
+  <div style="max-width:600px;margin:0 auto;background:var(--fondo-2);border-radius:var(--radio-lg);box-shadow:var(--sombra-md);overflow:hidden">
+    <div style="background:#fef2f2;padding:1.1rem 1.5rem;border-bottom:1.5px solid var(--error-borde);display:flex;align-items:center;justify-content:space-between">
+      <h2 style="font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--error)" id="mAsunto">—</h2>
+      <button onclick="cerrar()" style="background:none;border:none;cursor:pointer;color:var(--texto-suave);font-size:1.2rem">✕</button>
+    </div>
+    <div style="padding:1.5rem">
+      <div style="background:var(--adv-bg);border:1.5px solid var(--adv-borde);border-radius:var(--radio-sm);padding:.65rem .9rem;font-size:.82rem;color:var(--advertencia);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+        <span class="material-symbols-outlined" style="font-size:1rem">warning</span>
+        Este mensaje fue marcado como spam. Ten cuidado con los enlaces o archivos adjuntos.
+      </div>
+      <p style="font-size:.75rem;color:var(--texto-suave);font-weight:600;text-transform:uppercase;letter-spacing:.04em">De</p>
+      <p style="font-size:.9rem;color:var(--texto);margin-bottom:1rem" id="mDe">—</p>
+      <hr class="separador"/>
+      <div id="mCuerpo" style="font-size:.9rem;line-height:1.7;color:var(--texto-medio);white-space:pre-wrap"></div>
+      <hr class="separador"/>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <button class="btn btn-secundario" onclick="restaurarUno(modalId)">Mover a bandeja</button>
+        <button class="btn btn-peligro" onclick="eliminarUno(modalId)">Eliminar definitivamente</button>
+        <button class="btn btn-secundario" onclick="cerrar()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../control/auth.js"></script>
+<script src="../control/spam.js"></script>
+</body>
+</html>

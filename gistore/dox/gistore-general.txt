@@ -1,0 +1,467 @@
+================================================================================
+  GI STORE — DOCUMENTACIÓN GENERAL
+  Arquitectura · Backend · PHP · JavaScript · HTML
+  Abril 2026
+================================================================================
+
+--------------------------------------------------------------------------------
+1. DESCRIPCIÓN GENERAL
+--------------------------------------------------------------------------------
+
+GI Store es una plataforma de comercio electrónico multivendedor desarrollada
+en Colombia. Permite a vendedores registrarse, gestionar su catálogo de
+productos, adquirir membresías y publicitar sus productos a través de una
+tienda pública accesible para cualquier cliente.
+
+El sistema se divide en tres capas:
+
+  [1] Tienda pública      → catálogo, directorio de tiendas, foro público
+  [2] Portal del vendedor → autogestión (módulo user/)
+  [3] Panel de admin      → gestión total del sistema (módulo admin/)
+
+Las tres capas comparten un único backend PHP/MySQL con autenticación por
+sesión y protección CSRF.
+
+
+--------------------------------------------------------------------------------
+2. TECNOLOGÍAS
+--------------------------------------------------------------------------------
+
+  Capa              | Tecnología                  | Notas
+  ------------------|-----------------------------|------------------------------
+  Frontend          | HTML5, CSS3, JavaScript ES6 | Sin framework, módulos ESM
+  Backend           | PHP 8.x + PDO               | API REST en endpoints .php
+  Base de Datos     | MySQL / MariaDB             | charset utf8mb4
+  Autenticación     | PHP Sessions + CSRF Token   | Token HMAC, expiración 2h
+  Pagos             | Wompi                       | Pasarela colombiana
+  Email             | PHPMailer 7.x               | SMTP SSL puerto 465
+  Video (cliente)   | FFmpeg WASM                 | Procesamiento en navegador
+  IA (texto)        | OpenRouter API              | Múltiples modelos con fallback
+
+
+--------------------------------------------------------------------------------
+3. ESTRUCTURA DE CARPETAS
+--------------------------------------------------------------------------------
+
+gistore/
+├── index.html                  ← Catálogo público principal
+├── router.php                  ← Router para servidor de desarrollo PHP
+├── hash.php                    ← Genera hash bcrypt para contraseñas
+├── composer.json               ← Dependencias PHP (require: phpmailer)
+├── composer.lock
+├── sitemap.xml
+│
+├── backend/                    ← Core PHP compartido (admin + user)
+│   ├── conexion.php            ← Conexión PDO MySQL
+│   ├── sesion.php              ← Verificación de sesiones por rol
+│   ├── tokens.php              ← Generación/validación de tokens CSRF
+│   └── cerrar.php              ← Destruye la sesión PHP
+│
+├── php/                        ← API pública (sin autenticación de rol)
+│   ├── categorias.php          ← GET: lista de categorías
+│   ├── vendedores.php          ← GET: tiendas, productos, publicidades
+│   ├── foro.php                ← GET/POST: foro comunitario
+│   ├── solicitudregistro.php   ← POST: solicitud de registro vendedor
+│   ├── enviar-publicidad.php   ← POST: solicitud de campaña publicitaria
+│   └── diagnostico.php         ← Diagnóstico del servidor
+│
+├── css/
+│   ├── style.css               ← Hoja principal pública
+│   ├── nav.css                 ← Navbar responsiva
+│   └── vendedor-ui.css         ← Componentes de tarjeta de tienda
+│
+├── js/
+│   ├── api.js                  ← Cliente HTTP central (fetch + token CSRF)
+│   ├── app.js                  ← Catálogo público con carrito
+│   ├── nav.js                  ← Menú hamburguesa responsivo
+│   ├── stores.js               ← Directorio de tiendas
+│   ├── tienda.js               ← Tienda individual del vendedor
+│   ├── foro.js                 ← Foro comunitario
+│   ├── impulsogis.js           ← Módulo de publicidad/impulso
+│   ├── banner-pub.js           ← Banners en el home
+│   ├── banner-pub-pages.js     ← Banners en páginas internas
+│   ├── modal-producto-banner.js← Modal de producto desde banner
+│   ├── solicitudregistro.js    ← Formulario de solicitud de registro
+│   ├── colombia-ciudades.js    ← Lista de ciudades colombianas
+│   ├── data.js                 ← Datos estáticos del sistema
+│   └── accesoadmin.js          ← Atajo oculto Ctrl+Shift+E → admin
+│
+├── page/                       ← Páginas HTML públicas
+│   ├── tienda.html             ← Tienda individual
+│   ├── stores.html             ← Directorio de tiendas
+│   ├── foro.html               ← Foro comunitario
+│   ├── info.html               ← Información del sistema
+│   └── nosotros.html           ← Página de empresa
+│
+├── admin/                      ← Panel de administración (ver doc admin)
+├── user/                       ← Portal del vendedor (ver doc user)
+│
+├── img/
+│   ├── favicon/                ← SVGs del ícono GI Store
+│   └── productos/              ← Imágenes subidas de productos
+│
+├── tools/
+│   └── generar-hash.php        ← CLI: genera hash para cambiar pass admin
+│
+└── tmp-banners/                ← Almacenamiento temporal de imágenes banner
+    └── .htaccess               ← Restringe acceso directo
+
+
+--------------------------------------------------------------------------------
+4. BACKEND COMPARTIDO — /backend/
+--------------------------------------------------------------------------------
+
+Estos archivos son la infraestructura PHP que usan AMBOS módulos (admin y user).
+No son accesibles directamente desde el navegador en producción.
+
+  ── conexion.php ──────────────────────────────────────────────────────────────
+
+  Funciones:
+    __Conectar()          Crea y retorna una conexión PDO.
+                          En error: HTTP 500 + JSON { error, mensaje }.
+    __Desconectar(&$pdo)  Cierra la conexión (asigna null por referencia).
+
+  Configuración actual:
+    host    = 127.0.0.1
+    puerto  = 3306
+    bd      = gistorec_bbdd
+    charset = utf8mb4
+
+  Opciones PDO:
+    ERRMODE_EXCEPTION        → lanza excepciones en errores SQL
+    DEFAULT_FETCH_MODE       → FETCH_ASSOC (arrays asociativos)
+    EMULATE_PREPARES = false → prepared statements nativos
+    INIT_COMMAND             → SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
+
+  ── sesion.php ────────────────────────────────────────────────────────────────
+
+  Endpoint GET. Parámetros requeridos:
+    accion = "verificar"    (único valor válido)
+    ac     = "admin"        → verifica rol 1
+             "user"         → verifica rol 2
+             "foro"         → acepta cualquier rol autenticado
+
+  Respuesta OK:   { ok: true, datos: { usuario_id, correo, rol } }
+  Respuesta ERR:  HTTP 401/403 + { ok: false, error: "..." }
+
+  NOTA: Las peticiones GET a este endpoint NO requieren token CSRF
+  para permitir la verificación de sesión desde el frontend sin sesión.
+
+  ── tokens.php ────────────────────────────────────────────────────────────────
+
+  Genera y persiste un token CSRF en la sesión PHP.
+  Algoritmo: bin2hex(random_bytes(32)) → 64 caracteres hexadecimales.
+  Expiración: 7200 segundos (2 horas).
+  Reutiliza el token si aún es válido; genera uno nuevo si expiró.
+
+  Respuesta: { ok: true, token: "<hex64>" }
+
+  ── cerrar.php ────────────────────────────────────────────────────────────────
+
+  Ejecuta session_unset() + session_destroy().
+  Responde: { ok: true }
+  No requiere token CSRF.
+
+
+--------------------------------------------------------------------------------
+5. API PÚBLICA — /php/
+--------------------------------------------------------------------------------
+
+Accesibles desde el frontend público (sin login requerido).
+TODOS requieren token CSRF válido en el parámetro GET/POST "token".
+
+  ── categorias.php ────────────────────────────────────────────────────────────
+
+  Acciones GET:
+    accion=obtener    SELECT id, nombre, orden FROM categorias ORDER BY orden
+
+  ── vendedores.php ────────────────────────────────────────────────────────────
+
+  Acciones GET:
+    accion=vendedores             Lista todos los vendedores activos
+    accion=vendedor&id=N          Datos de un vendedor por ID
+    accion=productos              Todos los productos activos (todos los vend.)
+    accion=productos_vendedor&id  Productos de un vendedor específico
+    accion=producto&id=N          Un producto por ID
+    accion=publicidades           Publicidades activas (filtradas por fecha
+                                  y límite diario de impresiones)
+    accion=impresion&id=N         Registra una impresión (incrementa contador)
+
+  Funciones internas:
+    resolverImagen($img)   Construye URL absoluta desde ruta relativa o externa
+    parsearBeneficios($raw) Decodifica JSON o texto separado por saltos de línea
+
+  ── foro.php ──────────────────────────────────────────────────────────────────
+
+  GET  → lectura pública de hilos y respuestas (sin verificación de sesión)
+  POST → publicar requiere token CSRF válido
+  Implementa register_shutdown_function para capturar errores fatales como JSON.
+
+  ── solicitudregistro.php ─────────────────────────────────────────────────────
+
+  POST. Campos requeridos: tienda, ciudad, correo, whatsapp, descripcion.
+  Envía correo con PHPMailer:
+    De:  notificaciones@gistore.com.co
+    A:   registro@gistore.com.co
+    Con: datos del solicitante en HTML
+
+  ── enviar-publicidad.php ─────────────────────────────────────────────────────
+
+  POST con FormData. Campos: plan, titulo, url, whatsapp, nombre, correo.
+  Archivo adjunto: banner (imagen JPG/PNG/GIF/WEBP, máx. según php.ini).
+  Valida MIME real del archivo (no solo extensión).
+  Envía correo con la imagen del banner como adjunto.
+
+
+--------------------------------------------------------------------------------
+6. JAVASCRIPT PÚBLICO — /js/
+--------------------------------------------------------------------------------
+
+  ── api.js (módulo ES6 exportado) ────────────────────────────────────────────
+
+  Cliente HTTP central para el frontend público. Importar con:
+    import { obtenerCategorias, obtenerVendedores, ... } from './api.js';
+
+  Detección de entorno:
+    localhost → API_BASE = '/php', TOKEN_URL = '/backend/tokens.php'
+    GitHub Pages → API_BASE = '/gistore/php', TOKEN_URL = '/gistore/backend/...'
+
+  Token CSRF:
+    Se cachea en memoria (_tokenPublico). En error 403 se renueva automáticamente
+    y reintenta la petición una vez.
+
+  Todas las peticiones usan: credentials: 'include'
+  (necesario para que PHP reciba la cookie de sesión)
+
+  Funciones exportadas:
+    obtenerCategorias()
+    obtenerVendedores()
+    obtenerVendedor(id)
+    obtenerProductosActivos()
+    obtenerProductosDeVendedor(vendedorId)
+    obtenerProductoPorId(id)
+    obtenerPublicidadesActivas()
+    incrementarImpresion(id)
+
+  ── app.js ────────────────────────────────────────────────────────────────────
+
+  Controlador del catálogo público (index.html).
+
+  Constantes:
+    POR_PAGINA  = 20        productos por página
+    CARRITO_KEY = 'gistore_carrito'   clave en localStorage
+
+  Estado global:
+    CATEGORIAS      Map id → nombre
+    VENDEDORES      Map id → objeto vendedor
+    categoriaActiva Filtro activo de categoría
+    busquedaActiva  Texto de búsqueda
+    paginaActual    Página actual de paginación
+    _cacheTodos     Cache maestro de todos los productos
+
+  Flujo principal:
+    1. iniciar() → carga categorías + vendedores en paralelo
+    2. _getTodosActivos() → carga todos los productos, cachea en _cacheTodos
+    3. fetchPagina(n) → filtra + pagina desde el cache
+    4. renderCatalogo() → actualiza el DOM con los productos
+
+  Carrito:
+    Persiste en localStorage. Se sincroniza al cargar para eliminar
+    productos que ya no existen (sincronizarCarrito()).
+    El pedido se envía por WhatsApp con buildWaUrl().
+
+  IDs en URL:
+    Los IDs se codifican en base64 sin padding para URLs limpias:
+    encodeId(id) = btoa(String(id)).replace(/=/g, '')
+    decodeId(str) = atob(str + padding)
+
+  ── nav.js ────────────────────────────────────────────────────────────────────
+
+  IIFE. Maneja el menú hamburguesa responsivo.
+  Cierre por: clic en link, clic fuera del menú, tecla Escape.
+  Bloquea document.body.style.overflow = 'hidden' cuando está abierto.
+
+  ── stores.js ─────────────────────────────────────────────────────────────────
+
+  Carga y renderiza el directorio de tiendas activas.
+  Filtro por nombre en tiempo real (normaliza acentos).
+  Genera cards con avatar (foto o inicial), color de marca, ciudad, descripción.
+  Enlace a page/tienda.html?v=<base64_id>
+
+  ── accesoadmin.js ────────────────────────────────────────────────────────────
+
+  Escucha keydown. Atajo: Ctrl+Shift+E
+  Desde la raíz (/) redirige a admin/index.html
+  Desde cualquier otra página redirige a ../admin/index.html
+  El panel de admin NO está enlazado desde el menú público.
+
+
+--------------------------------------------------------------------------------
+7. SEGURIDAD
+--------------------------------------------------------------------------------
+
+  CSRF:
+    - Todos los endpoints PHP verifican el token CSRF.
+    - El token se guarda en la sesión PHP y se compara con hash_equals()
+      (protección contra timing attacks).
+    - Expiración: 7200 segundos (2 horas).
+    - El frontend renueva el token automáticamente en error 403.
+
+  Autenticación por roles:
+    Rol 1 = Administrador → /admin/backend/
+    Rol 2 = Vendedor      → /user/backend/
+    Cada endpoint privado verifica $_SESSION['rol'] antes de operar.
+
+  Contraseñas:
+    Almacenadas con password_hash(PASSWORD_DEFAULT) de PHP.
+    Verificadas con password_verify().
+    Herramienta CLI: php hash.php para generar hashes manualmente.
+
+  Aislamiento de datos (vendedor):
+    El vendedor_id NUNCA se lee del cliente. Siempre se obtiene desde
+    la sesión PHP: SELECT id FROM vendedores WHERE usuario_id = $_SESSION[id]
+
+
+--------------------------------------------------------------------------------
+8. BASE DE DATOS — TABLAS PRINCIPALES
+--------------------------------------------------------------------------------
+
+  usuarios
+    id, correo, password_hash, rol (1=admin, 2=vendedor), activo
+
+  vendedores
+    id, usuario_id (FK), nombre, ciudad, correo, whatsapp,
+    descripcion, perfil (imagen), color, url_web, redes (JSON),
+    estado (activo/inactivo), creado_en, actualizado_en
+
+  productos
+    id, vendedor_id (FK), categoria_id (FK), nombre, valor (decimal),
+    descripcion, recomendacion, beneficios (JSON/texto), imagen,
+    activo (0/1), creado_en, actualizado_en
+
+  categorias
+    id, nombre, orden
+
+  membresias
+    id, vendedor_id (FK), plan_id (FK), fecha_inicio, fecha_fin,
+    estado (activa/vencida/cancelada), notas, wompi_tx_id,
+    creado_en, actualizado_en
+
+  planes_membresia
+    id, nombre, precio, duracion_dias, beneficios (JSON)
+
+  publicidad
+    id, titulo, imagen_url, url_destino, fecha_inicio, fecha_fin,
+    limite_diario, estado (activa/inactiva/pausada/pausada_auto),
+    creado_en
+
+  publicidad_impresiones
+    id, publicidad_id (FK), fecha, contador
+
+  foro_hilos
+    id, usuario_id (FK), titulo, contenido, creado_en
+
+  foro_respuestas
+    id, hilo_id (FK), usuario_id (FK), contenido, creado_en
+
+  recuperar
+    id, correo, token (6 dígitos), creado_en
+
+  api_claves
+    id, servicio, nombre, origen_url, clave, modelos (JSON),
+    activo, nota, creado_en, actualizado_en
+
+  wpis
+    id, public (llave pública Wompi), privada, eventos, integridad
+
+
+--------------------------------------------------------------------------------
+9. SISTEMA DE CORREO — PHPMAILER
+--------------------------------------------------------------------------------
+
+  Dependencia: phpmailer/phpmailer ^7.0 (composer install)
+
+  Configuración SMTP:
+    Host      : mail.gistore.com.co
+    Puerto    : 465
+    Seguridad : SMTPS (SSL)
+    Remitente : notificaciones@gistore.com.co
+    Charset   : UTF-8
+    Timeout   : 15 segundos
+
+  Casos de uso:
+    1. solicitudregistro.php  → correo de solicitud de nuevo vendedor
+    2. enviar-publicidad.php  → solicitud de campaña publicitaria con banner
+    3. user/backend/recuperar.php → código de recuperación de contraseña
+
+
+--------------------------------------------------------------------------------
+10. INTEGRACIÓN DE PAGOS — WOMPI
+--------------------------------------------------------------------------------
+
+  Wompi es la pasarela de pagos colombiana usada para procesar membresías.
+
+  Claves almacenadas en tabla wpis:
+    public       → llave pública (pub_...)
+    privada      → llave privada (prv_...) — NUNCA se expone al JS
+    eventos      → evento_id de Wompi
+    integridad   → llave para generar firma SHA256
+
+  Firma de integridad:
+    hash_hmac('sha256', referencia + monto + moneda + clave_integridad)
+
+  Flujo de pago:
+    1. user/js/membresia.js solicita claves a user/backend/wompi_config.php
+    2. wompi_config.php genera la firma y devuelve la llave pública
+    3. El frontend inicializa el widget de Wompi con la firma
+    4. Wompi procesa el pago y redirige al resultado
+    5. user/backend/membresias.php?accion=verificar_pago confirma con Wompi
+    6. Si está aprobado, crea/renueva la membresía en BD
+    7. sincronizarProductosConMembresia() activa los productos del vendedor
+
+
+--------------------------------------------------------------------------------
+11. ROUTER DE DESARROLLO
+--------------------------------------------------------------------------------
+
+  Uso: php -S localhost:8000 router.php
+
+  El archivo router.php:
+    → Rutas /api   : pendiente de implementación (reescribe REQUEST_URI)
+    → Archivos estáticos: detecta extensión y envía MIME type correcto
+    → Todo lo demás: devuelve index.html (comportamiento SPA)
+
+  MIME types configurados:
+    js, mjs, css, html, json, png, jpg, jpeg, gif, svg, ico,
+    woff, woff2, webp, xml, txt
+
+
+--------------------------------------------------------------------------------
+12. SETUP RÁPIDO
+--------------------------------------------------------------------------------
+
+  1. Importar esquema de BD:
+       mysql -u root -p gistore < database.sql
+
+  2. Configurar variables de entorno en .htaccess:
+       SetEnv DB_HOST     127.0.0.1
+       SetEnv DB_NAME     gistorec_bbdd
+       SetEnv DB_USER     tu_usuario
+       SetEnv DB_PASS     tu_contraseña
+
+  3. Instalar dependencias PHP:
+       composer install
+
+  4. Cambiar contraseña del admin:
+       php tools/generar-hash.php
+
+  5. Configurar claves Wompi:
+       Panel Admin → Sección WIP → ingresar public, privada, eventos, integridad
+
+  6. Configurar claves de API (IA Spotlight):
+       Panel Admin → API Claves → agregar clave de OpenRouter
+
+
+================================================================================
+  GI Store © 2026 — gistore.com.co
+================================================================================

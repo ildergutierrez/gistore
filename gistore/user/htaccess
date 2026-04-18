@@ -1,0 +1,18 @@
+# ============================================================
+#  user/.htaccess — GI Store
+#  Agrega cabeceras CORS para imágenes de productos.
+#  Necesario para que crossOrigin='anonymous' en el canvas
+#  funcione y el video no quede con frames corruptos.
+# ============================================================
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg)$">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET"
+    </FilesMatch>
+
+    # Requerido por ffmpeg.wasm para usar SharedArrayBuffer
+    # Sin esto el Worker no puede cargar scripts cross-origin
+    Header always set Cross-Origin-Opener-Policy "same-origin"
+    Header always set Cross-Origin-Embedder-Policy "require-corp"
+</IfModule>

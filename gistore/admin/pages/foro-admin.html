@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Foro — GI Store Admin</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <style>
+    .hilo-admin {
+      background: var(--fondo-2,#fff);
+      border: 1.5px solid var(--borde,#e5e7eb);
+      border-radius: 12px; margin-bottom: .85rem;
+      transition: box-shadow .18s;
+    }
+    .hilo-admin:hover { box-shadow: 0 3px 14px rgba(0,0,0,.07); }
+    .hilo-admin-header {
+      padding: .9rem 1.2rem;
+      display: flex; align-items: flex-start; gap: .75rem; cursor: pointer;
+    }
+    .hilo-avatar-sm {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .88rem; color: #fff;
+      background: var(--verde,#1a6b3c); overflow: hidden;
+    }
+    .hilo-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+    .hilo-admin-meta { flex: 1; min-width: 0; }
+    .hilo-admin-titulo { font-weight: 700; font-size: .95rem; color: var(--texto,#111); margin-bottom: .2rem; }
+    .hilo-admin-info { font-size: .75rem; color: var(--texto-suave,#9ca3af); display: flex; gap: .75rem; flex-wrap: wrap; }
+    .hilo-admin-body {
+      display: none; padding: .75rem 1.2rem 1rem;
+      border-top: 1px solid var(--borde,#f3f4f6);
+    }
+    .hilo-admin-body.open { display: block; }
+    .resp-admin {
+      padding: .6rem .85rem; background: var(--fondo,#f9fafb);
+      border-radius: 8px; margin-bottom: .5rem;
+      display: flex; align-items: flex-start; gap: .6rem;
+    }
+    .resp-admin-body { flex: 1; min-width: 0; }
+    .resp-admin-autor { font-size: .78rem; font-weight: 700; color: var(--texto,#111); }
+    .resp-admin-texto { font-size: .83rem; color: var(--gris-700,#374151); margin-top: .2rem; line-height: 1.5; white-space: pre-wrap; }
+    .btn-elim-foro {
+      background: none; border: 1px solid var(--error,#dc2626); color: var(--error,#dc2626);
+      border-radius: 6px; padding: .2rem .55rem; font-size: .72rem; cursor: pointer;
+      transition: all .15s; flex-shrink: 0;
+    }
+    .btn-elim-foro:hover { background: var(--error,#dc2626); color: #fff; }
+    .tabla-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* ── Modal de confirmación ── */
+    .modal-confirm {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.45); align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-confirm.visible { display: flex; }
+    .modal-confirm-box {
+      background: var(--fondo-2,#fff); border-radius: 14px;
+      padding: 1.75rem 1.5rem 1.5rem; max-width: 400px; width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      animation: fadeUp .18s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-confirm-icono { font-size: 2rem; text-align: center; margin-bottom: .6rem; }
+    .modal-confirm-titulo {
+      font-weight: 700; font-size: 1rem; color: var(--texto,#111);
+      text-align: center; margin-bottom: .5rem;
+    }
+    .modal-confirm-msg {
+      font-size: .86rem; color: var(--gris-700,#374151);
+      text-align: center; line-height: 1.55; margin-bottom: 1.25rem;
+    }
+    .modal-confirm-btns {
+      display: flex; gap: .6rem; justify-content: center;
+    }
+    .modal-confirm-btns button {
+      flex: 1; max-width: 160px; padding: .55rem 1rem;
+      border-radius: 8px; font-size: .86rem; font-weight: 600; cursor: pointer;
+      border: none; transition: opacity .15s;
+    }
+    .modal-confirm-btns button:hover { opacity: .85; }
+    .btn-modal-cancelar {
+      background: var(--fondo,#f3f4f6); color: var(--texto,#111);
+    }
+    .btn-modal-ok {
+      background: var(--error,#dc2626); color: #fff;
+    }
+
+    @media (max-width:600px) {
+      .topbar { flex-direction: column; align-items: flex-start; gap: .75rem; }
+      .hilo-admin-header { gap: .5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar">
+  <a href="dashboard.html" class="sidebar-logo" title="Inicio" style="text-decoration:none">
+    <div class="sidebar-logo-icono"><img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store" style="width:22px;height:22px;object-fit:contain"/></div>
+    <div class="sidebar-logo-txt"><strong>GI Store</strong><span>Admin Panel</span></div>
+  </a>
+  <nav class="nav">
+    <div class="nav-titulo">General</div>
+    <a href="dashboard.html"><span class="icono"><span class="material-symbols-outlined">bar_chart</span></span> Dashboard</a>
+    <div class="nav-titulo">Gestión</div>
+    <a href="vendedores.html"><span class="icono"><span class="material-symbols-outlined">point_of_sale</span></span> Vendedores</a>
+    <a href="vendedores-inactivos.html"><span class="icono"><span class="material-symbols-outlined">person_off</span></span> Desactivados</a>
+    <a href="membresias.html"><span class="icono"><span class="material-symbols-outlined">id_card</span></span> Membresías</a>
+    <a href="productos.html"><span class="icono"><span class="material-symbols-outlined">shopping_bag</span></span> Productos</a>
+    <a href="categorias.html"><span class="icono"><span class="material-symbols-outlined">article_person</span></span> Categorías</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="catalogo.html"><span class="icono"><span class="material-symbols-outlined">export_notes</span></span> Exportar catálogo</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span> Publicidad</a>
+    <a href="#" class="activo"><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+    <a href="api-claves.html"><span class="icono"><span class="material-symbols-outlined">key</span></span> Claves API</a>
+    <a href="perfil.html"><span class="icono"><span class="material-symbols-outlined">contacts_product</span></span> Mi perfil</a>
+    <div class="nav-titulo">Sitio</div>
+    <a href="../../index.html" target="_blank"><span class="icono"><span class="material-symbols-outlined">trolley</span></span> Ver catálogo</a>
+  </nav>
+  <div class="sidebar-pie">
+    <button class="btn-salir" id="btnSalir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>💬 Foro — Moderación</h1>
+      <p class="fecha" id="fechaHoy"></p>
+    </div>
+  </div>
+
+  <div class="msg-error" id="msgError"><span>⚠&nbsp;</span><span id="textoError"></span></div>
+  <div class="msg-ok"    id="msgOk"   ><span>✓&nbsp;</span><span id="textoOk"></span></div>
+
+  <div class="panel">
+    <div class="panel-header"><h2>Hilos del foro</h2><div class="topbar-der">
+      <a href="../../page/foro.html" target="_blank" class="btn btn-secundario" style="font-size:.82rem;padding:.4rem .85rem">Ver foro público →</a>
+    </div></div>
+    
+    <div style="padding:1.25rem 1.5rem">
+      <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:1rem">
+        Haz clic en un hilo para ver y moderar sus respuestas. Como admin puedes eliminar cualquier hilo o respuesta.
+      </p>
+      <div id="foroAdminLista"><p class="cargando-txt">Cargando…</p></div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de confirmación reutilizable -->
+<div class="modal-confirm" id="modalConfirm">
+  <div class="modal-confirm-box">
+    <div class="modal-confirm-icono" id="modalConfirmIcono">🗑</div>
+    <div class="modal-confirm-titulo" id="modalConfirmTitulo">¿Confirmar acción?</div>
+    <div class="modal-confirm-msg" id="modalConfirmMsg"></div>
+    <div class="modal-confirm-btns">
+      <button class="btn-modal-cancelar" id="btnModalCancelar">Cancelar</button>
+      <button class="btn-modal-ok"       id="btnModalOk">Eliminar</button>
+    </div>
+  </div>
+</div>
+ <script src="../js/auth.js"></script>
+<script type="module" src="../js/foro-admin.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var btnH = document.getElementById("btnHamburguesa");
+    var sidebar = document.querySelector(".sidebar");
+    var overlay = document.getElementById("sidebarOverlay");
+    if (!btnH||!sidebar||!overlay) return;
+    function abrir()  { sidebar.classList.add("abierto");    overlay.classList.add("visible");    btnH.classList.add("abierto"); }
+    function cerrar() { sidebar.classList.remove("abierto"); overlay.classList.remove("visible"); btnH.classList.remove("abierto"); }
+    btnH.addEventListener("click", () => sidebar.classList.contains("abierto") ? cerrar() : abrir());
+    overlay.addEventListener("click", cerrar);
+    document.querySelectorAll(".nav a").forEach(a => a.addEventListener("click", () => { if (window.innerWidth <= 700) cerrar(); }));
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp — GI Store Comunicaciones</title>
+      <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+  <style>
+    .wa-tabs { display:flex; border-bottom:1.5px solid var(--borde); background:var(--verde-claro); }
+    .wa-tab {
+      padding:.75rem 1.5rem; cursor:pointer; font-size:.88rem; font-weight:600;
+      color:var(--texto-suave); border-bottom:3px solid transparent;
+      transition:all .15s; display:flex; align-items:center; gap:.4rem;
+    }
+    .wa-tab.activo { color:var(--verde); border-bottom-color:var(--verde); }
+    .wa-tab:hover { color:var(--verde); background:var(--verde-hover); }
+    .wa-panel { display:none; }
+    .wa-panel.activo { display:block; }
+    .tel-chip {
+      display:inline-flex; align-items:center; gap:.4rem;
+      background:var(--verde-claro); border:1px solid var(--verde-borde);
+      border-radius:20px; padding:.18rem .65rem;
+      font-size:.78rem; color:var(--verde); font-weight:600;
+    }
+    .tel-chip button { background:none; border:none; cursor:pointer; color:var(--texto-suave); font-size:.8rem; line-height:1; padding:0; }
+    .tel-chip button:hover { color:var(--error); }
+    .preview-burbuja {
+      background:#dcfce7; border-radius:16px 16px 4px 16px;
+      padding:1rem 1.25rem; max-width:340px; font-size:.9rem;
+      color:#1a2e22; line-height:1.6; white-space:pre-wrap;
+      box-shadow:0 2px 8px rgba(26,107,60,.12);
+      position:relative;
+    }
+    .preview-burbuja::after {
+      content:''; position:absolute; bottom:0; left:-8px;
+      border:8px solid transparent; border-right-color:#dcfce7; border-bottom:0;
+    }
+    .log-item {
+      display:flex; align-items:center; gap:1rem;
+      padding:.8rem 1.2rem; border-bottom:1px solid var(--fondo);
+    }
+    .log-item:last-child { border-bottom:none; }
+    .log-icon {
+      width:36px; height:36px; border-radius:50%;
+      background:#dcfce7; display:flex; align-items:center; justify-content:center;
+      font-size:1rem; flex-shrink:0;
+    }
+  </style>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt">
+      <strong>GI Store</strong>
+      <span>Comunicaciones</span>
+    </div>
+  </a>
+  <nav class="nav">
+
+     <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose">
+      <span class="material-symbols-outlined" style="font-size:1rem">edit</span>
+      Redactar correo
+    </a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa">
+      <span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>
+      Enviar WhatsApp
+    </a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html" class="activo"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie">
+    <button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>📲 WhatsApp Business</h1>
+      <p class="sub">Envío masivo e individual · API oficial de WhatsApp</p>
+    </div>
+    <div class="topbar-der">
+      <span style="display:inline-flex;align-items:center;gap:.4rem;background:#dcfce7;border:1.5px solid #bbf7d0;border-radius:20px;padding:.3rem .9rem;font-size:.8rem;color:#15803d;font-weight:600">
+        <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+        API conectada
+      </span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat" style="animation-delay:.05s">
+      <div class="etiqueta">Enviados hoy</div>
+      <div class="numero">57</div>
+      <div class="icono-bg">💬</div>
+    </div>
+    <div class="stat" style="animation-delay:.1s">
+      <div class="etiqueta">Entregados</div>
+      <div class="numero">54</div>
+      <div class="icono-bg">✅</div>
+    </div>
+    <div class="stat" style="animation-delay:.15s">
+      <div class="etiqueta">Fallidos</div>
+      <div class="numero">3</div>
+      <div class="icono-bg">⚠️</div>
+    </div>
+    <div class="stat" style="animation-delay:.2s">
+      <div class="etiqueta">Campañas este mes</div>
+      <div class="numero">8</div>
+      <div class="icono-bg">📡</div>
+    </div>
+  </div>
+
+  <div class="panel" style="animation-delay:.25s">
+    <!-- Tabs -->
+    <div class="wa-tabs">
+      <div class="wa-tab activo" onclick="cambiarTab('masivo', this)">
+        <span class="material-symbols-outlined" style="font-size:1rem">cell_tower</span>
+        Envío masivo
+      </div>
+      <div class="wa-tab" onclick="cambiarTab('individual', this)">
+        <span class="material-symbols-outlined" style="font-size:1rem">chat</span>
+        Mensaje individual
+      </div>
+      <div class="wa-tab" onclick="cambiarTab('historial', this)">
+        <span class="material-symbols-outlined" style="font-size:1rem">history</span>
+        Historial
+      </div>
+    </div>
+
+    <!-- ─── TAB: MASIVO ─── -->
+    <div class="wa-panel activo" id="tab-masivo">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+
+        <div style="padding:1.5rem;border-right:1.5px solid var(--borde)">
+          <div id="msgOkMasivo" class="msg-ok"><span class="material-symbols-outlined">check_circle</span> <span id="msgOkMasivoTxt"></span></div>
+          <div id="msgErrMasivo" class="msg-error"><span class="material-symbols-outlined">error</span> <span id="msgErrMasivoTxt"></span></div>
+
+          <div class="campo">
+            <label>Grupo de destinatarios</label>
+            <select id="grupoWA" onchange="actualizarContador()"
+              style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+              <option value="">— Seleccionar grupo —</option>
+              <option value="todos" data-n="312">Todos los vendedores (312)</option>
+              <option value="activos" data-n="298">Vendedores activos (298)</option>
+              <option value="inactivos" data-n="14">Vendedores inactivos (14)</option>
+              <option value="plan-basico" data-n="120">Plan básico (120)</option>
+              <option value="plan-pro" data-n="98">Plan profesional (98)</option>
+              <option value="plan-premium" data-n="80">Plan premium (80)</option>
+            </select>
+            <p id="contadorWA" style="font-size:.78rem;color:var(--verde);font-weight:600;margin-top:.35rem"></p>
+          </div>
+
+          <div class="campo">
+            <label>Plantilla de mensaje</label>
+            <select id="plantillaWA" onchange="cargarPlantillaWA()"
+              style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+              <option value="">— Sin plantilla —</option>
+              <option value="bienvenida">🎉 Bienvenida al vendedor</option>
+              <option value="promo">📢 Campaña promocional</option>
+              <option value="renovacion">🔄 Renovación de membresía</option>
+              <option value="recordatorio">⏰ Recordatorio de pago</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>Mensaje <span style="font-weight:400;color:var(--texto-suave)">(máx. 1024 caracteres)</span></label>
+            <textarea id="msgWAmasivo" rows="6"
+              placeholder="Escribe el mensaje. Usa [nombre] y [tienda] como variables…"
+              oninput="previsualizarMasivo(); contarCaracteres(this, 'ctMasivo')"
+              style="resize:none"
+            ></textarea>
+            <p id="ctMasivo" style="font-size:.75rem;color:var(--texto-suave);text-align:right;margin-top:.25rem">0 / 1024</p>
+          </div>
+
+          <button class="btn btn-primary" onclick="enviarMasivo()" id="btnMasivo" style="width:100%">
+            <span class="material-symbols-outlined" style="font-size:1rem">cell_tower</span>
+            <span id="lblMasivo">Enviar campaña</span>
+          </button>
+        </div>
+
+        <!-- Preview -->
+        <div style="padding:1.5rem;background:var(--fondo)">
+          <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--texto-suave);margin-bottom:1rem">Vista previa del mensaje</p>
+          <div style="background:#fff;border-radius:12px;padding:1rem;min-height:240px;border:1.5px solid var(--borde)">
+            <div style="display:flex;align-items:center;gap:.6rem;padding-bottom:.75rem;border-bottom:1px solid var(--fondo);margin-bottom:.75rem">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--verde);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;font-weight:700">GI</div>
+              <div>
+                <p style="font-size:.85rem;font-weight:700;color:var(--texto)">GI Store</p>
+                <p style="font-size:.72rem;color:var(--texto-suave)">Cuenta empresarial</p>
+              </div>
+            </div>
+            <div class="preview-burbuja" id="previewMasivo">
+              <em style="color:var(--texto-suave)">El mensaje aparecerá aquí…</em>
+            </div>
+            <p style="font-size:.72rem;color:var(--texto-suave);text-align:right;margin-top:.5rem" id="horaPreview"></p>
+          </div>
+          <p style="font-size:.76rem;color:var(--texto-suave);margin-top:.75rem">
+            Las variables <strong>[nombre]</strong> y <strong>[tienda]</strong> se reemplazarán con los datos de cada vendedor al enviar.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ─── TAB: INDIVIDUAL ─── -->
+    <div class="wa-panel" id="tab-individual">
+      <div style="padding:1.5rem;max-width:560px">
+        <div id="msgOkInd" class="msg-ok"><span class="material-symbols-outlined">check_circle</span> <span id="msgOkIndTxt"></span></div>
+        <div id="msgErrInd" class="msg-error"><span class="material-symbols-outlined">error</span> <span id="msgErrIndTxt"></span></div>
+
+        <div class="campo">
+          <label>Vendedor / Número</label>
+          <select id="vendedorWA"
+            style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto);margin-bottom:.5rem">
+            <option value="">— Buscar vendedor —</option>
+            <option value="+573001234567">Carlos Mendoza · +57 300 123 4567</option>
+            <option value="+573109876543">Mariana Valencia · +57 310 987 6543</option>
+            <option value="+573204567890">Pedro Castillo · +57 320 456 7890</option>
+            <option value="+573158765432">Tienda Rápida SAS · +57 315 876 5432</option>
+          </select>
+          <p style="font-size:.76rem;color:var(--texto-suave)">O ingresa el número directamente (con código de país)</p>
+          <input type="tel" id="telefonoWA" placeholder="+57 300 000 0000"
+            style="margin-top:.4rem;width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)"
+            oninput="this.value=this.value.replace(/[^+\d\s]/g,'')"/>
+        </div>
+
+        <div class="campo">
+          <label>Mensaje</label>
+          <textarea id="msgWAind" rows="5"
+            placeholder="Escribe el mensaje para este vendedor…"
+            oninput="contarCaracteres(this,'ctInd')"
+            style="resize:none"
+          ></textarea>
+          <p id="ctInd" style="font-size:.75rem;color:var(--texto-suave);text-align:right;margin-top:.25rem">0 / 1024</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="enviarIndividual()">
+          <span class="material-symbols-outlined" style="font-size:1rem">send</span>
+          Enviar por WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── TAB: HISTORIAL ─── -->
+    <div class="wa-panel" id="tab-historial">
+      <div style="padding:1rem 0">
+        <div id="historialLista"></div>
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+</main>
+
+    <script src="../control/auth.js"></script>
+    <script src="../control/wmasivo.js"></script>
+</body>
+</html>

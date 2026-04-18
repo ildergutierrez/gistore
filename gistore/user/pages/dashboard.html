@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Panel — GI Store</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+</head>
+
+<body>
+
+  <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar">
+    <a href="#" class="sidebar-logo" title="Ir al inicio 🏠"
+      style="text-decoration:none;display:flex;align-items:center;gap:.75rem;padding:1.25rem 1.25rem 1rem;border-bottom:1px solid rgba(255,255,255,.12)">
+      <div class="sidebar-logo-icono"><img src="../../img/favicon/gi-icono-blanco.svg" alt="GI Store"
+          style="width:22px;height:22px;object-fit:contain" /></div>
+      <div class="sidebar-logo-txt">
+        <strong>GI Store</strong>
+        <span id="vendedorNombre">Portal Vendedor</span>
+      </div>
+    </a>
+    <nav class="nav">
+      <div class="nav-titulo">Mi cuenta</div>
+      <a href="#" class="activo">
+        <span class="icono"><span class="material-symbols-outlined">bento</span></span>
+        Dashboard
+      </a>
+      <a href="productos.html">
+        <span class="icono"><span class="material-symbols-outlined">package_2</span></span>
+        Mis productos
+      </a>
+      <a href="catalogo.html">
+        <span class="icono"><span class="material-symbols-outlined">photo_library</span></span>
+        Exportar catálogo
+      </a>
+      <a href="spotlight.html">
+        <span class="icono"><span class="material-symbols-outlined">auto_awesome</span></span>
+        Spotlight IA
+      </a>
+      <a href="membresia.html">
+        <span class="icono"><span class="material-symbols-outlined">workspace_premium</span></span>
+        Mi membresía
+      </a>
+      <a href="videos.html">
+        <span class="icono"><span class="material-symbols-outlined">movie</span></span>
+        Crear video
+      </a>
+      <div class="nav-titulo">Comunidad</div>
+      <a href="foro.html"><span class="icono"><span class="material-symbols-outlined">forum</span></span> Foro</a>
+      <div class="nav-titulo">Sitio</div>
+      <a href="perfil.html">
+        <span class="icono"><span class="material-symbols-outlined">assignment_ind</span></span>
+        Mi perfil
+      </a>
+      <a href="../../index.html" target="_blank">
+        <span class="icono"><span class="material-symbols-outlined">article_person</span></span>
+        Ver catálogo
+      </a>
+    </nav>
+    <div class="sidebar-pie">
+      <button class="btn-salir" id="btnSalir"><span class="material-symbols-outlined">
+          logout
+        </span> Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-izq">
+        <h1 id="bienvenida">Cargando...</h1>
+        <p class="fecha" id="fechaHoy"></p>
+      </div>
+      <div class="topbar-der">
+        <a href="manual-vendedor.html" class="btn btn-primary">📖 Manual de Usuario</a>
+        <a href="productos.html" class="btn btn-primary">+ Nuevo producto</a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat" style="animation-delay:.05s">
+        <div class="etiqueta">Total productos</div>
+        <div class="numero" id="statProductos">—</div>
+        <div class="icono-bg">📦</div>
+      </div>
+      <div class="stat" style="animation-delay:.1s">
+        <div class="etiqueta">Productos activos</div>
+        <div class="numero" id="statActivos">—</div>
+        <div class="icono-bg">✅</div>
+      </div>
+      <div class="stat" style="animation-delay:.15s">
+        <div class="etiqueta">Productos inactivos</div>
+        <div class="numero" id="statInactivos">—</div>
+        <div class="icono-bg">⏸️</div>
+      </div>
+    </div>
+
+    <!-- Membresía -->
+    <div class="panel" style="margin-bottom:1.5rem;animation-delay:.2s">
+      <div class="panel-header">
+        <h2>🎫 Mi membresía</h2>
+      </div>
+      <div style="padding:1.25rem 1.5rem" id="panelMembresia">
+        <p class="cargando-txt">Cargando...</p>
+      </div>
+    </div>
+    <!-- Gráfica y tablas de estadísticas -->
+    <div class="panel" style="margin-bottom:1.5rem">
+      <div class="panel-header">
+        <h2>📊 Estadísticas de productos</h2>
+      </div>
+      <div style="padding:1.25rem 1.5rem">
+
+        <!-- Filtros -->
+        <div id="est-filtros" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+          <button class="btn btn-secundario est-btn activo" data-modo="dia">Hoy</button>
+          <button class="btn btn-secundario est-btn" data-modo="semana">7 días</button>
+          <button class="btn btn-secundario est-btn" data-modo="mes">30 días</button>
+          <button class="btn btn-secundario est-btn" data-modo="anio">Este año</button>
+          <button class="btn btn-secundario est-btn" data-modo="todo">Todo</button>
+        </div>
+
+        <!-- Cards resumen -->
+        <div
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:1.25rem">
+          <div class="stat">
+            <div class="etiqueta">Visitas totales</div>
+            <div class="numero" id="c-vis">—</div>
+          </div>
+          <div class="stat">
+            <div class="etiqueta">Compartidos</div>
+            <div class="numero" id="c-com">—</div>
+          </div>
+          <div class="stat">
+            <div class="etiqueta">Días activos</div>
+            <div class="numero" id="c-dias">—</div>
+          </div>
+          <div class="stat">
+            <div class="etiqueta">Pico diario</div>
+            <div class="numero" id="c-pico">—</div>
+          </div>
+        </div>
+
+        <!-- Gráfica -->
+        <div style="display:flex;gap:16px;margin-bottom:8px;font-size:12px;color:var(--texto-medio)">
+          <span style="display:flex;align-items:center;gap:5px">
+            <span style="width:20px;height:3px;background:#378add;border-radius:2px;display:inline-block"></span>
+            Visitas
+          </span>
+          <span style="display:flex;align-items:center;gap:5px">
+            <span style="width:20px;height:3px;background:#1d9e75;border-radius:2px;display:inline-block"></span>
+            Compartidos
+          </span>
+        </div>
+        <div style="position:relative;width:100%;height:240px;margin-bottom:1.5rem">
+          <canvas id="est-chart" role="img" aria-label="Gráfica de visitas y compartidos"></canvas>
+        </div>
+
+        <!-- Tablas -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;min-width:0">
+  <div style="min-width:0;overflow:hidden">
+    <p style="font-size:13px;font-weight:600;margin-bottom:.5rem">👁️ Más vistos</p>
+    <div id="tbl-vistos"></div>
+  </div>
+  <div style="min-width:0;overflow:hidden">
+    <p style="font-size:13px;font-weight:600;margin-bottom:.5rem">🔗 Más compartidos</p>
+    <div id="tbl-compartidos"></div>
+  </div>
+</div>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="grilla-2">
+      <div class="panel" style="animation-delay:.25s">
+        <div class="panel-header">
+          <h2>⚡ Accesos rápidos</h2>
+        </div>
+        <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem">
+          <a href="productos.html" class="btn btn-primary">📦 Gestionar mis productos</a>
+          <a href="catalogo.html" class="btn btn-secundario">📄 Exportar catálogo PDF</a>
+          <a href="../../index.html" target="_blank" class="btn btn-secundario">🌐 Ver catálogo público</a>
+          <a href="spotlight.html" class="btn btn-secundario">✨ Spotlight de producto IA</a>
+        </div>
+      </div>
+      <div class="panel" style="animation-delay:.3s">
+        <div class="panel-header">
+          <h2>📞 Soporte y PQRs</h2>
+        </div>
+        <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:.75rem">
+          <p style="font-size:.85rem;color:var(--texto-medio)">¿Tienes alguna duda, problema o sugerencia?</p>
+          <a href="https://wa.me/573145891108" target="_blank" class="btn btn-secundario">💬 WhatsApp soporte</a>
+          <a href="mailto:atencionalcliente@gistore.com.co" class="btn btn-secundario">✉️ Correo electrónico</a>
+          <div style="border-top:1px solid var(--borde);padding-top:.75rem;margin-top:.25rem">
+            <p style="font-size:.82rem;color:var(--texto-suave);margin-bottom:.6rem">¿Quieres pagar o renovar tu
+              membresía?</p>
+            <a href="membresia.html" class="btn btn-primary">💳 Ir a Mi membresía</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  <script src="../js/auth.js"></script>
+  <script type="module" src="../js/dashboard.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script type="module" src="../js/estadistica.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btnH = document.getElementById('btnHamburguesa');
+      var sidebar = document.querySelector('.sidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      if (!btnH || !sidebar || !overlay) return;
+      function abrir() { sidebar.classList.add('abierto'); overlay.classList.add('visible'); btnH.classList.add('abierto'); }
+      function cerrar() { sidebar.classList.remove('abierto'); overlay.classList.remove('visible'); btnH.classList.remove('abierto'); }
+      btnH.addEventListener('click', function () { sidebar.classList.contains('abierto') ? cerrar() : abrir(); });
+      overlay.addEventListener('click', cerrar);
+      document.querySelectorAll('.nav a').forEach(function (a) { a.addEventListener('click', function () { if (window.innerWidth <= 700) cerrar(); }); });
+    });
+  </script>
+</body>
+
+</html>

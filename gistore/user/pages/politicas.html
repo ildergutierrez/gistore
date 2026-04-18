@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Políticas y Valores — GI Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Variables ── */
+    :root {
+      --verde:       #1a6b3c;
+      --verde-claro: #2d9458;
+      --verde-suave: #e8f5ee;
+      --gris-100:    #f4f4f4;
+      --gris-300:    #d1d1d1;
+      --gris-500:    #888888;
+      --gris-700:    #444444;
+      --negro:       #1a1a1a;
+      --blanco:      #ffffff;
+      --rojo:        #c0392b;
+      --crema:       #fafaf8;
+      --sombra-sm:   0 1px 4px rgba(0,0,0,.08);
+      --sombra-md:   0 4px 16px rgba(0,0,0,.10);
+      --radio:       12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--crema);
+      color: var(--negro);
+      line-height: 1.65;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--verde);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .75rem clamp(1rem, 4vw, 2.5rem);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    }
+    .nav-brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+    .nav-icon svg { width: 36px; height: 36px; }
+    .nav-brand-text { color: var(--blanco); }
+    .nav-brand-text strong { font-size: 1.05rem; letter-spacing: .04em; display: block; }
+    .nav-brand-text span { font-size: .65rem; opacity: .7; letter-spacing: .12em; }
+    .nav-links { display: flex; gap: 1.4rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--blanco); }
+    .nav-cta {
+      background: rgba(0,0,0,.25); color: var(--blanco);
+      border: 1px solid rgba(255,255,255,.3);
+      padding: .45rem 1.1rem; border-radius: 20px;
+      font-size: .85rem; font-weight: 600; text-decoration: none;
+      transition: background .2s;
+    }
+    .nav-cta:hover { background: rgba(0,0,0,.4); }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+      color: var(--blanco);
+      text-align: center;
+      padding: clamp(2.5rem, 6vw, 5rem) 1.5rem clamp(2rem, 4vw, 3.5rem);
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      margin-bottom: .6rem;
+    }
+    .hero p { font-size: clamp(.95rem, 2vw, 1.1rem); opacity: .88; max-width: 600px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: .35rem 1rem;
+      font-size: .8rem;
+      margin-bottom: 1rem;
+      letter-spacing: .08em;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem clamp(1rem, 4vw, 2rem);
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0 1.2rem;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      color: var(--verde);
+    }
+    .section-line { flex: 1; height: 2px; background: var(--gris-300); }
+
+    /* ── POLÍTICA CARD ── */
+    .pol-card {
+      background: var(--blanco);
+      border: 1px solid var(--gris-300);
+      border-radius: var(--radio);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      box-shadow: var(--sombra-sm);
+      transition: box-shadow .2s;
+    }
+    .pol-card:hover { box-shadow: var(--sombra-md); }
+
+    .pol-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .9rem 1.2rem;
+      cursor: pointer;
+      user-select: none;
+      background: var(--blanco);
+    }
+    .pol-code {
+      background: var(--verde-suave);
+      color: var(--verde);
+      font-size: .75rem;
+      font-weight: 700;
+      padding: .3rem .55rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      letter-spacing: .06em;
+    }
+    .pol-title { font-weight: 600; font-size: 1rem; flex: 1; color: var(--negro); }
+    .pol-arrow {
+      color: var(--gris-500);
+      font-size: 1rem;
+      transition: transform .28s ease;
+    }
+    .pol-card.open .pol-arrow { transform: rotate(180deg); }
+
+    .pol-body {
+      padding: 0 1.2rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease, padding .25s ease;
+    }
+    .pol-card.open .pol-body {
+      max-height: 600px;
+      padding: .2rem 1.2rem 1.2rem;
+    }
+    .pol-body ul { padding-left: 1.2rem; }
+    .pol-body li { margin-bottom: .45rem; font-size: .95rem; color: var(--gris-700); }
+
+    /* ── VALORES GRID ── */
+    .valores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .valor-card {
+      background: var(--blanco);
+      border: 1px solid var(--gris-300);
+      border-radius: var(--radio);
+      padding: 1.3rem 1.1rem;
+      text-align: center;
+      box-shadow: var(--sombra-sm);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .valor-card:hover { transform: translateY(-3px); box-shadow: var(--sombra-md); }
+    .valor-num {
+      font-size: .75rem; font-weight: 700; color: var(--verde-claro);
+      letter-spacing: .1em; margin-bottom: .3rem;
+    }
+    .valor-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; color: var(--verde);
+      margin-bottom: .5rem;
+    }
+    .valor-desc { font-size: .85rem; color: var(--gris-700); line-height: 1.45; }
+
+    /* ── MISIÓN VISIÓN ── */
+    .mv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 560px) { .mv-grid { grid-template-columns: 1fr; } }
+    .mv-card {
+      background: var(--blanco);
+      border-left: 4px solid var(--verde);
+      border-radius: 0 var(--radio) var(--radio) 0;
+      padding: 1.2rem 1.4rem;
+      box-shadow: var(--sombra-sm);
+    }
+    .mv-card h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--verde); font-size: 1.15rem;
+      margin-bottom: .5rem;
+    }
+    .mv-card p { font-size: .92rem; color: var(--gris-700); line-height: 1.55; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--negro);
+      color: rgba(255,255,255,.6);
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: .85rem;
+      margin-top: 3rem;
+    }
+    footer strong { color: var(--blanco); }
+    footer a { color: var(--verde-claro); text-decoration: none; }
+
+    /* ── SCROLL SMOOTH ── */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="../../index.html">
+    <span class="nav-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="vg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2d9458"/>
+            <stop offset="100%" style="stop-color:#1a6b3c"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" fill="url(#vg)"/>
+        <polygon points="50,10 86,31 86,69 50,90 14,69 14,31" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <text x="14" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="#fff" letter-spacing="-3">G</text>
+        <text x="57" y="68" font-family="Georgia,serif" font-size="48" font-weight="700" fill="rgba(255,255,255,0.7)">I</text>
+      </svg>
+    </span>
+    <span class="nav-brand-text">
+      <strong>GISTORE</strong>
+      <span>CALIDAD · ESTILO · CONFIANZA</span>
+    </span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="../../index.html">Catálogo</a></li>
+    <li><a href="terminos.html">Términos</a></li>
+  </ul>
+  <a class="nav-cta" href="../../user/acceso.html">⬡ Vendedores</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-badge">DOCUMENTO INSTITUCIONAL</span>
+  <h1>Políticas y Valores</h1>
+  <p>Las normas que guían nuestra comunidad y los valores que nos definen como plataforma.</p>
+</section>
+
+<main class="container">
+
+  <!-- POLÍTICAS -->
+  <div class="section-header">
+    <h2>Políticas de la Plataforma</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div id="politicas-list">
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-01</span>
+        <span class="pol-title">Registro y Verificación de Vendedores</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>Todo vendedor debe registrarse con información verídica: nombre completo, ciudad, WhatsApp activo y correo electrónico.</li>
+          <li>GI Store verifica la identidad y legitimidad del negocio antes de activar la cuenta.</li>
+          <li>Está prohibido crear múltiples cuentas para el mismo vendedor o producto.</li>
+          <li>Las cuentas inactivas por más de 90 días podrán ser suspendidas sin previo aviso.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-02</span>
+        <span class="pol-title">Publicación de Productos</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>Los productos deben ser reales, disponibles y con información precisa (nombre, precio, descripción, imágenes).</li>
+          <li>Cada vendedor es responsable de mantener actualizado el stock y los precios.</li>
+          <li>Las imágenes deben ser propias o con derechos de uso.</li>
+          <li><strong>El administrador puede eliminar cualquier producto que viole las políticas o que no corresponda al espíritu comercial de la plataforma, sin notificación previa.</strong></li>
+          <li>Productos duplicados o con información falsa serán removidos inmediatamente.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-03</span>
+        <span class="pol-title">Membresías y Pagos</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>GI Store opera con membresía mensual para sus vendedores.</li>
+          <li><strong>Plan Fundador</strong> (primeros 10 vendedores): tarifa preferencial mensual.</li>
+          <li><strong>Plan Estándar</strong>: aplica para nuevos vendedores a partir del cupo 11.</li>
+          <li>Los pagos se procesan a través de Wompi (Bancolombia), plataforma segura y certificada.</li>
+          <li>El incumplimiento suspende automáticamente la cuenta. No se realizan reembolsos por períodos ya consumidos.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-04</span>
+        <span class="pol-title">Responsabilidad del Vendedor</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>Cada vendedor es el único responsable de sus productos: calidad, legalidad, entrega y posventa.</li>
+          <li>GI Store actúa como plataforma intermediaria y no se responsabiliza por transacciones entre partes.</li>
+          <li>El vendedor debe responder a los mensajes de clientes por WhatsApp en un plazo razonable.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-05</span>
+        <span class="pol-title">Conducta y Comunidad</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>Está prohibido publicar comentarios difamatorios, spam o contenido ofensivo en el foro.</li>
+          <li>Se prohíbe la competencia desleal, robo de clientes o prácticas engañosas.</li>
+          <li>GI Store fomenta la colaboración y el respeto mutuo entre todos sus miembros.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-06</span>
+        <span class="pol-title">Privacidad y Datos</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>GI Store recopila únicamente los datos necesarios para operar la plataforma.</li>
+          <li>Los datos de vendedores no son vendidos ni compartidos con terceros sin consentimiento.</li>
+          <li>El vendedor puede solicitar la eliminación de sus datos en cualquier momento.</li>
+          <li>Las imágenes subidas a la plataforma pueden usarse con fines promocionales de GI Store.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pol-card">
+      <div class="pol-header" onclick="toggle(this)">
+        <span class="pol-code">POL-07</span>
+        <span class="pol-title">Facultades del Administrador</span>
+        <span class="pol-arrow">▼</span>
+      </div>
+      <div class="pol-body">
+        <ul>
+          <li>El administrador puede activar, suspender o eliminar cuentas que violen estas políticas.</li>
+          <li>Puede remover productos, publicaciones o comentarios que atenten contra los valores de la plataforma.</li>
+          <li>Las decisiones del administrador son definitivas; los vendedores pueden apelar vía correo electrónico.</li>
+          <li>GI Store puede actualizar estas políticas en cualquier momento desde su publicación.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /politicas-list -->
+
+  <!-- VALORES -->
+  <div class="section-header" style="margin-top:3rem">
+    <h2>Valores Institucionales</h2>
+    <div class="section-line"></div>
+  </div>
+  <p style="color:var(--gris-700);margin-bottom:1rem;">Los principios que guían cada decisión y cada interacción dentro de GI Store.</p>
+
+  <div class="valores-grid">
+    <div class="valor-card">
+      <div class="valor-num">01</div>
+      <div class="valor-name">Calidad</div>
+      <div class="valor-desc">Solo productos verificados y con descripciones verídicas.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">02</div>
+      <div class="valor-name">Estilo</div>
+      <div class="valor-desc">Presentación profesional que refleja la identidad del vendedor.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">03</div>
+      <div class="valor-name">Confianza</div>
+      <div class="valor-desc">Transparencia en precios, stock y condiciones de venta.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">04</div>
+      <div class="valor-name">Respeto</div>
+      <div class="valor-desc">Trato digno entre vendedores, compradores y la plataforma.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">05</div>
+      <div class="valor-name">Comunidad</div>
+      <div class="valor-desc">El éxito de uno impulsa a todos. Crecimiento colectivo.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">06</div>
+      <div class="valor-name">Responsabilidad</div>
+      <div class="valor-desc">Cada vendedor responde por sus productos y su reputación.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">07</div>
+      <div class="valor-name">Innovación</div>
+      <div class="valor-desc">Adoptar herramientas digitales para mejorar la experiencia.</div>
+    </div>
+    <div class="valor-card">
+      <div class="valor-num">08</div>
+      <div class="valor-name">Legalidad</div>
+      <div class="valor-desc">Cumplimiento de las leyes colombianas y regulaciones vigentes.</div>
+    </div>
+  </div>
+
+  <!-- MISIÓN / VISIÓN -->
+  <div class="section-header" style="margin-top:3rem">
+    <h2>Misión y Visión</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="mv-grid">
+    <div class="mv-card">
+      <h3>Nuestra Misión</h3>
+      <p>Democratizar el comercio digital en Colombia, brindando a vendedores independientes una plataforma profesional y confiable para exhibir y vender sus productos, conectando directamente con compradores a través de WhatsApp.</p>
+    </div>
+    <div class="mv-card">
+      <h3>Nuestra Visión</h3>
+      <p>Ser la plataforma de referencia para el comercio emprendedor en Colombia y Latinoamérica, reconocida por la calidad de sus vendedores, la transparencia de sus procesos y la excelencia de la experiencia.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>GI Store</strong> — Calidad · Estilo · Confianza<br/>
+  <a href="../../index.html">gistore</a> · Aguachica, Cesar, Colombia<br/>
+  <span style="font-size:.8rem;opacity:.6;">© 2026 GI Store. Documento institucional — Versión 1.0</span>
+</footer>
+
+<script>
+  function toggle(header) {
+    const card = header.closest('.pol-card');
+    card.classList.toggle('open');
+  }
+  // Abrir la primera por defecto
+  document.querySelector('.pol-card .pol-header').click();
+</script>
+</body>
+</html>

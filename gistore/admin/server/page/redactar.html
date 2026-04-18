@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Redactar — GI Store Comunicaciones</title>
+      <link
+      rel="icon"
+      href="../../../img/favicon/gi-icono-blanco.svg"
+      type="image/svg+xml"
+    />
+  <link rel="stylesheet" href="../styles/comunicaciones.css"/>
+</head>
+<body>
+
+<button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar">
+  <a href="bandeja.html" class="sidebar-logo">
+    <div class="sidebar-logo-icono">✉️</div>
+    <div class="sidebar-logo-txt">
+      <strong>GI Store</strong>
+      <span>Comunicaciones</span>
+    </div>
+  </a>
+  <nav class="nav">
+
+     <a href="sdasboard.html"
+          ><span class="icono"
+            ><span class="material-symbols-outlined">bar_chart</span></span
+          >
+          Dashboard</a>
+           <div class="nav-titulo">Redacción</div>
+    <a href="redactar.html" class="sidebar-compose">
+      <span class="material-symbols-outlined" style="font-size:1rem">edit</span>
+      Redactar correo
+    </a>
+    <a href="whatsapp-masivo.html" class="sidebar-compose wa">
+      <span class="material-symbols-outlined" style="font-size:1rem">phone_iphone</span>
+      Enviar WhatsApp
+    </a>
+    <div class="nav-titulo">Correo</div>
+    <a href="bandeja.html"><span class="icono"><span class="material-symbols-outlined">inbox</span></span>Bandeja de entrada<span class="badge-nav">7</span></a>
+    <a href="enviados.html"><span class="icono"><span class="material-symbols-outlined">send</span></span>Enviados</a>
+    <a href="redactar.html" class="activo"><span class="icono"><span class="material-symbols-outlined">draft</span></span>Borradores<span class="badge-nav verde">2</span></a>
+    <a href="spam.html"><span class="icono"><span class="material-symbols-outlined">block</span></span>Spam<span class="badge-nav">14</span></a>
+    <div class="nav-titulo">Plantillas</div>
+    <a href="plantillas.html"><span class="icono"><span class="material-symbols-outlined">description</span></span>Mis plantillas</a>
+    <a href="publicidad.html"><span class="icono"><span class="material-symbols-outlined">campaign</span></span>Publicidad / Promo</a>
+    <a href="plantilla-bienvenida.html"><span class="icono"><span class="material-symbols-outlined">celebration</span></span>Bienvenida vendedor</a>
+    <div class="nav-titulo">WhatsApp</div>
+    <a href="whatsapp-masivo.html"><span class="icono"><span class="material-symbols-outlined">cell_tower</span></span>Envío masivo</a>
+    <a href="whatsapp-individual.html"><span class="icono"><span class="material-symbols-outlined">chat</span></span>Mensaje individual</a>
+    <a href="whatsapp-historial.html"><span class="icono"><span class="material-symbols-outlined">history</span></span>Historial WA</a>
+    <div class="nav-titulo">Configuración</div>
+    <a href="config-correo.html"><span class="icono"><span class="material-symbols-outlined">settings</span></span>Cuentas de correo</a>
+    <a href="config-whatsapp.html"><span class="icono"><span class="material-symbols-outlined">key</span></span>API WhatsApp</a>
+    <div class="nav-titulo">Admin</div>
+    <a href="../../pages/dashboard.html"><span class="icono"><span class="material-symbols-outlined">arrow_back</span></span>Volver al panel</a>
+  </nav>
+  <div class="sidebar-pie">
+    <button class="btn-salir"><span class="material-symbols-outlined">logout</span> Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-izq">
+      <h1>✏️ Redactar mensaje</h1>
+      <p class="sub">Envío individual o masivo · guarda como plantilla</p>
+    </div>
+    <div class="topbar-der">
+      <button class="btn btn-secundario" onclick="guardarBorrador()">
+        <span class="material-symbols-outlined" style="font-size:1rem">save</span> Guardar borrador
+      </button>
+    </div>
+  </div>
+
+  <div class="grilla-2" style="align-items:start">
+
+    <!-- Columna izquierda: formulario -->
+    <div>
+      <div class="panel" style="animation-delay:.05s">
+        <div class="panel-header">
+          <h2>📝 Nuevo mensaje</h2>
+          <div class="acciones">
+            <!-- Toggle individual / masivo -->
+            <label style="display:flex;align-items:center;gap:.5rem;font-size:.83rem;color:var(--texto-medio);cursor:pointer">
+              <input type="checkbox" id="toggleMasivo" onchange="cambiarModo()" style="accent-color:var(--verde)"/>
+              Envío masivo
+            </label>
+          </div>
+        </div>
+        <div class="panel-body">
+
+          <div id="msgOk" class="msg-ok">
+            <span class="material-symbols-outlined">check_circle</span> <span id="msgOkTxt">Mensaje enviado correctamente.</span>
+          </div>
+          <div id="msgError" class="msg-error">
+            <span class="material-symbols-outlined">error</span> <span id="msgErrorTxt">Por favor completa todos los campos.</span>
+          </div>
+
+          <!-- Modo individual -->
+          <div id="modoIndividual">
+            <div class="campo">
+              <label>Para (destinatario)</label>
+              <input type="email" id="para" placeholder="correo@vendedor.com"/>
+            </div>
+          </div>
+
+          <!-- Modo masivo -->
+          <div id="modoMasivo" style="display:none">
+            <div class="campo">
+              <label>Destinatarios</label>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem" id="chips"></div>
+              <select id="selectGrupo" onchange="seleccionarGrupo()"
+                style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.93rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+                <option value="">— Seleccionar grupo —</option>
+                <option value="todos">Todos los vendedores (312)</option>
+                <option value="activos">Vendedores activos (298)</option>
+                <option value="inactivos">Vendedores inactivos (14)</option>
+                <option value="plan-basico">Plan básico (120)</option>
+                <option value="plan-pro">Plan profesional (98)</option>
+                <option value="plan-premium">Plan premium (80)</option>
+              </select>
+              <p style="font-size:.76rem;color:var(--texto-suave);margin-top:.4rem">O escribe correos separados por coma</p>
+              <textarea id="emailsManual" placeholder="correo1@ejemplo.com, correo2@ejemplo.com…" style="min-height:70px;margin-top:.4rem;width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.85rem;font-family:'Inter',sans-serif;outline:none;resize:vertical;background:var(--fondo-2);color:var(--texto)"></textarea>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label>Asunto</label>
+            <input type="text" id="asunto" placeholder="Asunto del mensaje…"/>
+          </div>
+
+          <!-- Plantilla rápida -->
+          <div class="campo">
+            <label>Cargar plantilla (opcional)</label>
+            <select id="selectPlantilla" onchange="cargarPlantilla()"
+              style="width:100%;padding:.72rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radio-sm);font-size:.93rem;font-family:'Inter',sans-serif;outline:none;background:var(--fondo-2);color:var(--texto)">
+              <option value="">— Sin plantilla —</option>
+              <option value="bienvenida">🎉 Bienvenida al vendedor</option>
+              <option value="promo">📢 Campaña promocional</option>
+              <option value="renovacion">🔄 Renovación de membresía</option>
+              <option value="recordatorio">⏰ Recordatorio de pago</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>Mensaje</label>
+            <!-- Mini toolbar -->
+            <div style="border:1.5px solid var(--borde);border-bottom:none;border-radius:var(--radio-sm) var(--radio-sm) 0 0;padding:.4rem .8rem;background:var(--fondo);display:flex;gap:.25rem;flex-wrap:wrap">
+              <button type="button" onclick="fmt('bold')" style="background:none;border:1px solid var(--borde);border-radius:4px;padding:.2rem .5rem;cursor:pointer;font-weight:700;font-size:.8rem;color:var(--texto-medio)">B</button>
+              <button type="button" onclick="fmt('italic')" style="background:none;border:1px solid var(--borde);border-radius:4px;padding:.2rem .5rem;cursor:pointer;font-style:italic;font-size:.8rem;color:var(--texto-medio)">I</button>
+              <button type="button" onclick="fmt('underline')" style="background:none;border:1px solid var(--borde);border-radius:4px;padding:.2rem .5rem;cursor:pointer;text-decoration:underline;font-size:.8rem;color:var(--texto-medio)">U</button>
+              <span style="width:1px;background:var(--borde);margin:.1rem .2rem"></span>
+              <button type="button" onclick="insertarVariable('[nombre]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.2rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[nombre]</button>
+              <button type="button" onclick="insertarVariable('[tienda]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.2rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[tienda]</button>
+              <button type="button" onclick="insertarVariable('[plan]')" style="background:var(--verde-claro);border:1px solid var(--verde-borde);border-radius:4px;padding:.2rem .6rem;cursor:pointer;font-size:.75rem;color:var(--verde);font-weight:600">[plan]</button>
+            </div>
+            <div id="editorMsg" contenteditable="true"
+              style="min-height:180px;border:1.5px solid var(--borde);border-radius:0 0 var(--radio-sm) var(--radio-sm);padding:.72rem 1rem;font-family:'Inter',sans-serif;font-size:.93rem;line-height:1.7;outline:none;background:var(--fondo-2);color:var(--texto)"
+              data-placeholder="Escribe tu mensaje aquí…"
+            ></div>
+          </div>
+
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem">
+            <button class="btn btn-primary" onclick="enviarCorreo()" id="btnEnviar">
+              <span class="material-symbols-outlined" style="font-size:1rem">send</span>
+              <span id="lblEnviar">Enviar mensaje</span>
+            </button>
+            <button class="btn btn-secundario" onclick="limpiarForm()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna derecha: plantillas guardadas -->
+    <div>
+      <div class="panel" style="animation-delay:.1s">
+        <div class="panel-header">
+          <h2>💾 Borradores guardados</h2>
+        </div>
+        <div id="listaBorradores" style="padding:.5rem 0"></div>
+      </div>
+
+      <div class="panel" style="animation-delay:.15s;margin-top:1.5rem">
+        <div class="panel-header">
+          <h2>📊 Últimos envíos masivos</h2>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Asunto</th>
+                <th>Dest.</th>
+                <th>Enviado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Promo temporada alta</strong></td>
+                <td><span class="badge badge-activo">298</span></td>
+                <td style="font-size:.78rem;color:var(--texto-suave)">Hace 3 días</td>
+              </tr>
+              <tr>
+                <td><strong>Renovación membresías</strong></td>
+                <td><span class="badge badge-promo">80</span></td>
+                <td style="font-size:.78rem;color:var(--texto-suave)">Hace 1 sem.</td>
+              </tr>
+              <tr>
+                <td><strong>Bienvenida nuevos (marzo)</strong></td>
+                <td><span class="badge badge-activo">12</span></td>
+                <td style="font-size:.78rem;color:var(--texto-suave)">12 mar 2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grilla -->
+</main>
+    <script src="../control/auth.js"></script>
+    <script src="../control/redactar.js"></script>
+
+</body>
+</html>

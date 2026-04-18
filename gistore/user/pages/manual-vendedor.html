@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manual de Usuario — Vendedor · GI Store</title>
+  <link rel="icon" href="../../img/favicon/gi-icono-blanco.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../../img/favicon/gi-icono-blanco.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --verde:       #1a6b3c;
+      --verde-m:     #2d8a56;
+      --verde-cl:    #e8f5ee;
+      --acento:      #22c55e;
+      --indigo:      #6366f1;
+      --indigo-cl:   #eef2ff;
+      --cyan:        #0891b2;
+      --cyan-cl:     #f0f9ff;
+      --bg:          #f4f9f6;
+      --white:       #ffffff;
+      --borde:       #d4e8dc;
+      --texto:       #1a2e22;
+      --texto-m:     #3d5a45;
+      --texto-s:     #6b8c76;
+      --warn:        #d97706;
+      --warn-bg:     #fffbeb;
+      --info:        #0891b2;
+      --info-bg:     #f0f9ff;
+      --tip-bg:      #f0fdf4;
+      --sidebar-w:   265px;
+      --radio:       12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--texto);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--verde);
+      overflow-y: auto;
+      z-index: 100;
+      padding-bottom: 2rem;
+    }
+    #sidebar::-webkit-scrollbar { width: 4px; }
+    #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+
+    .sb-brand {
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .sb-brand-icon {
+      width: 40px; height: 40px; background: rgba(255,255,255,.15);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .sb-brand-txt { color: #fff; }
+    .sb-brand-txt strong { display: block; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; }
+    .sb-brand-txt span { font-size: .73rem; opacity: .75; }
+
+    .sb-section { padding: .85rem 1rem .35rem; }
+    .sb-section-title {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.55);
+      padding: 0 .25rem; margin-bottom: .35rem;
+    }
+    .sb-link {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .48rem .75rem; border-radius: 8px;
+      color: rgba(255,255,255,.82); text-decoration: none;
+      font-size: .84rem; font-weight: 500;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .sb-link:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .sb-link.activo { background: rgba(255,255,255,.18); color: #fff; font-weight: 600; }
+    .sb-num {
+      margin-left: auto; background: rgba(255,255,255,.18);
+      border-radius: 10px; padding: .1rem .45rem;
+      font-size: .7rem; font-weight: 700;
+    }
+
+    /* ── MAIN ── */
+    #main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      padding: 0 0 4rem;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0f4026 0%, var(--verde) 50%, #1a4f6b 100%);
+      padding: 3.5rem 3rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 75% 30%, rgba(99,102,241,.2), transparent);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.9); font-size: .75rem; font-weight: 600;
+      padding: .3rem .8rem; border-radius: 20px; margin-bottom: 1rem;
+      letter-spacing: .03em;
+    }
+    .hero h1 {
+      font-family: 'Nunito', sans-serif; font-size: 2.4rem; font-weight: 900;
+      color: #fff; line-height: 1.15; margin-bottom: .75rem; position: relative;
+    }
+    .hero p { color: rgba(255,255,255,.78); font-size: 1rem; max-width: 560px; position: relative; }
+    .hero-meta {
+      display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; position: relative;
+    }
+    .hero-meta span {
+      color: rgba(255,255,255,.7); font-size: .82rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .hero-meta strong { color: #fff; }
+
+    /* TOC */
+    .toc-bar {
+      background: var(--white); border-bottom: 1px solid var(--borde);
+      padding: .75rem 3rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
+    }
+    .toc-bar span { font-size: .78rem; color: var(--texto-s); margin-right: .25rem; }
+    .toc-pill {
+      background: var(--verde-cl); color: var(--verde);
+      border-radius: 20px; padding: .28rem .75rem;
+      font-size: .78rem; font-weight: 600; text-decoration: none;
+      transition: background .15s;
+    }
+    .toc-pill:hover { background: var(--acento); color: #fff; }
+    .toc-pill.ia { background: var(--indigo-cl); color: var(--indigo); }
+    .toc-pill.ia:hover { background: var(--indigo); color: #fff; }
+
+    /* Content area */
+    .content { padding: 2.5rem 3rem; }
+
+    /* Module section */
+    .modulo {
+      background: var(--white);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .modulo-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--borde);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .modulo-header.verde { background: linear-gradient(135deg, var(--verde-cl), var(--white)); }
+    .modulo-header.indigo { background: linear-gradient(135deg, var(--indigo-cl), var(--white)); }
+    .modulo-header.cyan { background: linear-gradient(135deg, var(--cyan-cl), var(--white)); }
+
+    .modulo-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .modulo-icon.verde  { background: var(--verde); }
+    .modulo-icon.indigo { background: var(--indigo); }
+    .modulo-icon.cyan   { background: var(--cyan); }
+
+    .modulo-header-txt h2 {
+      font-family: 'Nunito', sans-serif; font-size: 1.25rem;
+      font-weight: 800; margin-bottom: .15rem;
+    }
+    .modulo-header-txt h2.verde  { color: var(--verde); }
+    .modulo-header-txt h2.indigo { color: var(--indigo); }
+    .modulo-header-txt h2.cyan   { color: var(--cyan); }
+    .modulo-header-txt p { font-size: .84rem; color: var(--texto-m); }
+    .modulo-body { padding: 1.75rem 2rem; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 1rem; }
+    .step { display: flex; gap: 1rem; align-items: flex-start; }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--verde); color: #fff;
+      font-size: .82rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: .05rem;
+    }
+    .step-num.indigo { background: var(--indigo); }
+    .step-body { flex: 1; }
+    .step-body strong { display: block; font-size: .95rem; color: var(--texto); margin-bottom: .2rem; }
+    .step-body p, .step-body li { font-size: .88rem; color: var(--texto-m); }
+    .step-body ul { padding-left: 1.1rem; margin-top: .3rem; }
+    .step-body ul li { margin-bottom: .2rem; }
+
+    /* Feature grid */
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem; margin-top: .5rem;
+    }
+    .feat-card {
+      background: var(--bg); border: 1px solid var(--borde);
+      border-radius: var(--radio); padding: 1rem 1.1rem;
+    }
+    .feat-card .feat-icon { font-size: 1.5rem; margin-bottom: .4rem; }
+    .feat-card strong { display: block; font-size: .9rem; color: var(--texto); margin-bottom: .25rem; }
+    .feat-card p { font-size: .82rem; color: var(--texto-m); line-height: 1.5; }
+
+    /* Callout */
+    .callout {
+      border-radius: var(--radio); padding: .9rem 1.1rem;
+      display: flex; gap: .7rem; align-items: flex-start;
+      margin: .75rem 0; font-size: .86rem;
+    }
+    .callout.warn { background: var(--warn-bg); border-left: 3px solid var(--warn); color: #78350f; }
+    .callout.info { background: var(--info-bg); border-left: 3px solid var(--info); color: #0c4a6e; }
+    .callout.tip  { background: var(--tip-bg);  border-left: 3px solid var(--acento); color: #14532d; }
+    .callout.ia   { background: var(--indigo-cl); border-left: 3px solid var(--indigo); color: #312e81; }
+    .callout-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .callout div strong { display: block; font-weight: 700; margin-bottom: .1rem; }
+
+    /* Table */
+    .manual-table { width: 100%; border-collapse: collapse; margin-top: .5rem; font-size: .86rem; }
+    .manual-table th {
+      background: var(--verde-cl); color: var(--verde);
+      font-weight: 700; text-align: left; padding: .6rem .9rem;
+      border-bottom: 2px solid var(--borde);
+    }
+    .manual-table.indigo th { background: var(--indigo-cl); color: var(--indigo); }
+    .manual-table td { padding: .55rem .9rem; border-bottom: 1px solid var(--borde); color: var(--texto-m); }
+    .manual-table tr:last-child td { border-bottom: none; }
+    .manual-table tr:hover td { background: var(--verde-cl); }
+
+    /* Badge */
+    .badge {
+      display: inline-block; padding: .18rem .55rem; border-radius: 20px;
+      font-size: .72rem; font-weight: 700;
+    }
+    .badge-verde  { background: #dcfce7; color: #15803d; }
+    .badge-rojo   { background: #fee2e2; color: #dc2626; }
+    .badge-gris   { background: #f1f5f9; color: #475569; }
+    .badge-ambar  { background: #fef3c7; color: #d97706; }
+    .badge-indigo { background: var(--indigo-cl); color: var(--indigo); }
+
+    /* Divider */
+    .section-divider {
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+      color: var(--verde); padding: .5rem 0 1rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-divider.indigo { color: var(--indigo); }
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--borde);
+    }
+
+    /* Sub-section */
+    .sub-section {
+      font-size: .82rem; font-weight: 700; color: var(--verde-m);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 1.25rem 0 .6rem;
+    }
+
+    /* IA pill */
+    .ia-pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: var(--indigo); color: #fff;
+      font-size: .72rem; font-weight: 700; padding: .18rem .6rem;
+      border-radius: 12px; letter-spacing: .02em;
+    }
+
+    /* Back to top */
+    .back-top {
+      display: inline-flex; align-items: center; gap: .4rem;
+      color: var(--verde-m); font-size: .8rem; font-weight: 600;
+      text-decoration: none; margin-top: .5rem;
+      transition: color .15s;
+    }
+    .back-top:hover { color: var(--verde); }
+
+    /* Print */
+    @media print {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      #sidebar { position: relative; width: 100%; height: auto; }
+      #main { margin-left: 0; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.8rem; }
+      .content { padding: 1.5rem; }
+      .toc-bar { padding: .75rem 1.5rem; }
+      .modulo-body { padding: 1.25rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+ <div class="sb-brand">
+     <a
+        href="dashboard.html"
+        class="sidebar-logo"
+        title="Ir al inicio 🏠"
+        style="
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1.25rem 1.25rem 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);        "
+      >
+        <div class="sidebar-logo-icono">
+          <img
+            src="../../img/favicon/gi-icono-blanco.svg"
+            alt="GI Store"
+            style="width: 22px; height: 22px; object-fit: contain"
+          />
+        </div>
+        <div class="sb-brand-txt">
+          <strong>GI Store</strong>
+          <span>Volver al panel</span>
+        </div>
+      </a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Introducción</div>
+    <a class="sb-link activo" href="#intro">📖 Bienvenida</a>
+    <a class="sb-link" href="#acceso">🔐 Acceso al portal</a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Módulos</div>
+    <a class="sb-link" href="#mod-dashboard">📊 Dashboard <span class="sb-num">1</span></a>
+    <a class="sb-link" href="#mod-productos">📦 Mis productos <span class="sb-num">2</span></a>
+    <a class="sb-link" href="#mod-catalogo">📄 Exportar catálogo <span class="sb-num">3</span></a>
+    <a class="sb-link" href="#mod-spotlight">✨ Spotlight IA <span class="sb-num">4</span></a>
+    <a class="sb-link" href="#mod-editor">🎨 Editor visual <span class="sb-num">5</span></a>
+    <a class="sb-link" href="#mod-membresia">💳 Mi membresía <span class="sb-num">6</span></a>
+    <a class="sb-link" href="#mod-videos">🎬 Crear video <span class="sb-num">7</span></a>
+    <a class="sb-link" href="#mod-foro">💬 Foro <span class="sb-num">8</span></a>
+    <a class="sb-link" href="#mod-perfil">👤 Mi perfil <span class="sb-num">9</span></a>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-title">Referencia</div>
+    <a class="sb-link" href="#faq">❓ Preguntas frecuentes</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HERO -->
+  <div class="hero" id="intro">
+    <div class="hero-badge">🌿 Portal del Vendedor</div>
+    <h1>Manual de Usuario<br>GI Store · Vendedor</h1>
+    <p>Todo lo que necesitas saber para gestionar tu tienda, productos y diseñar contenido visual con inteligencia artificial.</p>
+    <div class="hero-meta">
+      <span>📅 <strong>Versión 2026</strong></span>
+      <span>📂 <strong>9 módulos</strong></span>
+      <span>👤 <strong>Rol: Vendedor</strong></span>
+      <span>✨ <strong>Incluye funciones IA</strong></span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc-bar">
+    <span>Ir a:</span>
+    <a class="toc-pill" href="#mod-dashboard">Dashboard</a>
+    <a class="toc-pill" href="#mod-productos">Productos</a>
+    <a class="toc-pill" href="#mod-catalogo">Catálogo PDF</a>
+    <a class="toc-pill ia" href="#mod-spotlight">✨ Spotlight IA</a>
+    <a class="toc-pill ia" href="#mod-editor">🎨 Editor</a>
+    <a class="toc-pill" href="#mod-membresia">Membresía</a>
+    <a class="toc-pill" href="#mod-videos">🎬 Video</a>
+    <a class="toc-pill" href="#mod-foro">Foro</a>
+    <a class="toc-pill" href="#mod-perfil">Perfil</a>
+  </div>
+
+  <div class="content">
+
+    <!-- ACCESO -->
+    <div id="acceso" class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">🔐</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Acceso al portal del vendedor</h2>
+          <p>Cómo iniciar sesión y qué protecciones tiene tu cuenta</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Navega al portal</strong>
+              <p>Accede a <code>gistore/user/</code>. Verás la pantalla de inicio de sesión del vendedor.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Ingresa tu correo y contraseña</strong>
+              <p>Usa las credenciales que el administrador te proporcionó. Si es tu primer ingreso, cambia la contraseña en <strong>Mi perfil</strong>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Acceso al Dashboard</strong>
+              <p>Si tu cuenta está activa, serás redirigido al Dashboard. Si tu cuenta está desactivada, el sistema te informará y no podrás ingresar.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn" style="margin-top:1.25rem">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Membresía necesaria</strong> Si tu membresía está vencida, podrás ingresar pero no podrás gestionar productos. Renueva desde el módulo <em>Mi membresía</em>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 1 — DASHBOARD -->
+    <div class="section-divider" id="mod-dashboard">Módulo 1 — Dashboard</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">📊</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Dashboard</h2>
+          <p>Tu pantalla de inicio con resumen de actividad y accesos rápidos</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">📦</div>
+            <strong>Total de productos</strong>
+            <p>Cantidad total de productos que tienes registrados (activos e inactivos).</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">✅</div>
+            <strong>Productos activos</strong>
+            <p>Los visibles actualmente en tu tienda pública.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">⏸️</div>
+            <strong>Productos inactivos</strong>
+            <p>Los que no están visibles. Se desactivan automáticamente si tu membresía vence.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:1.25rem">
+          <div class="sub-section">Panel de membresía</div>
+          <p style="font-size:.88rem;color:var(--texto-m)">Muestra el estado de tu membresía actual: plan activo, días restantes, fecha de vencimiento y, si aplica, el beneficio de <strong>Fundador</strong>.</p>
+        </div>
+
+        <div style="margin-top:1rem">
+          <div class="sub-section">Accesos rápidos</div>
+          <p style="font-size:.88rem;color:var(--texto-m)">Botones directos a: gestionar productos, exportar catálogo PDF, Spotlight IA, ver catálogo público y soporte por WhatsApp.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 2 — PRODUCTOS -->
+    <div class="section-divider" id="mod-productos">Módulo 2 — Mis productos</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">📦</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Mis productos</h2>
+          <p>Crear, editar, activar/desactivar y eliminar tus productos</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Crear un producto nuevo</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Clic en "Nuevo producto"</strong>
+              <p>Se abre el formulario en modo creación.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Completa los campos</strong>
+              <ul>
+                <li><strong>Nombre</strong> — nombre del producto (obligatorio)</li>
+                <li><strong>Precio</strong> — en pesos colombianos (COP)</li>
+                <li><strong>Categoría</strong> — elige de las categorías disponibles</li>
+                <li><strong>Descripción</strong> — descripción general del producto</li>
+                <li><strong>Beneficios</strong> — lista de características clave (uno por línea)</li>
+                <li><strong>Recomendación de uso</strong> — ej: "Ideal en ayunas"</li>
+                <li><strong>Imagen</strong> — sube una foto (se almacena en Cloudinary)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Guardar</strong>
+              <p>El producto se crea en Firestore y aparece en tu tienda pública inmediatamente (si tu membresía está activa).</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem">
+          <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Acciones sobre productos existentes</div>
+          <table class="manual-table">
+            <thead><tr><th>Acción</th><th>Descripción</th></tr></thead>
+            <tbody>
+              <tr><td>✏️ <strong>Editar</strong></td><td>Modifica cualquier campo del producto. La imagen puede reemplazarse subiendo una nueva.</td></tr>
+              <tr><td>🔁 <strong>Activar / Desactivar</strong></td><td>Cambia la visibilidad en el catálogo público sin eliminar el producto.</td></tr>
+              <tr><td>🗑️ <strong>Eliminar</strong></td><td>Borra el producto permanentemente. No se puede deshacer.</td></tr>
+              <tr><td>🔍 <strong>Buscar</strong></td><td>Filtra por nombre en tiempo real en la tabla de productos.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn" style="margin-top:1rem">
+          <span class="callout-icon">⚠️</span>
+          <div><strong>Membresía vencida:</strong> Si tu membresía vence, todos tus productos se desactivan automáticamente y dejan de ser visibles en el catálogo público. Al renovar, se reactivan.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 3 — CATÁLOGO PDF -->
+    <div class="section-divider" id="mod-catalogo">Módulo 3 — Exportar catálogo</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">📄</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Exportar catálogo</h2>
+          <p>Genera un PDF de tu catálogo de productos para compartir con clientes</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Elige los filtros</strong>
+              <p>Selecciona la categoría, el estado de los productos y el orden de presentación (por nombre, precio o categoría).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Vista previa</strong>
+              <p>El sistema muestra cómo quedará el catálogo paginado, con imágenes y precios.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Exportar PDF</strong>
+              <p>Clic en "Exportar PDF". El archivo se descarga al instante. Incluye portada con tu información de tienda y datos de contacto.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div>Para mejores resultados al imprimir, usa el navegador Chrome o Edge y activa "Imprimir fondos" en las opciones de impresión.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 4 — SPOTLIGHT IA -->
+    <div class="section-divider indigo" id="mod-spotlight">✨ Módulo 4 — Spotlight IA</div>
+    <div class="modulo">
+      <div class="modulo-header indigo">
+        <div class="modulo-icon indigo">✨</div>
+        <div class="modulo-header-txt">
+          <h2 class="indigo">Spotlight de Producto <span class="ia-pill">IA</span></h2>
+          <p>Genera tarjetas visuales estilo revista con Inteligencia Artificial</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1.25rem">El módulo Spotlight usa Google Gemini (vía OpenRouter) para generar automáticamente un texto publicitario elegante para tu producto, y lo presenta en una tarjeta visual lista para exportar como imagen PNG.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Flujo de uso</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num indigo">1</div>
+            <div class="step-body">
+              <strong>Filtra y selecciona un producto</strong>
+              <p>Usa los filtros de búsqueda por texto, categoría y estado. Haz clic en la tarjeta del producto que deseas destacar — quedará marcada con un ✓.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num indigo">2</div>
+            <div class="step-body">
+              <strong>Elige cómo continuar</strong>
+              <ul>
+                <li><strong>Generar con IA</strong> — La IA analiza el producto y escribe un texto publicitario (eslogan) automáticamente. El proceso toma 5-15 segundos.</li>
+                <li><strong>Editar diseño</strong> — Abre el Editor visual directamente con los datos del producto, sin texto IA.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num indigo">3</div>
+            <div class="step-body">
+              <strong>Vista previa de la tarjeta</strong>
+              <p>Aparece la tarjeta generada con: imagen del producto, nombre, precio, categoría, beneficios, recomendación y el texto IA. La paleta de colores se adapta automáticamente según la categoría.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num indigo">4</div>
+            <div class="step-body">
+              <strong>Acciones disponibles</strong>
+              <ul>
+                <li>🔄 <strong>Regenerar</strong> — pide un nuevo texto IA</li>
+                <li>⬇️ <strong>Exportar PNG</strong> — descarga la tarjeta como imagen de alta resolución</li>
+                <li>🎨 <strong>Abrir en Editor</strong> — lleva la tarjeta al editor para personalización completa</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout ia" style="margin-top:1rem">
+          <span class="callout-icon">🤖</span>
+          <div><strong>Sobre la IA gratuita:</strong> Se usan modelos de Google Gemini y Llama 4 sin costo. Si el primer modelo no responde (límite de velocidad), el sistema prueba automáticamente con el siguiente. El texto IA es solo una sugerencia — puedes editarlo en el Editor.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 5 — EDITOR VISUAL -->
+    <div class="section-divider indigo" id="mod-editor">🎨 Módulo 5 — Editor visual</div>
+    <div class="modulo">
+      <div class="modulo-header indigo">
+        <div class="modulo-icon indigo">🎨</div>
+        <div class="modulo-header-txt">
+          <h2 class="indigo">Editor visual tipo Canva</h2>
+          <p>Personaliza cada detalle de tu tarjeta de producto antes de exportarla</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1.25rem">El editor se abre en una nueva pestaña y te permite modificar visualmente todos los elementos de la tarjeta, con zoom, arrastrar imagen y textos libres.</p>
+
+        <div class="feat-grid" style="margin-bottom:1.25rem">
+          <div class="feat-card">
+            <div class="feat-icon">📝</div>
+            <strong>Pestaña Texto</strong>
+            <p>Edita nombre, precio, categoría, marca, descripción, eslogan IA, recomendación, beneficios y pie de tarjeta. Activa/desactiva secciones con toggles.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🖼️</div>
+            <strong>Pestaña Imagen</strong>
+            <p>Cambia la URL de imagen, ajusta zoom (también con rueda del mouse), arrastra para reposicionar, aplica filtros CSS y configura el overlay de color.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🎨</div>
+            <strong>Pestaña Diseño</strong>
+            <p>6 paletas de color prediseñadas, 9 gradientes para la barra superior, color primario personalizado, color de fondo y radio de bordes.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📐</div>
+            <strong>Pestaña Layout</strong>
+            <p>Cambia la fuente del título, tamaños de texto, ancho de columna de imagen, ancho total de tarjeta, alineación y tipo de bullet para beneficios.</p>
+          </div>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Textos libres arrastrables</div>
+        <p style="font-size:.88rem;color:var(--texto-m);margin-bottom:.75rem">Haz clic en <strong>"+ Añadir texto libre"</strong> (botón morado en el sidebar) para superponer bloques de texto sobre la tarjeta.</p>
+        <table class="manual-table indigo">
+          <thead><tr><th>Acción</th><th>Cómo hacerlo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Mover</strong></td><td>Arrastra el bloque con el mouse</td></tr>
+            <tr><td><strong>Editar texto</strong></td><td>Doble clic sobre el bloque</td></tr>
+            <tr><td><strong>Seleccionar</strong></td><td>Un clic — aparece el panel de propiedades</td></tr>
+            <tr><td><strong>Cambiar estilo</strong></td><td>Usa el panel: tamaño, color, fuente, negrita, cursiva, alineación, opacidad, radio de borde</td></tr>
+            <tr><td><strong>Duplicar</strong></td><td>Botón "Duplicar" en el panel del texto seleccionado</td></tr>
+            <tr><td><strong>Subir/Bajar capa</strong></td><td>Botones ↑ ↓ en el panel</td></tr>
+            <tr><td><strong>Eliminar</strong></td><td>Botón 🗑 o tecla <kbd>Delete</kbd></td></tr>
+            <tr><td><strong>Deseleccionar</strong></td><td>Tecla <kbd>Escape</kbd> o clic fuera</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Modos de apertura del editor</div>
+        <table class="manual-table">
+          <thead><tr><th>Modo</th><th>Indicador</th><th>Descripción</th></tr></thead>
+          <tbody>
+            <tr><td>📦 <strong>Producto cargado</strong></td><td><span class="badge badge-verde">verde</span></td><td>Se abrió desde "Editar diseño" con datos del producto pero sin texto IA.</td></tr>
+            <tr><td>✨ <strong>Con texto IA</strong></td><td><span class="badge badge-indigo">morado</span></td><td>Se abrió desde "Abrir en Editor" después de generar con IA.</td></tr>
+            <tr><td>✏️ <strong>Edición libre</strong></td><td><span class="badge" style="background:#f0fdfa;color:#0f766e">teal</span></td><td>Pestaña en blanco para diseño desde cero, sin producto específico.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout tip" style="margin-top:1rem">
+          <span class="callout-icon">💡</span>
+          <div>Usa los botones <strong>–</strong> y <strong>+</strong> de zoom en la barra superior para ver mejor la tarjeta. El ícono <strong>⊡</strong> ajusta el zoom automáticamente al ancho de pantalla.</div>
+        </div>
+        <div class="callout info" style="margin-top:.5rem">
+          <span class="callout-icon">ℹ️</span>
+          <div>El botón <strong>"✏️ Edición libre"</strong> (verde azulado, al fondo del sidebar) abre una nueva pestaña del editor completamente en blanco, ideal para crear contenido publicitario sin asociarlo a un producto específico.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 6 — MEMBRESÍA -->
+    <div class="section-divider" id="mod-membresia">Módulo 6 — Mi membresía</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">💳</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Mi membresía</h2>
+          <p>Consultar el estado de tu suscripción, planes y realizar el pago</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="feat-grid" style="margin-bottom:1.25rem">
+          <div class="feat-card">
+            <div class="feat-icon">📋</div>
+            <strong>Estado actual</strong>
+            <p>Muestra: plan activo, fecha de inicio, fecha de vencimiento, días restantes y estado general.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">💰</div>
+            <strong>Planes disponibles</strong>
+            <p>Lista los planes configurados por el administrador con precio y duración. Los precios son dinámicos desde Firestore.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🏅</div>
+            <strong>Beneficio Fundador</strong>
+            <p>Si fuiste uno de los primeros registrados, ves el precio especial de fundador durante 1 año.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📜</div>
+            <strong>Historial de pagos</strong>
+            <p>Registro de todos tus pagos anteriores con fecha y plan.</p>
+          </div>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Cómo renovar o comprar membresía</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Elige tu plan</strong>
+              <p>Selecciona el plan que se adapte a tu necesidad en la sección "Planes disponibles".</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Realiza el pago</strong>
+              <p>Haz clic en el botón de pago del plan elegido. Serás redirigido a la pasarela de pago.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Confirmación</strong>
+              <p>Al completar el pago, serás redirigido a la página de resultado. El administrador activará tu membresía y tus productos serán visibles nuevamente.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn" style="margin-top:1rem">
+          <span class="callout-icon">⚠️</span>
+          <div>Si tienes algún problema con el pago o necesitas una renovación manual, contacta al soporte por WhatsApp o correo desde el módulo Dashboard → Soporte y PQRs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO 7 — PERFIL -->
+
+
+    <!-- MÓDULO 7 — CREAR VIDEO -->
+    <div class="section-divider" id="mod-videos">Módulo 7 — Crear video</div>
+    <div class="modulo">
+      <div class="modulo-header cyan">
+        <div class="modulo-icon cyan">🎬</div>
+        <div class="modulo-header-txt">
+          <h2 class="cyan">Crear video</h2>
+          <p>Graba y exporta videos cortos de tus productos directamente desde el navegador</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p style="font-size:.9rem;color:var(--texto-m);margin-bottom:1rem">Esta herramienta te permite grabar un video corto usando las plantillas visuales de GI Store y descargarlo en formato MP4 compatible con WhatsApp, Facebook e Instagram. <strong>No es un editor profesional</strong> — es una forma rápida y sencilla de crear contenido visual básico sin salir de la plataforma.</p>
+
+        <div class="callout info" style="margin-bottom:1.25rem">
+          <span class="callout-icon">ℹ️</span>
+          <div><strong>¿Para qué sirve?</strong> Para grabar videos cortos con animaciones y música de fondo sobre tus productos y compartirlos directamente en redes sociales o por WhatsApp. La herramienta es simple a propósito: facilidad antes que complejidad.</div>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Cómo grabar un video</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num" style="background:var(--cyan)">1</div>
+            <div class="step-body">
+              <strong>Elige una plantilla</strong>
+              <p>Selecciona una de las plantillas disponibles. Cada plantilla tiene un estilo visual diferente (colores, animaciones, tipografía). Haz clic en la que quieras usar.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:var(--cyan)">2</div>
+            <div class="step-body">
+              <strong>Personaliza el contenido</strong>
+              <p>Según la plantilla, podrás ajustar: nombre del producto, precio, descripción corta e imagen. Algunos campos se llenan automáticamente si vienes desde un producto.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:var(--cyan)">3</div>
+            <div class="step-body">
+              <strong>Inicia la grabación</strong>
+              <p>Haz clic en el botón <strong>● Grabar</strong>. El sistema captura la animación en tiempo real. El botón cambia a <strong>■ Detener</strong> mientras está activo.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num" style="background:var(--cyan)">4</div>
+            <div class="step-body">
+              <strong>Detén y exporta</strong>
+              <p>Haz clic en <strong>■ Detener</strong> cuando hayas terminado. El video se procesa automáticamente y se descarga como archivo <code>.mp4</code> listo para compartir.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Compatibilidad del video exportado</div>
+        <table class="manual-table">
+          <thead><tr><th>Plataforma</th><th>Compatible</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr><td>📱 <strong>WhatsApp</strong></td><td><span class="badge badge-verde">✅ Sí</span></td><td>El video se optimiza automáticamente al formato que acepta WhatsApp.</td></tr>
+            <tr><td>📘 <strong>Facebook</strong></td><td><span class="badge badge-verde">✅ Sí</span></td><td>Formato H.264 compatible con publicaciones y reels cortos.</td></tr>
+            <tr><td>📸 <strong>Instagram</strong></td><td><span class="badge badge-verde">✅ Sí</span></td><td>Apto para stories y reels. La duración recomendada es de 15 a 30 segundos.</td></tr>
+            <tr><td>🎵 <strong>TikTok</strong></td><td><span class="badge badge-ambar">⚠️ Parcial</span></td><td>Puede funcionar, pero TikTok tiene sus propios filtros de calidad al subir.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Lo que esta herramienta NO hace</div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div>
+            <strong>Limitaciones a tener en cuenta:</strong>
+            <ul style="margin-top:.4rem;padding-left:1.1rem;font-size:.85rem">
+              <li>No permite editar el video después de grabado (cortar, fusionar, agregar efectos).</li>
+              <li>No graba la voz ni el micrófono — solo captura la animación de la pantalla y la música de fondo de la plantilla.</li>
+              <li>No es un reemplazo de herramientas como CapCut, Canva Video o editores profesionales.</li>
+              <li>La calidad final depende del navegador y del dispositivo — en móviles más antiguos puede verse afectada.</li>
+              <li>El tiempo de exportación puede variar: en Chrome es rápido (pocos segundos); en otros navegadores puede tomar más tiempo dependiendo de la duración del video.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout tip" style="margin-top:.75rem">
+          <span class="callout-icon">💡</span>
+          <div><strong>Recomendación:</strong> Usa Google Chrome en computador para la mejor experiencia de grabación y exportación. La herramienta funciona en móvil, pero el resultado es más estable desde escritorio.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Módulo Foro -->
+    <div class="section-divider" id="mod-foro">Módulo 8 — Foro de la comunidad</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">💬</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Foro de la comunidad</h2>
+          <p>Participa en las discusiones de la comunidad GI Store</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <p>El Foro es un espacio público donde todos los vendedores y el administrador pueden compartir preguntas, consejos y experiencias. Cualquier visitante puede leer; solo tú (como vendedor con sesión activa) puedes responder o crear hilos.</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem">Acceder al foro</div>
+        <p>Desde el portal del vendedor, ve a <strong>Comunidad → Foro</strong> en el menú lateral. También puedes ver el foro público desde <strong>page/foro.html</strong> sin iniciar sesión (solo lectura).</p>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Crear una nueva pregunta</div>
+        <ol>
+          <li>Haz clic en <strong>+ Nueva pregunta</strong>.</li>
+          <li>Escribe el <strong>título</strong> (obligatorio, máx. 140 caracteres).</li>
+          <li>Agrega una <strong>descripción</strong> con más contexto (opcional, máx. 1200 caracteres).</li>
+          <li>Haz clic en <strong>Publicar</strong>.</li>
+        </ol>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Responder un hilo</div>
+        <ol>
+          <li>Haz clic en <strong>Ver hilo →</strong> en la tarjeta del hilo que te interesa.</li>
+          <li>En la parte inferior del modal escribe tu respuesta.</li>
+          <li>Haz clic en <strong>Responder</strong>.</li>
+        </ol>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">Editar y eliminar</div>
+        <table class="manual-table">
+          <thead><tr><th>Acción</th><th>Condición</th></tr></thead>
+          <tbody>
+            <tr><td><strong>✏️ Editar</strong></td><td>Solo puedes editar tus propias respuestas y solo durante los primeros <strong>30 minutos</strong> después de publicarlas.</td></tr>
+            <tr><td><strong>🗑 Eliminar</strong></td><td>Puedes eliminar tus propias respuestas en cualquier momento, sin límite de tiempo.</td></tr>
+          </tbody>
+        </table>
+
+        <div style="background:#f0faf4;border-radius:8px;padding:.75rem 1rem;margin-top:1rem;font-size:.85rem;color:#155c32">
+          💡 <strong>Tip:</strong> El foro público en <code>page/foro.html</code> muestra exactamente los mismos hilos. Tus respuestas aparecen con tu nombre y foto de perfil.
+        </div>
+      </div>
+    </div>
+
+        <div class="section-divider" id="mod-perfil">Módulo 9 — Mi perfil</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">👤</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Mi perfil</h2>
+          <p>Gestiona la información pública de tu tienda y la seguridad de tu cuenta</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <div class="feat-grid" style="margin-bottom:1.25rem">
+          <div class="feat-card">
+            <div class="feat-icon">📸</div>
+            <strong>Foto de perfil</strong>
+            <p>Sube una imagen (máx. 2 MB, JPEG/PNG/WebP). Se mostrará en tu tienda pública como avatar. Si no subes foto, se usa tu inicial con tu color de marca.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📝</div>
+            <strong>Datos de la tienda</strong>
+            <p>Nombre, ciudad, WhatsApp, <strong>URL de página web</strong> y descripción (máx. 300 caracteres). Todo aparece en tu tienda pública.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🌐</div>
+            <strong>Página web</strong>
+            <p>Si tienes un sitio web propio, agrégalo aquí. Aparecerá como botón "Visitar página web" en tu tienda junto al de WhatsApp.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">📲</div>
+            <strong>Redes sociales</strong>
+            <p>Vincula Facebook, TikTok, Instagram y YouTube. Los íconos aparecen <strong>encima del botón de WhatsApp</strong> en tu tienda pública. Solo se muestran las redes que hayas completado.</p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">🔑</div>
+            <strong>Cambiar contraseña</strong>
+            <p>Ingresa tu contraseña actual para verificar y establece la nueva (mínimo 6 caracteres).</p>
+          </div>
+        </div>
+
+        <div class="section-divider" style="font-size:.85rem;padding-bottom:.5rem;margin-top:1.25rem">📲 Redes sociales</div>
+        <p>En la sección <strong>Redes sociales</strong> del formulario de perfil, ingresa la URL completa de cada red. Solo se muestran las redes que hayas completado.</p>
+        <table class="manual-table">
+          <thead><tr><th>Red</th><th>URL esperada</th><th>Dónde aparece</th></tr></thead>
+          <tbody>
+            <tr><td>🔵 <strong>Facebook</strong></td><td><code>https://facebook.com/tutienda</code></td><td rowspan="4" style="vertical-align:middle;text-align:center;font-size:.82rem">Íconos circulares encima del botón WhatsApp en tu tienda pública</td></tr>
+            <tr><td>⚫ <strong>TikTok</strong></td><td><code>https://tiktok.com/@tutienda</code></td></tr>
+            <tr><td>🌸 <strong>Instagram</strong></td><td><code>https://instagram.com/tutienda</code></td></tr>
+            <tr><td>🔴 <strong>YouTube</strong></td><td><code>https://youtube.com/@tucanal</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div><strong>Descripción de tienda:</strong> Una buena descripción aumenta la confianza de tus clientes. Cuéntales qué vendes, qué te hace especial y cómo pueden contactarte.</div>
+        </div>
+        <div class="callout info" style="margin-top:.5rem">
+          <span class="callout-icon">ℹ️</span>
+          <div>El correo electrónico <strong>no se puede cambiar</strong> desde el perfil. Si necesitas cambiarlo, contacta al administrador.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-divider" id="faq">Preguntas frecuentes</div>
+    <div class="modulo">
+      <div class="modulo-header verde">
+        <div class="modulo-icon verde">❓</div>
+        <div class="modulo-header-txt">
+          <h2 class="verde">Preguntas frecuentes — Vendedor</h2>
+          <p>Situaciones comunes y cómo resolverlas</p>
+        </div>
+      </div>
+      <div class="modulo-body">
+        <table class="manual-table">
+          <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>¿Por qué mis productos no aparecen en el catálogo público?</strong></td>
+              <td>Verifica que tu membresía esté activa y que los productos tengan estado <span class="badge badge-verde">activo</span>. Si la membresía venció, tus productos se desactivaron automáticamente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿La IA del Spotlight siempre funciona?</strong></td>
+              <td>Usa modelos gratuitos con límite de velocidad. Si el primer modelo no responde, prueba automáticamente con el siguiente. En casos excepcionales puede tardar más. La tarjeta se genera igual aunque la IA falle.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puedo editar el texto que generó la IA?</strong></td>
+              <td>Sí. Abre la tarjeta en el Editor visual y modifica el campo "Texto IA / Eslogan" libremente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿El PNG exportado tiene buena resolución?</strong></td>
+              <td>Sí. Se exporta a escala 2× (Spotlight) o 2.5× (Editor), lo que da imágenes de alta calidad aptas para redes sociales.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Qué pasa si subo una imagen con URL relativa (sin http)?</strong></td>
+              <td>El sistema detecta si estás en local o en GitHub Pages y construye la URL completa automáticamente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo comparto un producto específico con un cliente?</strong></td>
+              <td>En la tienda pública, abre el producto y haz clic en el botón "Compartir". Se genera un link con el ID del producto que al abrirse muestra el modal directamente.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puedo tener varios productos en la misma categoría?</strong></td>
+              <td>Sí, no hay límite. Las categorías las gestiona el administrador.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Para qué sirve el "Editor de edición libre"?</strong></td>
+              <td>Para crear tarjetas visuales desde cero, sin asociarlas a un producto. Útil para publicidad general, anuncios de ofertas o contenido de marca.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Cómo agrego mis redes sociales a mi tienda?</strong></td>
+              <td>Ve a <strong>Mi perfil</strong> y llena los campos de Facebook, TikTok, Instagram o YouTube con la URL completa. Los íconos aparecerán encima del botón de WhatsApp en tu tienda pública.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puedo editar mi respuesta en el foro después de publicarla?</strong></td>
+              <td>Sí, pero solo durante los primeros 30 minutos. Después de ese tiempo la opción desaparece, aunque puedes eliminarla en cualquier momento.</td>
+            </tr>
+            <tr>
+              <td><strong>El Spotlight IA muestra "clave no configurada". ¿Qué hago?</strong></td>
+              <td>Contacta al administrador para que registre o actualice la clave de OpenRouter en <strong>Admin → Claves API</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Puedo editar mi respuesta en el foro después de publicarla?</strong></td>
+              <td>Sí, pero solo durante los primeros 30 minutos. Después de ese tiempo, la opción de editar desaparece aunque puedes eliminarla en cualquier momento.</td>
+            </tr>
+            <tr>
+              <td><strong>¿Mis respuestas en el foro aparecen con mi nombre y foto?</strong></td>
+              <td>Sí. Se usan el nombre y la foto de perfil de tu cuenta de vendedor.</td>
+            </tr>
+            <tr>
+              <td><strong>El Spotlight IA dice "clave API no configurada". ¿Qué hago?</strong></td>
+              <td>Contacta al administrador — la clave de OpenRouter necesita ser registrada o actualizada en el panel de Admin → Claves API.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <a href="#intro" class="back-top">↑ Volver al inicio</a>
+
+  </div>
+</div>
+
+</body>
+</html>
